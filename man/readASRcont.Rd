@@ -4,10 +4,12 @@
 \alias{readASRcont}
 \title{Read continuous monitoring data from an external file}
 \usage{
-readASRcont(contpth, runchk = T)
+readASRcont(contpth, tz, runchk = TRUE)
 }
 \arguments{
 \item{contpth}{character string of path to the results file}
+
+\item{tz}{character string of time zone for the date and time columns  See \code{OlsonNames()} for acceptable time zones.}
 
 \item{runchk}{logical to run data checks with \code{\link{checkASRcont}}}
 }
@@ -21,5 +23,5 @@ Read continuous monitoring data from an external file
 
 contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
 
-readASRcont(contpth)
+readASRcont(contpth, tz = 'Etc/GMT+5')
 }
