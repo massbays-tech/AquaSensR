@@ -48,7 +48,8 @@ Depends:
 Imports:
   dplyr, 
   lubridate,
-  readxl
+  readxl,
+  tidyr
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

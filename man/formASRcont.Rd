@@ -21,7 +21,8 @@ Format continuous data
 This function is used internally within \code{\link{readASRcont}} to format the input data for downstream analysis.  The formatting includes:
 
 \itemize{
-\item Text
+\item Combine Date and Time columns: Combines into a single DateTime column, converts to POSIXct with the specified time zone.
+\item Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.
 }
 }
 \examples{
