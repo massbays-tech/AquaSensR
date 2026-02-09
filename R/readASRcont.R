@@ -8,22 +8,28 @@
 #' @export
 #'
 #' @examples
-#' 
+#'
 #' contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
-#' 
+#'
 #' readASRcont(contpth, tz = 'Etc/GMT+5')
-readASRcont <- function(contpth, tz, runchk = TRUE){
-  
-  contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''), guess_max = Inf)) %>% 
-    dplyr::mutate(dplyr::across(dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")), as.character))
-  
+readASRcont <- function(contpth, tz, runchk = TRUE) {
+  contdat <- suppressWarnings(readxl::read_excel(
+    contpth,
+    na = c('NA', 'na', ''),
+    guess_max = Inf
+  )) %>%
+    dplyr::mutate(dplyr::across(
+      dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
+      as.character
+    ))
+
   # run checks
-  if(runchk)
+  if (runchk) {
     contdat <- checkASRcont(contdat, warn = warn)
+  }
 
   # format results
   out <- formASRcont(contdat, tz = tz)
-  
+
   return(out)
-  
 }
