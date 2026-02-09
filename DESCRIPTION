@@ -17,7 +17,7 @@ Authors@R: c(
     person(given = "Mariel",
       family = "Sorlien", 
       role = c("aut"),
-      email = "msorlien@nbep.org"
+      email = "msorlien@nbep.org",
       comment = c(ORCID = "0000-0001-7102-2918")
     ),
     person(given = "Christopher",
