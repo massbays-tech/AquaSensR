@@ -25,7 +25,7 @@ readASRcont <- function(contpth, tz, runchk = TRUE) {
 
   # run checks
   if (runchk) {
-    contdat <- checkASRcont(contdat, warn = warn)
+    contdat <- checkASRcont(contdat)
   }
 
   # format results

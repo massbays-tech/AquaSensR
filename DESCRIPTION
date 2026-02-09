@@ -44,7 +44,7 @@ Description: Methods for quality control and exploratory analysis of continuous
   <https://www.epa.gov/waterdata/water-quality-data-upload-wqx> and reporting 
   of quality control to state agencies.
 Depends: 
-  R (>= 3.5)
+  R (>= 4.1.0)
 Imports:
   dplyr, 
   lubridate,

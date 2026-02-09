@@ -1,7 +1,6 @@
 #' Check continuous monitoring data
 #'
 #' @param contdat input data frame for results
-#' @param warn logical to return warnings to the console (default)
 #'
 #' @details This function is used internally within \code{\link{readASRcont}} to run several checks on the input data to verify correct formatting before downstream analysis.
 #'
@@ -31,7 +30,7 @@
 #'    as.character))
 #'
 #' checkASRcont(contdat)
-checkASRcont <- function(contdat, warn = TRUE) {
+checkASRcont <- function(contdat) {
   message('Running checks on continuous data...\n')
 
   # globals
@@ -75,8 +74,7 @@ checkASRcont <- function(contdat, warn = TRUE) {
   if (!any(chk)) {
     stop(
       msg,
-      '\n\tNo parameter columns found. Please include at least one of the following columns: ',
-      paste(parms, collapse = ', '),
+      '\n\tNo parameter columns found. Please include at least one from the Label column in paramsASR.',
       call. = FALSE
     )
   }
@@ -119,9 +117,14 @@ checkASRcont <- function(contdat, warn = TRUE) {
   })
   if (any(chk)) {
     # get rows with non-numeric values
-    tochk <- lapply(nms[chk], function(x) {
-      which(suppressWarnings(as.numeric(contdat[[x]])) |> is.na())
-    })
+    tochk <- sapply(
+      nms[chk],
+      function(x) {
+        which(suppressWarnings(as.numeric(contdat[[x]])) |> is.na())
+      },
+      simplify = FALSE
+    )
+
     stop(
       msg,
       '\n\tThe following parameter columns have non-numeric values in the following rows: ',
