@@ -4,12 +4,10 @@
 \alias{checkASRcont}
 \title{Check continuous monitoring data}
 \usage{
-checkASRcont(contdat, warn = TRUE)
+checkASRcont(contdat)
 }
 \arguments{
 \item{contdat}{input data frame for results}
-
-\item{warn}{logical to return warnings to the console (default)}
 }
 \value{
 \code{contdat} is returned as is if no errors are found, otherwise an informative error message is returned prompting the user to make the required correction to the raw data before proceeding.
@@ -35,11 +33,11 @@ library(dplyr)
 
 contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
 
-contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''), 
-     guess_max = Inf)) \%>\% 
+contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
+     guess_max = Inf)) |>
    dplyr::mutate(dplyr::across(
-     dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")), 
+     dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
    as.character))
-             
+
 checkASRcont(contdat)
 }

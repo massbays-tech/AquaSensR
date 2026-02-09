@@ -17,7 +17,7 @@ readASRcont <- function(contpth, tz, runchk = TRUE) {
     contpth,
     na = c('NA', 'na', ''),
     guess_max = Inf
-  )) %>%
+  )) |>
     dplyr::mutate(dplyr::across(
       dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
       as.character

@@ -28,11 +28,11 @@ This function is used internally within \code{\link{readASRcont}} to format the 
 \examples{
 contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
 
-contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''), 
-     guess_max = Inf)) \%>\% 
+contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
+     guess_max = Inf)) |>
    dplyr::mutate(dplyr::across(
-     dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")), 
+     dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
    as.character))
-             
+
 formASRcont(contdat, tz = 'Etc/GMT+5')
 }

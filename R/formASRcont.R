@@ -18,7 +18,7 @@
 #' contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
 #'
 #' contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
-#'      guess_max = Inf)) %>%
+#'      guess_max = Inf)) |>
 #'    dplyr::mutate(dplyr::across(
 #'      dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
 #'    as.character))
