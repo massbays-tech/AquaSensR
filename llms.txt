@@ -1,6 +1,7 @@
 # AquaSensR
 
 [![R-CMD-check](https://github.com/massbays-tech/AquaSensR/workflows/R-CMD-check/badge.svg)](https://github.com/massbays-tech/AquaSensR/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/massbays-tech/AquaSensR/workflows/pkgdown/badge.svg)](https://github.com/massbays-tech/AquaSensR/actions/workflows/pkgdown.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/massbays-tech/AquaSensR/graph/badge.svg)](https://app.codecov.io/gh/massbays-tech/AquaSensR)
 
