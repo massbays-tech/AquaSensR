@@ -1,0 +1,37 @@
+url: https://massbays-tech.github.io/AquaSensR/
+template:
+  bootstrap: 5
+  assets: inst/extdata
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    reference:
+      text: Functions
+      href: reference/index.html
+    
+articles: 
+- title: Get Started
+  navbar: ~
+  contents:
+  - AquaSensR
+- title: Articles
+  navbar: ~
+  contents: 
+  - inputs
+
+reference:
+- title: Read, check, and format data
+  desc: >
+    Functions for importing, checking, and formatting input data.
+  contents:
+  - starts_with('read')
+  - starts_with('check')
+  - starts_with('form')
+- title: Supplementary datasets
+  desc: >
+    Supplementary datasets for the read, quality control, and analysis functions.
+  contents:
+  - paramsASR
