@@ -35,7 +35,8 @@ Authors@R: c(
     person(given = "Jill",
       family = "Carr",
       role = c("aut"),
-      email = "Jillian.Carr@umb.edu"
+      email = "Jillian.Carr@umb.edu",
+      comment = c(ORCID = "0000-0003-1476-6640")
     )
   )
 Description: Methods for quality control and exploratory analysis of continuous

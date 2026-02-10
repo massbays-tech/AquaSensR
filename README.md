@@ -2,6 +2,7 @@
 
  <!-- badges: start -->
 [![R-CMD-check](https://github.com/massbays-tech/AquaSensR/workflows/R-CMD-check/badge.svg)](https://github.com/massbays-tech/AquaSensR/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/massbays-tech/AquaSensR/workflows/pkgdown/badge.svg)](https://github.com/massbays-tech/AquaSensR/actions/workflows/pkgdown.yaml)
 [![Codecov test coverage](https://codecov.io/gh/massbays-tech/AquaSensR/graph/badge.svg)](https://app.codecov.io/gh/massbays-tech/AquaSensR)
 <!-- badges: end -->
 
@@ -9,7 +10,7 @@ R package for working with continuous monitoring data in aquatic environments
 
 ## Installation
 
-A precompiled version of the package can be installed from [R-Universe](https://massbays-tech.r-universe.dev/AquaSensR){target="_blank"} as follows:
+A precompiled version of the package can be installed from [R-Universe](https://massbays-tech.r-universe.dev/AquaSensR) as follows:
 
 ``` r
 install.packages('AquaSensR', repos = c('https://massbays-tech.r-universe.dev', 'https://cloud.r-project.org'))
