@@ -16,5 +16,16 @@ tst <- list(
     system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR'),
     tz = 'Etc/GMT+5',
     runchk = F
+  ),
+  # continuous metadata
+  metapth = system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR'),
+  metadatchk = suppressWarnings(readxl::read_excel(
+    system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR'),
+    na = c('NA', 'na', ''),
+    guess_max = Inf
+  )),
+  metadat = readASRmeta(
+    system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR'),
+    runchk = F
   )
 )

@@ -1,6 +1,6 @@
 #' Read continuous monitoring data from an external file
 #'
-#' @param contpth character string of path to the results file
+#' @param contpth character string of path to the continuous data file
 #' @param tz character string of time zone for the date and time columns  See `OlsonNames()` for acceptable time zones.
 #' @param runchk logical to run data checks with \code{\link{checkASRcont}}
 #'

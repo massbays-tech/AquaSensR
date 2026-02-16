@@ -6,11 +6,12 @@
 #'
 #' The following checks are made:
 #' \itemize{
-#'  \item: Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
-#'  \item: Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
-#'  \item: At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
+#'  \item Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
+#'  \item Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
+#'  \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
 #'  \item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
 #'  \item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
+#'  \item Missing values: No missing values in any columns
 #'  \item Parameter columns should be numeric: All parameter columns should be numeric values
 #' }
 #'
@@ -103,6 +104,33 @@ checkASRcont <- function(contdat) {
       msg,
       '\n\tThe following rows have times that are not in a recognizable format: ',
       paste(tochk, collapse = ', '),
+      call. = FALSE
+    )
+  }
+  message(paste(msg, 'OK'))
+
+  # check for missing values
+  msg <- '\tChecking for missing values...'
+  chk <- sapply(contdat, function(x) any(is.na(x)))
+  if (any(chk)) {
+    nms <- names(contdat)[chk]
+    tochk <- sapply(
+      nms,
+      function(x) {
+        which(is.na(contdat[[x]]))
+      },
+      simplify = FALSE
+    )
+
+    stop(
+      msg,
+      '\n\tThe following columns have missing values in the following rows: ',
+      paste(
+        sapply(names(tochk), function(x) {
+          paste0(x, ' (', paste(tochk[[x]], collapse = ', '), ')')
+        }),
+        collapse = '; '
+      ),
       call. = FALSE
     )
   }

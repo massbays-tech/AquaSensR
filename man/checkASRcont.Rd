@@ -20,11 +20,12 @@ This function is used internally within \code{\link{readASRcont}} to run several
 
 The following checks are made:
 \itemize{
-\item: Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Label} column in \code{\link{paramsASR}}
-\item: Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
-\item: At least one parameter column is present: At least one parameter column that matches the \code{Label} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
+\item Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
+\item Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
+\item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
 \item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
 \item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
+\item Missing values: No missing values in any columns
 \item Parameter columns should be numeric: All parameter columns should be numeric values
 }
 }

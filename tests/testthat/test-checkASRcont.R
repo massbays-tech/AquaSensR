@@ -59,6 +59,78 @@ test_that("checkASRcont errors on invalid time format", {
   )
 })
 
+test_that("checkASRcont errors on missing values", {
+  bad_data <- tst$contdatchk
+  param_name <- 'Water Temp_C'
+  bad_data[[param_name]][3] <- NA
+
+  expected_msg <- paste0(
+    "\tChecking for missing values...\n\t",
+    "The following columns have missing values in the following rows: ",
+    "Water Temp_C (3)"
+  )
+
+  expect_error(
+    checkASRcont(bad_data),
+    expected_msg,
+    fixed = TRUE
+  )
+
+  bad_data <- tst$contdatchk
+  param_name <- 'Water Temp_C'
+  bad_data[[param_name]][1] <- NA
+  bad_data[[param_name]][3] <- NA
+
+  expected_msg <- paste0(
+    "\tChecking for missing values...\n\t",
+    "The following columns have missing values in the following rows: ",
+    "Water Temp_C (1, 3)"
+  )
+
+  expect_error(
+    checkASRcont(bad_data),
+    expected_msg,
+    fixed = TRUE
+  )
+
+  bad_data <- tst$contdatchk
+  param_name <- 'Water Temp_C'
+  bad_data[[param_name]][3] <- NA
+  param_name <- 'Site'
+  bad_data[[param_name]][2] <- NA
+
+  expected_msg <- paste0(
+    "\tChecking for missing values...\n\t",
+    "The following columns have missing values in the following rows: ",
+    "Site (2); Water Temp_C (3)"
+  )
+
+  expect_error(
+    checkASRcont(bad_data),
+    expected_msg,
+    fixed = TRUE
+  )
+
+  bad_data <- tst$contdatchk
+  param_name <- 'Water Temp_C'
+  bad_data[[param_name]][1] <- NA
+  bad_data[[param_name]][3] <- NA
+  param_name <- 'Site'
+  bad_data[[param_name]][2] <- NA
+
+  expected_msg <- paste0(
+    "\tChecking for missing values...\n\t",
+    "The following columns have missing values in the following rows: ",
+    "Site (2); Water Temp_C (1, 3)"
+  )
+
+  expect_error(
+    checkASRcont(bad_data),
+    expected_msg,
+    fixed = TRUE
+  )
+})
+
 test_that("checkASRcont errors on non-numeric parameter values", {
   bad_data <- tst$contdatchk
   param_name <- 'Water Temp_C'

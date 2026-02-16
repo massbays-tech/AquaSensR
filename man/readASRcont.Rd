@@ -7,7 +7,7 @@
 readASRcont(contpth, tz, runchk = TRUE)
 }
 \arguments{
-\item{contpth}{character string of path to the results file}
+\item{contpth}{character string of path to the continuous data file}
 
 \item{tz}{character string of time zone for the date and time columns  See \code{OlsonNames()} for acceptable time zones.}
 
