@@ -29,15 +29,15 @@ before downstream analysis.
 
 The following checks are made:
 
-- : Column names: Should include only Site, Date, Time, and at least one
-  parameter column that matches the `Label` column in
+- Column names: Should include only Site, Date, Time, and at least one
+  parameter column that matches the `Parameter` column in
   [`paramsASR`](https://massbays-tech.github.io/AquaSensR/reference/paramsASR.md)
 
-- : Site, Date, Time are present: These columns are required for
+- Site, Date, Time are present: These columns are required for
   downstream analysis and upload to WQX
 
-- : At least one parameter column is present: At least one parameter
-  column that matches the `Label` column in
+- At least one parameter column is present: At least one parameter
+  column that matches the `Parameter` column in
   [`paramsASR`](https://massbays-tech.github.io/AquaSensR/reference/paramsASR.md)
   is required for downstream analysis and upload to WQX
 
@@ -46,6 +46,8 @@ The following checks are made:
 
 - Time format: Should be in a format that can be recognized by
   [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html)
+
+- Missing values: No missing values in any columns
 
 - Parameter columns should be numeric: All parameter columns should be
   numeric values
@@ -78,6 +80,7 @@ checkASRcont(contdat)
 #>  Checking at least one parameter column is present... OK
 #>  Checking date format... OK
 #>  Checking time format... OK
+#>  Checking for missing values... OK
 #>  Checking parameter columns for non-numeric values... OK
 #> 
 #> All checks passed!

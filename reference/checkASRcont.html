@@ -63,11 +63,12 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is used internally within <code><a href="readASRcont.html">readASRcont</a></code> to run several checks on the input data to verify correct formatting before downstream analysis.</p>
-<p>The following checks are made:</p><ul><li><p>: Column names: Should include only Site, Date, Time, and at least one parameter column that matches the <code>Label</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
-<li><p>: Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX</p></li>
-<li><p>: At least one parameter column is present: At least one parameter column that matches the <code>Label</code> column in <code><a href="paramsASR.html">paramsASR</a></code> is required for downstream analysis and upload to WQX</p></li>
+<p>The following checks are made:</p><ul><li><p>Column names: Should include only Site, Date, Time, and at least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
+<li><p>Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX</p></li>
+<li><p>At least one parameter column is present: At least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code> is required for downstream analysis and upload to WQX</p></li>
 <li><p>Date format: Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code></p></li>
 <li><p>Time format: Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code></p></li>
+<li><p>Missing values: No missing values in any columns</p></li>
 <li><p>Parameter columns should be numeric: All parameter columns should be numeric values</p></li>
 </ul></div>
 
@@ -98,6 +99,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking at least one parameter column is present... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking date format... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking time format... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking for missing values... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking parameter columns for non-numeric values... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> All checks passed!</span>

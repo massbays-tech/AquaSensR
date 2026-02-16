@@ -12,7 +12,7 @@ readASRcont(contpth, tz, runchk = TRUE)
 
 - contpth:
 
-  character string of path to the results file
+  character string of path to the continuous data file
 
 - tz:
 
@@ -42,6 +42,7 @@ readASRcont(contpth, tz = 'Etc/GMT+5')
 #>  Checking at least one parameter column is present... OK
 #>  Checking date format... OK
 #>  Checking time format... OK
+#>  Checking for missing values... OK
 #>  Checking parameter columns for non-numeric values... OK
 #> 
 #> All checks passed!
