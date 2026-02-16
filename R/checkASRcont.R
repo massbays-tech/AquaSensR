@@ -6,9 +6,9 @@
 #'
 #' The following checks are made:
 #' \itemize{
-#'  \item: Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Label} column in \code{\link{paramsASR}}
+#'  \item: Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
 #'  \item: Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
-#'  \item: At least one parameter column is present: At least one parameter column that matches the \code{Label} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
+#'  \item: At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
 #'  \item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
 #'  \item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
 #'  \item Parameter columns should be numeric: All parameter columns should be numeric values
@@ -35,7 +35,7 @@ checkASRcont <- function(contdat) {
 
   # globals
   colnms <- c("Site", "Date", "Time")
-  parms <- paramsASR$Label
+  parms <- paramsASR$Parameter
 
   # check column names
   msg <- '\tChecking column names...'
@@ -74,7 +74,7 @@ checkASRcont <- function(contdat) {
   if (!any(chk)) {
     stop(
       msg,
-      '\n\tNo parameter columns found. Please include at least one from the Label column in paramsASR.',
+      '\n\tNo parameter columns found. Please include at least one from the Parameter column in paramsASR.',
       call. = FALSE
     )
   }

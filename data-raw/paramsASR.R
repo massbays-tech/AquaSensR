@@ -1,8 +1,5 @@
 library(dplyr)
 
-paramsASR <- readxl::read_excel('inst/extdata/ParameterMapping.xlsx') |>
-  rename(
-    Label = `MassWateR Column Label`
-  )
+paramsASR <- readxl::read_excel('inst/extdata/ParameterMapping.xlsx')
 
 usethis::use_data(paramsASR, overwrite = TRUE)

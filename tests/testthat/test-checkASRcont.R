@@ -32,7 +32,7 @@ test_that("checkASRcont errors when no parameter columns present", {
 
   expect_error(
     checkASRcont(bad_data),
-    regexp = "\tChecking at least one parameter column is present...\n\tNo parameter columns found. Please include at least one from the Label column in paramsASR.",
+    regexp = "\tChecking at least one parameter column is present...\n\tNo parameter columns found. Please include at least one from the Parameter column in paramsASR.",
     fixed = TRUE
   )
 })
