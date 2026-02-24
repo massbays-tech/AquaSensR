@@ -6,7 +6,7 @@
 #'
 #' The following checks are made:
 #' \itemize{
-#'  \item Column names: Should include only Site, Parameter, Depth, Min, Max, Tlower, and Tupper
+#'  \item Column names: Should include only Site, Parameter, Depth, Min, Max, Tlower, Tupper, SpikeFail, SpikeSuspect, FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCStdev, and RoCHours
 #'  \item All columns present: All columns from the previous check should be present
 #'  \item At least one parameter is present: At least one parameter in the \code{Parameter} column matches the \code{Parameter} column in \code{\link{paramsASR}}
 #'  \item Parameter format: All parameters listed in the \code{Parameter} column should match those in the \code{Parameter} column in \code{\link{paramsASR}}
@@ -30,7 +30,11 @@ checkASRmeta <- function(metadat) {
   message('Running checks on continuous metadata...\n')
 
   # globals
-  colnms <- c("Site", "Parameter", "Depth", "Min", "Max", "Tlower", "Tupper")
+  colnms <- c("Site", "Parameter", "Depth", "Min", "Max", "Tlower", "Tupper",
+              "SpikeFail", "SpikeSuspect",
+              "FlatFailN", "FlatFailDelta",
+              "FlatSuspectN", "FlatSuspectDelta",
+              "RoCStdev", "RoCHours")
   parms <- paramsASR$Parameter
 
   # check column names

@@ -47,8 +47,9 @@ Description: Methods for quality control and exploratory analysis of continuous
 Depends: 
   R (>= 4.1.0)
 Imports:
-  dplyr, 
+  dplyr,
   lubridate,
+  plotly,
   readxl,
   tidyr
 License: CC0
