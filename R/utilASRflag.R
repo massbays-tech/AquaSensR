@@ -9,13 +9,13 @@
 #' @details Applies four independent QC checks to the selected parameter for
 #' every site in \code{contdat}, matching thresholds from \code{metadat} by
 #' \code{Site} and \code{Parameter}.  Each check produces its own flag
-#' (\code{"pass"}, \code{"suspect"}, or \code{"fail"}) so the caller can see
+#' (\code{"pass"}, \code{"suspect"}, or \code{"fail"}) so the user can see
 #' exactly which criteria fired.  If multiple metadata rows match a given
 #' site/parameter pair the first row is used and a warning is issued.
 #'
-#' \strong{Gross range} (\code{gross_flag}) — Observations below \code{Min}
-#' or above \code{Max} are flagged \code{"fail"}.  Observations below
-#' \code{Tlower} or above \code{Tupper} (but within the fail bounds) are
+#' \strong{Gross range} (\code{gross_flag}) — Observations below \code{GrMinFail}
+#' or above \code{GrMaxFail} are flagged \code{"fail"}.  Observations below
+#' \code{GrMinSuspect} or above \code{GrMaxSuspect} (but within the fail bounds) are
 #' flagged \code{"suspect"}.
 #'
 #' \strong{Spike} (\code{spike_flag}) — The absolute difference between
@@ -29,6 +29,8 @@
 #' rolling \code{RoCHours}-hour window centered on that observation.
 #' Observations exceeding the threshold are flagged \code{"suspect"}.
 #' Requires at least 3 differences in the window; otherwise \code{"pass"}.
+#' Note that this check only produces \code{"suspect"} flags, not \code{"fail"}
+#' flags.
 #'
 #' \strong{Flatline} (\code{flat_flag}) — Counts consecutive observations
 #' where the absolute step from the previous observation is within
@@ -37,6 +39,11 @@
 #' flagged.
 #'
 #' Data are sorted by \code{Site} and \code{DateTime} before processing.
+#'
+#' Underlying concepts and code for this function borrow heavily from those
+#' in the [ContDataQC](https://leppott.github.io/ContDataQC) package.  Any
+#' credit for the approach should go to the
+#' [ContDataQC authors](https://leppott.github.io/ContDataQC/authors.html#citation).
 #'
 #' @return A data frame with columns \code{Site}, \code{DateTime}, the
 #'   selected parameter, and four flag columns: \code{gross_flag},

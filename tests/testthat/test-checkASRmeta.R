@@ -85,13 +85,13 @@ test_that("checkASRmeta errors on non-numeric values", {
   bad_data <- tst$metadatchk
   param_name <- 'Depth'
   bad_data[[param_name]][3] <- "text"
-  param_name <- 'Tupper'
+  param_name <- 'GrMaxSuspect'
   bad_data[[param_name]][2] <- "text"
 
   expected_msg <- paste0(
     "\tChecking columns for non-numeric values...\n\t",
     "The following columns have non-numeric values in the following rows: ",
-    "Depth (3); Tupper (2)"
+    "Depth (3); GrMaxSuspect (2)"
   )
 
   expect_error(
@@ -101,16 +101,16 @@ test_that("checkASRmeta errors on non-numeric values", {
   )
 
   bad_data <- tst$metadatchk
-  param_name <- 'Min'
+  param_name <- 'GrMinFail'
   bad_data[[param_name]][1] <- "text"
   bad_data[[param_name]][3] <- "text"
-  param_name <- 'Tlower'
+  param_name <- 'GrMinSuspect'
   bad_data[[param_name]][2] <- "text"
 
   expected_msg <- paste0(
     "\tChecking columns for non-numeric values...\n\t",
     "The following columns have non-numeric values in the following rows: ",
-    "Min (1, 3); Tlower (2)"
+    "GrMinFail (1, 3); GrMinSuspect (2)"
   )
 
   expect_error(
