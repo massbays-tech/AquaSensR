@@ -24,16 +24,16 @@
 #' utilASRflaggross(flag, vals, meta)
 utilASRflaggross <- function(flag, vals, meta) {
   if (!is.na(meta$Tlower)) {
-    flag <- utilASRflagupdategupdate(flag, "suspect", vals < meta$Tlower)
+    flag <- utilASRflagupdate(flag, "suspect", vals < meta$Tlower)
   }
   if (!is.na(meta$Tupper)) {
-    flag <- utilASRflagupdategupdate(flag, "suspect", vals > meta$Tupper)
+    flag <- utilASRflagupdate(flag, "suspect", vals > meta$Tupper)
   }
   if (!is.na(meta$Min)) {
-    flag <- utilASRflagupdategupdate(flag, "fail", vals < meta$Min)
+    flag <- utilASRflagupdate(flag, "fail", vals < meta$Min)
   }
   if (!is.na(meta$Max)) {
-    flag <- utilASRflagupdategupdate(flag, "fail", vals > meta$Max)
+    flag <- utilASRflagupdate(flag, "fail", vals > meta$Max)
   }
   flag
 }

@@ -29,14 +29,14 @@
 utilASRflagspike <- function(flag, vals, meta) {
   diffs <- c(NA_real_, abs(diff(vals)))
   if ("SpikeSuspect" %in% names(meta) && !is.na(meta$SpikeSuspect)) {
-    flag <- utilASRflagupdategupdate(
+    flag <- utilASRflagupdate(
       flag,
       "suspect",
       diffs >= meta$SpikeSuspect
     )
   }
   if ("SpikeFail" %in% names(meta) && !is.na(meta$SpikeFail)) {
-    flag <- utilASRflagupdategupdate(flag, "fail", diffs >= meta$SpikeFail)
+    flag <- utilASRflagupdate(flag, "fail", diffs >= meta$SpikeFail)
   }
   flag
 }

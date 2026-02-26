@@ -40,11 +40,11 @@ utilASRflagflatline <- function(flag, vals, meta) {
 
   if (has_susp) {
     rl <- utilASRflagrleflat(vals, meta$FlatSuspectDelta)
-    flag <- utilASRflagupdategupdate(flag, "suspect", rl >= meta$FlatSuspectN)
+    flag <- utilASRflagupdate(flag, "suspect", rl >= meta$FlatSuspectN)
   }
   if (has_fail) {
     rl <- utilASRflagrleflat(vals, meta$FlatFailDelta)
-    flag <- utilASRflagupdategupdate(flag, "fail", rl >= meta$FlatFailN)
+    flag <- utilASRflagupdate(flag, "fail", rl >= meta$FlatFailN)
   }
   flag
 }

@@ -59,5 +59,5 @@ utilASRflagroc <- function(flag, vals, datetimes, meta) {
     !is.na(roc_sd) &
     roc_sd > 0 &
     diffs >= meta$RoCStdev * roc_sd
-  utilASRflagupdategupdate(flag, "suspect", is_roc)
+  utilASRflagupdate(flag, "suspect", is_roc)
 }
