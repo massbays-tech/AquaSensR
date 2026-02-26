@@ -45,5 +45,5 @@ flag <- rep("pass", 5)
 vals <- c(10, 10.5, 14, 10.2, 10.3)
 meta <- data.frame(SpikeSuspect = 1.5, SpikeFail = 2.0)
 utilASRflagspike(flag, vals, meta)
-#> Error in utilASRflagupdategupdate(flag, "suspect", diffs >= meta$SpikeSuspect): could not find function "utilASRflagupdategupdate"
+#> [1] "pass" "pass" "fail" "fail" "pass"
 ```

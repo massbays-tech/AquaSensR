@@ -22,18 +22,18 @@ corresponding WQX names is also included.
 
 ``` r
 paramsASR
-#> # A tibble: 31 × 5
-#>    `Parameter Group`   Parameter     Label `WQX Parameter` `WQX Unit of measure`
-#>    <chr>               <chr>         <chr> <chr>           <chr>                
-#>  1 Air Temp            Air Temp_C    Air … Temperature, a… deg C                
-#>  2 Air Temp            Air Temp_F    Air … Temperature, a… deg F                
-#>  3 Water Temp          Water Temp_C  Wate… Temperature, w… deg C                
-#>  4 Water Temp          Water Temp_F  Wate… Temperature, w… deg F                
-#>  5 Barometric Pressure Air BP_psi    Baro… NA              NA                   
-#>  6 Water Level         Water P_psi   Wate… NA              NA                   
-#>  7 Water Level         Sensor Depth… Sens… Depth           ft                   
-#>  8 Water Level         Gage Height_… Gage… Height, gage    ft                   
-#>  9 Flow                Discharge_ft… Disc… Flow            cfs                  
-#> 10 Conductivity        Conductivity… Cond… Conductivity    uS/cm                
-#> # ℹ 21 more rows
+#> # A tibble: 36 × 6
+#>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
+#>    <chr>             <chr>     <chr> <chr> <chr>           <chr>                
+#>  1 Air Temp          Air Temp… deg C Air … Temperature, a… deg C                
+#>  2 Air Temp          Air Temp… deg F Air … Temperature, a… deg F                
+#>  3 Barometric Press… Air BP_p… psi   Air … Barometric pre… psi                  
+#>  4 Barometric Press… Air BP_m… mmHg  Air … Barometric pre… mmHg                 
+#>  5 Chlorophyll       Chloroph… ug/l  Chlo… Chlorophyll a … ug/l                 
+#>  6 Chlorophyll       Chloroph… RFU   Chlo… Chlorophyll a … RFU                  
+#>  7 Chlorophyll       Pheophyt… ug/l  Pheo… Pheophytin a    ug/l                 
+#>  8 Chlorophyll       Pheophyt… RFU   Pheo… Pheophytin a    RFU                  
+#>  9 CO2               pCO2_ppm  ppm   pCO2… Partial Pressu… ppm                  
+#> 10 Conductivity      Conducti… uS/cm Cond… Conductivity    uS/cm                
+#> # ℹ 26 more rows
 ```

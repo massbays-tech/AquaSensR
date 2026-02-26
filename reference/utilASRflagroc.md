@@ -52,5 +52,5 @@ vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
 meta <- data.frame(RoCStdev = 3, RoCHours = 2)
 utilASRflagroc(flag, vals, datetimes, meta)
-#> Error in utilASRflagupdategupdate(flag, "suspect", is_roc): could not find function "utilASRflagupdategupdate"
+#> [1] "pass" "pass" "pass" "pass" "pass" "pass"
 ```

@@ -73,5 +73,19 @@ contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
 metadat <- readASRmeta(metapth, runchk = FALSE)
 
 utilASRflag(contdat, metadat, param = 'Water Temp_C')
-#> Error in utilASRflagupdategupdate(flag, "suspect", vals < meta$Tlower): could not find function "utilASRflagupdategupdate"
+#> # A tibble: 927 × 7
+#>    Site   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag
+#>    <chr>  <dttm>                       <dbl> <chr>      <chr>      <chr>   
+#>  1 sud096 2024-08-14 13:56:33           24.2 pass       pass       pass    
+#>  2 sud096 2024-08-14 13:56:43           24.2 pass       pass       pass    
+#>  3 sud096 2024-08-14 13:56:53           24.2 pass       pass       pass    
+#>  4 sud096 2024-08-14 13:57:03           24.2 pass       pass       pass    
+#>  5 sud096 2024-08-14 13:57:13           24.2 pass       pass       pass    
+#>  6 sud096 2024-08-14 13:57:23           24.2 pass       pass       pass    
+#>  7 sud096 2024-08-14 13:57:33           24.2 pass       pass       pass    
+#>  8 sud096 2024-08-14 13:57:43           24.2 pass       pass       pass    
+#>  9 sud096 2024-08-14 13:57:53           24.2 pass       pass       pass    
+#> 10 sud096 2024-08-14 13:58:03           24.2 pass       pass       pass    
+#> # ℹ 917 more rows
+#> # ℹ 1 more variable: flat_flag <chr>
 ```

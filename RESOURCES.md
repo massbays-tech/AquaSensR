@@ -10,4 +10,4 @@ Below are links to resources for using or learning about AquaSensR.
 ## AquaSensR built-in files
 
 - Parameter list and units:
-  [link](https://github.com/massbays-tech/AquaSensR/raw/refs/heads/main/inst/extdata/ParameterMapping.xlsx)
+  [link](https://github.com/massbays-tech/AquaSensR/raw/refs/heads/main/inst/extdata/ASRparameterMapping.xlsx)

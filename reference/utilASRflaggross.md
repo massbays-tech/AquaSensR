@@ -42,5 +42,5 @@ flag <- rep("pass", 5)
 vals <- c(-2, 0, 15, 26, 32)
 meta <- data.frame(Min = -1, Max = 30, Tlower = 0, Tupper = 25)
 utilASRflaggross(flag, vals, meta)
-#> Error in utilASRflagupdategupdate(flag, "suspect", vals < meta$Tlower): could not find function "utilASRflagupdategupdate"
+#> [1] "fail"    "pass"    "pass"    "suspect" "fail"   
 ```

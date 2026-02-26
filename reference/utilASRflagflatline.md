@@ -48,5 +48,6 @@ vals <- c(10, 10, 10.005, 10.002, 10.001, 10.003, 12, 12)
 meta <- data.frame(FlatSuspectN = 3, FlatSuspectDelta = 0.01,
                    FlatFailN = 5,    FlatFailDelta = 0.01)
 utilASRflagflatline(flag, vals, meta)
-#> Error in utilASRflagupdategupdate(flag, "suspect", rl >= meta$FlatSuspectN): could not find function "utilASRflagupdategupdate"
+#> [1] "pass"    "pass"    "suspect" "suspect" "fail"    "fail"    "pass"   
+#> [8] "pass"   
 ```

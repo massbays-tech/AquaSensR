@@ -85,7 +85,7 @@ checkASRcont(contdat)
 #> 
 #> All checks passed!
 #> # A tibble: 927 × 10
-#>    Site   Date       Time    `Water Temp_C` DO_pctsat DO_mg_L Conductivity_uS_cm
+#>    Site   Date       Time    `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
 #>    <chr>  <chr>      <chr>            <dbl>     <dbl>   <dbl>              <dbl>
 #>  1 sud096 2024-08-14 1899-1…           24.2      76.9    6.44               410.
 #>  2 sud096 2024-08-14 1899-1…           24.2      76.7    6.43               410.
@@ -98,5 +98,5 @@ checkASRcont(contdat)
 #>  9 sud096 2024-08-14 1899-1…           24.2      76.5    6.41               404.
 #> 10 sud096 2024-08-14 1899-1…           24.2      77.6    6.5                399.
 #> # ℹ 917 more rows
-#> # ℹ 3 more variables: TDS_mg_L <dbl>, Salinity_psu <dbl>, pH_SU <dbl>
+#> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
 ```

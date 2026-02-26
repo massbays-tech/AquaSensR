@@ -90,7 +90,7 @@ is not flagged by this check.</p>
 <span class="r-in"><span><span class="va">vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10.5</span>, <span class="fl">14</span>, <span class="fl">10.2</span>, <span class="fl">10.3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>SpikeSuspect <span class="op">=</span> <span class="fl">1.5</span>, SpikeFail <span class="op">=</span> <span class="fl">2.0</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">utilASRflagspike</span><span class="op">(</span><span class="va">flag</span>, <span class="va">vals</span>, <span class="va">meta</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in utilASRflagupdategupdate(flag, "suspect", diffs &gt;= meta$SpikeSuspect):</span> could not find function "utilASRflagupdategupdate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pass" "pass" "fail" "fail" "pass"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
