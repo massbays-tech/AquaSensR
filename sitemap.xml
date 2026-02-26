@@ -10,6 +10,7 @@
 <url><loc>https://massbays-tech.github.io/AquaSensR/authors.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/index.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/news/index.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/anlzASRflag.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/checkASRmeta.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/formASRcont.html</loc></url>
@@ -18,5 +19,12 @@
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/paramsASR.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/readASRcont.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflag.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagflatline.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflaggross.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagrleflat.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagroc.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagspike.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagupdate.html</loc></url>
 </urlset>
 
