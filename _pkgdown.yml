@@ -33,6 +33,11 @@ reference:
   - starts_with('read')
   - starts_with('check')
   - starts_with('form')
+- title: Quality control
+  desc: >
+    Functions for flagging suspect and failed data based on user-defined metadata.
+  contents:
+  - contains('flag')
 - title: Supplementary datasets
   desc: >
     Supplementary datasets for the read, quality control, and analysis functions.
