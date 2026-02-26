@@ -38,15 +38,15 @@ readASRmeta(metapth)
 #> 
 #> All checks passed!
 #> # A tibble: 7 × 15
-#>   Site   Parameter        Depth   Min   Max Tlower Tupper SpikeFail SpikeSuspect
-#>   <chr>  <chr>            <dbl> <dbl> <dbl>  <dbl>  <dbl>     <dbl>        <dbl>
-#> 1 sud096 Water Temp_C        NA     0    35   20     28.3         2          1.5
-#> 2 sud096 DO_pctsat           NA     0   150   60     NA          25         10  
-#> 3 sud096 DO_mg_l             NA     0    12    4     NA           4          2  
-#> 4 sud096 Conductivity_uS…    NA     0  1000   NA     NA          10          5  
-#> 5 sud096 TDS_mg_l            NA     0  1000   NA     NA         100         50  
-#> 6 sud096 Salinity_ppt        NA     0    32   NA     NA           5          3  
-#> 7 sud096 pH_SU               NA     0    14    6.5    8.3        10          5  
-#> # ℹ 6 more variables: FlatFailN <dbl>, FlatFailDelta <dbl>, FlatSuspectN <dbl>,
-#> #   FlatSuspectDelta <dbl>, RoCStdev <dbl>, RoCHours <dbl>
+#>   Site   Parameter Depth GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail
+#>   <chr>  <chr>     <dbl>     <dbl>     <dbl>        <dbl>        <dbl>     <dbl>
+#> 1 sud096 Water Te…    NA        -1        30         -0.5           25         2
+#> 2 sud096 DO_pctsat    NA        -1       120          0            100        25
+#> 3 sud096 DO_mg_l      NA         1        18          2             16         4
+#> 4 sud096 Conducti…    NA        10      1500         20           1200        10
+#> 5 sud096 TDS_mg_l     NA        10      1500         20           1200       100
+#> 6 sud096 Salinity…    NA         2        41          3             37         5
+#> 7 sud096 pH_SU        NA         3        12          4             11        10
+#> # ℹ 7 more variables: SpikeSuspect <dbl>, FlatFailN <dbl>, FlatFailDelta <dbl>,
+#> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCStdev <dbl>, RoCHours <dbl>
 ```

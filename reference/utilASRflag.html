@@ -77,12 +77,12 @@ selected parameter, and four flag columns: <code>gross_flag</code>,
     <p>Applies four independent QC checks to the selected parameter for
 every site in <code>contdat</code>, matching thresholds from <code>metadat</code> by
 <code>Site</code> and <code>Parameter</code>.  Each check produces its own flag
-(<code>"pass"</code>, <code>"suspect"</code>, or <code>"fail"</code>) so the caller can see
+(<code>"pass"</code>, <code>"suspect"</code>, or <code>"fail"</code>) so the user can see
 exactly which criteria fired.  If multiple metadata rows match a given
 site/parameter pair the first row is used and a warning is issued.</p>
-<p><strong>Gross range</strong> (<code>gross_flag</code>) — Observations below <code>Min</code>
-or above <code>Max</code> are flagged <code>"fail"</code>.  Observations below
-<code>Tlower</code> or above <code>Tupper</code> (but within the fail bounds) are
+<p><strong>Gross range</strong> (<code>gross_flag</code>) — Observations below <code>GrMinFail</code>
+or above <code>GrMaxFail</code> are flagged <code>"fail"</code>.  Observations below
+<code>GrMinSuspect</code> or above <code>GrMaxSuspect</code> (but within the fail bounds) are
 flagged <code>"suspect"</code>.</p>
 <p><strong>Spike</strong> (<code>spike_flag</code>) — The absolute difference between
 consecutive observations is compared to <code>SpikeFail</code> (fail) and
@@ -93,13 +93,19 @@ absolute difference from the previous observation is compared to
 <code>RoCStdev</code> standard deviations of all absolute differences within a
 rolling <code>RoCHours</code>-hour window centered on that observation.
 Observations exceeding the threshold are flagged <code>"suspect"</code>.
-Requires at least 3 differences in the window; otherwise <code>"pass"</code>.</p>
+Requires at least 3 differences in the window; otherwise <code>"pass"</code>.
+Note that this check only produces <code>"suspect"</code> flags, not <code>"fail"</code>
+flags.</p>
 <p><strong>Flatline</strong> (<code>flat_flag</code>) — Counts consecutive observations
 where the absolute step from the previous observation is within
 <code>FlatSuspectDelta</code> (or <code>FlatFailDelta</code>) units.  Observations
 whose run length reaches <code>FlatSuspectN</code> (or <code>FlatFailN</code>) are
 flagged.</p>
 <p>Data are sorted by <code>Site</code> and <code>DateTime</code> before processing.</p>
+<p>Underlying concepts and code for this function borrow heavily from those
+in the <a href="https://leppott.github.io/ContDataQC" class="external-link">ContDataQC</a> package.  Any
+credit for the approach should go to the
+<a href="https://leppott.github.io/ContDataQC/authors.html#citation" class="external-link">ContDataQC authors</a>.</p>
     </div>
 
     <div class="section level2">

@@ -64,8 +64,8 @@
 
 <dt id="arg-meta">meta<a class="anchor" aria-label="anchor" href="#arg-meta"></a></dt>
 <dd><p>single-row data frame of metadata for the parameter being
-checked.  Must contain numeric columns <code>Min</code>, <code>Max</code>,
-<code>Tlower</code>, and <code>Tupper</code>.</p></dd>
+checked.  Must contain numeric columns <code>GrMinFail</code>, <code>GrMaxFail</code>,
+<code>GrMinSuspect</code>, and <code>GrMaxSuspect</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -74,8 +74,8 @@ checked.  Must contain numeric columns <code>Min</code>, <code>Max</code>,
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Observations below <code>Min</code> or above <code>Max</code> are flagged
-<code>"fail"</code>.  Observations below <code>Tlower</code> or above <code>Tupper</code>
+    <p>Observations below <code>GrMinFail</code> or above <code>GrMaxFail</code> are flagged
+<code>"fail"</code>.  Observations below <code>GrMinSuspect</code> or above <code>GrMaxSuspect</code>
 (but within the fail bounds) are flagged <code>"suspect"</code>.
 <code>NA</code> threshold values are silently skipped.</p>
     </div>
@@ -84,7 +84,7 @@ checked.  Must contain numeric columns <code>Min</code>, <code>Max</code>,
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">flag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"pass"</span>, <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">15</span>, <span class="fl">26</span>, <span class="fl">32</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Min <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, Max <span class="op">=</span> <span class="fl">30</span>, Tlower <span class="op">=</span> <span class="fl">0</span>, Tupper <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>GrMinFail <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, GrMaxFail <span class="op">=</span> <span class="fl">30</span>, GrMinSuspect <span class="op">=</span> <span class="fl">0</span>, GrMaxSuspect <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">utilASRflaggross</span><span class="op">(</span><span class="va">flag</span>, <span class="va">vals</span>, <span class="va">meta</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fail"    "pass"    "pass"    "suspect" "fail"   </span>
 </code></pre></div>

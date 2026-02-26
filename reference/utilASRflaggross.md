@@ -22,7 +22,8 @@ utilASRflaggross(flag, vals, meta)
 - meta:
 
   single-row data frame of metadata for the parameter being checked.
-  Must contain numeric columns `Min`, `Max`, `Tlower`, and `Tupper`.
+  Must contain numeric columns `GrMinFail`, `GrMaxFail`, `GrMinSuspect`,
+  and `GrMaxSuspect`.
 
 ## Value
 
@@ -30,17 +31,17 @@ Updated character flag vector.
 
 ## Details
 
-Observations below `Min` or above `Max` are flagged `"fail"`.
-Observations below `Tlower` or above `Tupper` (but within the fail
-bounds) are flagged `"suspect"`. `NA` threshold values are silently
-skipped.
+Observations below `GrMinFail` or above `GrMaxFail` are flagged
+`"fail"`. Observations below `GrMinSuspect` or above `GrMaxSuspect` (but
+within the fail bounds) are flagged `"suspect"`. `NA` threshold values
+are silently skipped.
 
 ## Examples
 
 ``` r
 flag <- rep("pass", 5)
 vals <- c(-2, 0, 15, 26, 32)
-meta <- data.frame(Min = -1, Max = 30, Tlower = 0, Tupper = 25)
+meta <- data.frame(GrMinFail = -1, GrMaxFail = 30, GrMinSuspect = 0, GrMaxSuspect = 25)
 utilASRflaggross(flag, vals, meta)
 #> [1] "fail"    "pass"    "pass"    "suspect" "fail"   
 ```

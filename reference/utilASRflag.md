@@ -37,13 +37,14 @@ and four flag columns: `gross_flag`, `spike_flag`, `roc_flag`, and
 Applies four independent QC checks to the selected parameter for every
 site in `contdat`, matching thresholds from `metadat` by `Site` and
 `Parameter`. Each check produces its own flag (`"pass"`, `"suspect"`, or
-`"fail"`) so the caller can see exactly which criteria fired. If
-multiple metadata rows match a given site/parameter pair the first row
-is used and a warning is issued.
+`"fail"`) so the user can see exactly which criteria fired. If multiple
+metadata rows match a given site/parameter pair the first row is used
+and a warning is issued.
 
-**Gross range** (`gross_flag`) — Observations below `Min` or above `Max`
-are flagged `"fail"`. Observations below `Tlower` or above `Tupper` (but
-within the fail bounds) are flagged `"suspect"`.
+**Gross range** (`gross_flag`) — Observations below `GrMinFail` or above
+`GrMaxFail` are flagged `"fail"`. Observations below `GrMinSuspect` or
+above `GrMaxSuspect` (but within the fail bounds) are flagged
+`"suspect"`.
 
 **Spike** (`spike_flag`) — The absolute difference between consecutive
 observations is compared to `SpikeFail` (fail) and `SpikeSuspect`
@@ -54,7 +55,8 @@ difference from the previous observation is compared to `RoCStdev`
 standard deviations of all absolute differences within a rolling
 `RoCHours`-hour window centered on that observation. Observations
 exceeding the threshold are flagged `"suspect"`. Requires at least 3
-differences in the window; otherwise `"pass"`.
+differences in the window; otherwise `"pass"`. Note that this check only
+produces `"suspect"` flags, not `"fail"` flags.
 
 **Flatline** (`flat_flag`) — Counts consecutive observations where the
 absolute step from the previous observation is within `FlatSuspectDelta`
@@ -62,6 +64,11 @@ absolute step from the previous observation is within `FlatSuspectDelta`
 `FlatSuspectN` (or `FlatFailN`) are flagged.
 
 Data are sorted by `Site` and `DateTime` before processing.
+
+Underlying concepts and code for this function borrow heavily from those
+in the [ContDataQC](https://leppott.github.io/ContDataQC) package. Any
+credit for the approach should go to the [ContDataQC
+authors](https://leppott.github.io/ContDataQC/authors.html#citation).
 
 ## Examples
 
