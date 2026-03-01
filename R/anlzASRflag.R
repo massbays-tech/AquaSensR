@@ -40,6 +40,9 @@ anlzASRflag <- function(flagdat) {
   # parameter is always the third column (Site, DateTime, param, flags...)
   param <- names(flagdat)[3L]
 
+  # get y-axis title using the parameter name, and use check names for legend items
+  ylab <- paramsASR[paramsASR$Parameter == param, "Label"] |> as.character()
+
   flag_cols <- c("gross_flag", "spike_flag", "roc_flag", "flat_flag")
 
   check_labels <- c(
@@ -126,16 +129,13 @@ anlzASRflag <- function(flagdat) {
             "</extra>"
           )
         )
-
-        # after the first site has added legend items, suppress for subsequent sites
-        show_legend <- FALSE
       }
     }
 
     # site label as y-axis title
     plotly::layout(
       p,
-      yaxis = list(title = paste0(site, "<br><sub>", param, "</sub>"))
+      yaxis = list(title = paste0(site, "<br><sub>", ylab, "</sub>"))
     )
   }
 
@@ -143,9 +143,8 @@ anlzASRflag <- function(flagdat) {
     p <- make_panel(flagdat, sites, show_legend = TRUE)
     plotly::layout(
       p,
-      title = list(text = param, font = list(size = 14)),
-      xaxis = list(title = "Date / Time"),
-      yaxis = list(title = param),
+      xaxis = list(title = ""),
+      yaxis = list(title = ylab),
       legend = list(
         title = list(text = "<b>Check \u2013 Severity</b>"),
         tracegroupgap = 4
@@ -169,8 +168,7 @@ anlzASRflag <- function(flagdat) {
       margin = 0.04
     ) |>
       plotly::layout(
-        title = list(text = param, font = list(size = 14)),
-        xaxis = list(title = "Date / Time"),
+        xaxis = list(title = ""),
         legend = list(
           title = list(text = "<b>Check \u2013 Severity</b>"),
           tracegroupgap = 4
