@@ -40,7 +40,7 @@ readASRmeta(metapth)
 #> # A tibble: 7 × 15
 #>   Site   Parameter Depth GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail
 #>   <chr>  <chr>     <dbl>     <dbl>     <dbl>        <dbl>        <dbl>     <dbl>
-#> 1 sud096 Water Te…    NA        -1        30         -0.5           25         2
+#> 1 sud096 Water Te…    NA        -1        30         -0.5           28         2
 #> 2 sud096 DO_pctsat    NA        -1       120          0            100        25
 #> 3 sud096 DO_mg_l      NA         1        18          2             16         4
 #> 4 sud096 Conducti…    NA        10      1500         20           1200        10
