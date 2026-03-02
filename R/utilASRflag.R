@@ -24,13 +24,12 @@
 #' flagged.
 #'
 #' \strong{Rate of change} (\code{roc_flag}) — For each observation the
-#' absolute difference from the previous observation is compared to
-#' \code{RoCStdev} standard deviations of all absolute differences within a
-#' rolling \code{RoCHours}-hour window centered on that observation.
-#' Observations exceeding the threshold are flagged \code{"suspect"}.
-#' Requires at least 3 differences in the window; otherwise \code{"pass"}.
-#' Note that this check only produces \code{"suspect"} flags, not \code{"fail"}
-#' flags.
+#' standard deviation of all raw values within a trailing \code{RoCHours}-hour
+#' window is multiplied by \code{RoCN} to produce a threshold.  The
+#' observation is flagged \code{"suspect"} if its absolute lag-1 difference
+#' exceeds that threshold.  Requires at least 2 values in the window;
+#' otherwise \code{"pass"}.  Note that this check only produces
+#' \code{"suspect"} flags, not \code{"fail"} flags.
 #'
 #' \strong{Flatline} (\code{flat_flag}) — Counts consecutive observations
 #' where the absolute step from the previous observation is within

@@ -17,9 +17,9 @@ utilASRflagroc(flag, vals, datetimes, meta)
 as \code{flag}.}
 
 \item{meta}{single-row data frame of metadata for the parameter being
-checked.  Optional numeric columns \code{RoCStdev} (number of standard
-deviations) and \code{RoCHours} (full window width in hours) control the
-check.  If either column is absent or \code{NA} the check is skipped.}
+checked.  Optional numeric columns \code{RoCN} (SD multiplier) and
+\code{RoCHours} (trailing window width in hours) control the check.  If
+either column is absent or \code{NA} the check is skipped.}
 }
 \value{
 Updated character flag vector.
@@ -28,19 +28,19 @@ Updated character flag vector.
 Apply rate-of-change QC flag
 }
 \details{
-For each observation the absolute difference from the previous
-observation is compared to \code{RoCStdev} × the standard deviation of
-all absolute differences within a \code{RoCHours}-hour window centered
-on that observation.  The observation is flagged \code{"suspect"} if its
-difference exceeds this threshold.  At least 3 differences must fall
-within the window; otherwise the observation is skipped.  This check
-only produces \code{"suspect"} flags; it does not produce \code{"fail"}
-flags.
+For each observation the standard deviation of all raw values
+within a trailing \code{RoCHours}-hour window ending at (and including)
+that observation is multiplied by \code{RoCN} to produce a threshold.
+The observation is flagged \code{"suspect"} if the absolute lag-1
+difference exceeds that threshold.  At least 2 values must fall within
+the window to compute the standard deviation; otherwise the observation
+is skipped.  This check only produces \code{"suspect"} flags; it does
+not produce \code{"fail"} flags.
 }
 \examples{
 flag <- rep("pass", 6)
 vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
-meta <- data.frame(RoCStdev = 3, RoCHours = 2)
+meta <- data.frame(RoCN = 3, RoCHours = 2)
 utilASRflagroc(flag, vals, datetimes, meta)
 }
