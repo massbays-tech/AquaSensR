@@ -31,8 +31,8 @@ The following checks are made:
 
 - Column names: Should include only Site, Parameter, Depth, GrMinFail,
   GrMaxFail, GrMinSuspect, GrMaxSuspect, SpikeFail, SpikeSuspect,
-  FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCStdev,
-  and RoCHours
+  FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCN, and
+  RoCHours
 
 - All columns present: All columns from the previous check should be
   present
@@ -78,5 +78,5 @@ checkASRmeta(metadat)
 #> 6 sud096 Salinity… NA            2        41          3             37         5
 #> 7 sud096 pH_SU     NA            3        12          4             11        10
 #> # ℹ 7 more variables: SpikeSuspect <dbl>, FlatFailN <dbl>, FlatFailDelta <dbl>,
-#> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCStdev <dbl>, RoCHours <dbl>
+#> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCN <dbl>, RoCHours <dbl>
 ```

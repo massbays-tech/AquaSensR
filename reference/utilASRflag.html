@@ -89,13 +89,12 @@ consecutive observations is compared to <code>SpikeFail</code> (fail) and
 <code>SpikeSuspect</code> (suspect).  The second observation in the jump is
 flagged.</p>
 <p><strong>Rate of change</strong> (<code>roc_flag</code>) — For each observation the
-absolute difference from the previous observation is compared to
-<code>RoCStdev</code> standard deviations of all absolute differences within a
-rolling <code>RoCHours</code>-hour window centered on that observation.
-Observations exceeding the threshold are flagged <code>"suspect"</code>.
-Requires at least 3 differences in the window; otherwise <code>"pass"</code>.
-Note that this check only produces <code>"suspect"</code> flags, not <code>"fail"</code>
-flags.</p>
+standard deviation of all raw values within a trailing <code>RoCHours</code>-hour
+window is multiplied by <code>RoCN</code> to produce a threshold.  The
+observation is flagged <code>"suspect"</code> if its absolute lag-1 difference
+exceeds that threshold.  Requires at least 2 values in the window;
+otherwise <code>"pass"</code>.  Note that this check only produces
+<code>"suspect"</code> flags, not <code>"fail"</code> flags.</p>
 <p><strong>Flatline</strong> (<code>flat_flag</code>) — Counts consecutive observations
 where the absolute step from the previous observation is within
 <code>FlatSuspectDelta</code> (or <code>FlatFailDelta</code>) units.  Observations

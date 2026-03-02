@@ -63,7 +63,7 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is used internally within <code><a href="readASRmeta.html">readASRmeta</a></code> to run several checks on the input data to verify correct formatting before downstream analysis.</p>
-<p>The following checks are made:</p><ul><li><p>Column names: Should include only Site, Parameter, Depth, GrMinFail, GrMaxFail, GrMinSuspect, GrMaxSuspect, SpikeFail, SpikeSuspect, FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCStdev, and RoCHours</p></li>
+<p>The following checks are made:</p><ul><li><p>Column names: Should include only Site, Parameter, Depth, GrMinFail, GrMaxFail, GrMinSuspect, GrMaxSuspect, SpikeFail, SpikeSuspect, FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCN, and RoCHours</p></li>
 <li><p>All columns present: All columns from the previous check should be present</p></li>
 <li><p>At least one parameter is present: At least one parameter in the <code>Parameter</code> column matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
 <li><p>Parameter format: All parameters listed in the <code>Parameter</code> column should match those in the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
@@ -99,7 +99,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> sud096 Salinity… <span style="color: #BB0000;">NA</span>            2        41          3             37         5</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> sud096 pH_SU     <span style="color: #BB0000;">NA</span>            3        12          4             11        10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: SpikeSuspect &lt;dbl&gt;, FlatFailN &lt;dbl&gt;, FlatFailDelta &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   FlatSuspectN &lt;dbl&gt;, FlatSuspectDelta &lt;dbl&gt;, RoCStdev &lt;dbl&gt;, RoCHours &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   FlatSuspectN &lt;dbl&gt;, FlatSuspectDelta &lt;dbl&gt;, RoCN &lt;dbl&gt;, RoCHours &lt;dbl&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

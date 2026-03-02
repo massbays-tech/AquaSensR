@@ -50,13 +50,12 @@ above `GrMaxSuspect` (but within the fail bounds) are flagged
 observations is compared to `SpikeFail` (fail) and `SpikeSuspect`
 (suspect). The second observation in the jump is flagged.
 
-**Rate of change** (`roc_flag`) — For each observation the absolute
-difference from the previous observation is compared to `RoCStdev`
-standard deviations of all absolute differences within a rolling
-`RoCHours`-hour window centered on that observation. Observations
-exceeding the threshold are flagged `"suspect"`. Requires at least 3
-differences in the window; otherwise `"pass"`. Note that this check only
-produces `"suspect"` flags, not `"fail"` flags.
+**Rate of change** (`roc_flag`) — For each observation the standard
+deviation of all raw values within a trailing `RoCHours`-hour window is
+multiplied by `RoCN` to produce a threshold. The observation is flagged
+`"suspect"` if its absolute lag-1 difference exceeds that threshold.
+Requires at least 2 values in the window; otherwise `"pass"`. Note that
+this check only produces `"suspect"` flags, not `"fail"` flags.
 
 **Flatline** (`flat_flag`) — Counts consecutive observations where the
 absolute step from the previous observation is within `FlatSuspectDelta`

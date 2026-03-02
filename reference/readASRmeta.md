@@ -48,5 +48,5 @@ readASRmeta(metapth)
 #> 6 sud096 Salinity…    NA         2        41          3             37         5
 #> 7 sud096 pH_SU        NA         3        12          4             11        10
 #> # ℹ 7 more variables: SpikeSuspect <dbl>, FlatFailN <dbl>, FlatFailDelta <dbl>,
-#> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCStdev <dbl>, RoCHours <dbl>
+#> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCN <dbl>, RoCHours <dbl>
 ```

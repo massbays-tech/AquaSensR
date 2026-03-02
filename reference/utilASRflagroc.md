@@ -26,9 +26,9 @@ utilASRflagroc(flag, vals, datetimes, meta)
 - meta:
 
   single-row data frame of metadata for the parameter being checked.
-  Optional numeric columns `RoCStdev` (number of standard deviations)
-  and `RoCHours` (full window width in hours) control the check. If
-  either column is absent or `NA` the check is skipped.
+  Optional numeric columns `RoCN` (SD multiplier) and `RoCHours`
+  (trailing window width in hours) control the check. If either column
+  is absent or `NA` the check is skipped.
 
 ## Value
 
@@ -36,13 +36,14 @@ Updated character flag vector.
 
 ## Details
 
-For each observation the absolute difference from the previous
-observation is compared to `RoCStdev` × the standard deviation of all
-absolute differences within a `RoCHours`-hour window centered on that
-observation. The observation is flagged `"suspect"` if its difference
-exceeds this threshold. At least 3 differences must fall within the
-window; otherwise the observation is skipped. This check only produces
-`"suspect"` flags; it does not produce `"fail"` flags.
+For each observation the standard deviation of all raw values within a
+trailing `RoCHours`-hour window ending at (and including) that
+observation is multiplied by `RoCN` to produce a threshold. The
+observation is flagged `"suspect"` if the absolute lag-1 difference
+exceeds that threshold. At least 2 values must fall within the window to
+compute the standard deviation; otherwise the observation is skipped.
+This check only produces `"suspect"` flags; it does not produce `"fail"`
+flags.
 
 ## Examples
 
@@ -50,7 +51,7 @@ window; otherwise the observation is skipped. This check only produces
 flag <- rep("pass", 6)
 vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
-meta <- data.frame(RoCStdev = 3, RoCHours = 2)
+meta <- data.frame(RoCN = 3, RoCHours = 2)
 utilASRflagroc(flag, vals, datetimes, meta)
 #> [1] "pass" "pass" "pass" "pass" "pass" "pass"
 ```
