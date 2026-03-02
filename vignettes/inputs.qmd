@@ -12,6 +12,170 @@ knitr:
 
 ```{r}
 #| label: setup
+#| include: false
+library(AquaSensR)
+```
+
+AquaSensR requires two types of input files to use the functions in the package:
+
+1. **Continuous monitoring data** — time series of sensor observations, one column per parameter.
+2. **QC threshold metadata** — site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
+
+Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and validate each input dataset using the `readASR*` and `checkASR*` family of functions. Example files are included with the package and are used throughout.
+
+## Load the package
+
+```{r}
 #| eval: false
 library(AquaSensR)
+```
+
+## File paths
+
+In practice you will supply paths to your own files, for example:
+
+```{r}
+#| eval: false
+contpth <- "path/to/your/ContinuousData.xlsx"
+metapth <- "path/to/your/Metadata.xlsx"
+```
+
+The examples below use the files included with the package:
+
+```{r}
+contpth <- system.file("extdata/ExampleCont.xlsx", package = "AquaSensR")
+metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
+```
+
+---
+
+## Continuous monitoring data
+
+Use `readASRcont()` to import continuous monitoring data. The function reads the Excel file, runs a series of checks via `checkASRcont()`, and then formats the result for downstream use. The `tz` argument sets the time zone for the combined `DateTime` column (see `OlsonNames()` for valid values).
+
+```{r}
+contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
+```
+
+### Format requirements
+
+The workbook must contain the following columns (additional unrecognised columns will trigger an error):
+
+| Column | Description |
+|--------|-------------|
+| `Site` | Site identifier |
+| `Date` | Observation date, parseable by `lubridate::ymd()` (e.g., `2024-06-01`) |
+| `Time` | Observation time as a full datetime string (e.g., `HH:MM:SS`), parseable by `lubridate::ymd_hms()` |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
+
+### Checks performed
+
+`checkASRcont()` verifies the following and stops with an informative error if any check fails:
+
+1. **Column names** — all columns are either `Site`, `Date`, `Time`, or a recognised parameter from `paramsASR`.
+2. **Required columns present** — `Site`, `Date`, and `Time` exist.
+3. **At least one parameter column** — at least one column matches an entry in `paramsASR$Parameter`.
+4. **Date format** — all values in `Date` parse successfully with `lubridate::ymd()`.
+5. **Time format** — all values in `Time` parse successfully with `lubridate::ymd_hms()`.
+6. **No missing values** — no `NA` in any column.
+7. **Numeric parameter columns** — all parameter columns contain numeric values.
+
+### Example: triggering an error
+
+Adding an unrecognised column causes `checkASRcont()` to stop immediately:
+
+```{r}
+#| error: true
+library(dplyr)
+
+contdat_raw <- suppressWarnings(
+  readxl::read_excel(contpth, na = c("NA", "na", ""), guess_max = Inf)
+) |>
+  mutate(across(
+    where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
+    as.character
+  ))
+
+# add a column that is not in paramsASR
+contdat_raw$BadColumn <- 1
+
+checkASRcont(contdat_raw)
+```
+
+### Output format
+
+After passing all checks, `readASRcont()` returns a data frame with:
+
+- `Site` — site identifier (character)
+- `DateTime` — combined and time-zone-aware `POSIXct` column
+- One numeric column per parameter present in the input file
+
+```{r}
+head(contdat)
+```
+
+---
+
+## QC threshold metadata
+
+Use `readASRmeta()` to import the QC threshold metadata. The function reads the workbook, runs checks via `checkASRmeta()`, and returns a formatted data frame.
+
+```{r}
+metadat <- readASRmeta(metapth)
+```
+
+### Format requirements
+
+The workbook must contain exactly the following columns (all required; thresholds you do not want to apply should be left blank / `NA`):
+
+| Column | Description |
+|--------|-------------|
+| `Site` | Site identifier matching those in the continuous data |
+| `Parameter` | Parameter name matching `paramsASR$Parameter` |
+| `Depth` | Sensor deployment depth (numeric; can be `NA`) |
+| `GrMinFail` | Gross range — lower fail threshold |
+| `GrMaxFail` | Gross range — upper fail threshold |
+| `GrMinSuspect` | Gross range — lower suspect threshold |
+| `GrMaxSuspect` | Gross range — upper suspect threshold |
+| `SpikeFail` | Spike — absolute step size for a fail flag |
+| `SpikeSuspect` | Spike — absolute step size for a suspect flag |
+| `FlatFailN` | Flatline — consecutive identical observations for a fail flag |
+| `FlatFailDelta` | Flatline — maximum within-run absolute change treated as "identical" for fail |
+| `FlatSuspectN` | Flatline — consecutive identical observations for a suspect flag |
+| `FlatSuspectDelta` | Flatline — maximum within-run absolute change treated as "identical" for suspect |
+| `RoCN` | Rate of change — multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
+| `RoCHours` | Rate of change — look-back window length in hours |
+
+### Checks performed
+
+`checkASRmeta()` verifies the following and stops with an informative error if any check fails:
+
+1. **Column names** — all columns are in the required list above.
+2. **All columns present** — every required column exists.
+3. **At least one parameter** — at least one value in `Parameter` matches `paramsASR$Parameter`.
+4. **Parameter format** — all `Parameter` values match those in `paramsASR$Parameter`.
+5. **Numeric columns** — all columns except `Site` and `Parameter` contain only numeric or missing values.
+
+### Example: triggering an error
+
+Supplying an unrecognised parameter name fails the parameter format check:
+
+```{r}
+#| error: true
+metadat_raw <- suppressWarnings(
+  readxl::read_excel(metapth, na = c("NA", "na", ""), guess_max = Inf)
+)
+
+# introduce a typo in the Parameter column
+metadat_raw$Parameter[1] <- "WaterTemp"
+
+checkASRmeta(metadat_raw)
+```
+
+### Output format
+
+After passing all checks, `readASRmeta()` returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.
+
+```{r}
+head(metadat)
 ```
