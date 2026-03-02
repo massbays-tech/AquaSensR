@@ -1,7 +1,6 @@
 # AquaSensR inputs and checks
 
-AquaSensR requires two types of input files to use the functions in the
-package:
+AquaSensR requires two input files to use the functions in the package:
 
 1.  **Continuous monitoring data** — time series of sensor observations,
     one column per parameter.
@@ -15,6 +14,8 @@ how to import and validate each input dataset using the `readASR*` and
 package and are used throughout.
 
 ## Load the package
+
+Load the package in an R session after installation:
 
 ``` r
 library(AquaSensR)
