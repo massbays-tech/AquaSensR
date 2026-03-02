@@ -16,7 +16,7 @@ knitr:
 library(AquaSensR)
 ```
 
-AquaSensR requires two types of input files to use the functions in the package:
+AquaSensR requires two input files to use the functions in the package:
 
 1. **Continuous monitoring data** — time series of sensor observations, one column per parameter.
 2. **QC threshold metadata** — site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
@@ -24,6 +24,8 @@ AquaSensR requires two types of input files to use the functions in the package:
 Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and validate each input dataset using the `readASR*` and `checkASR*` family of functions. Example files are included with the package and are used throughout.
 
 ## Load the package
+
+Load the package in an R session after installation: 
 
 ```{r}
 #| eval: false
