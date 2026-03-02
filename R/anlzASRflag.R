@@ -101,6 +101,7 @@ anlzASRflag <- function(flagdat) {
           data = sub,
           x = ~DateTime,
           y = sub[[param]],
+          inherit = FALSE,
           type = "scatter",
           mode = "markers",
           marker = list(
@@ -109,7 +110,6 @@ anlzASRflag <- function(flagdat) {
             size = sev_sizes[sev],
             line = list(color = "white", width = 0.5)
           ),
-          line = list(width = 0),
           name = paste0(chk, " \u2013 ", sev),
           legendgroup = paste0(chk, "_", sev),
           showlegend = show_legend,
