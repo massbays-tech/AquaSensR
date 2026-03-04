@@ -13,7 +13,10 @@ knitr:
 ```{r}
 #| label: setup
 #| include: false
+#| message: false
+#| warning: false
 library(AquaSensR)
+library(dplyr)
 ```
 
 AquaSensR requires two input files to use the functions in the package:
@@ -21,7 +24,7 @@ AquaSensR requires two input files to use the functions in the package:
 1. **Continuous monitoring data** — time series of sensor observations, one column per parameter.
 2. **QC threshold metadata** — site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
 
-Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and validate each input dataset using the `readASR*` and `checkASR*` family of functions. Example files are included with the package and are used throughout.
+Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format.  Example files with the correct format are included with the package and are used throughout.
 
 ## Load the package
 
@@ -34,7 +37,7 @@ library(AquaSensR)
 
 ## File paths
 
-In practice you will supply paths to your own files, for example:
+First, specify the location of the two files by saving their paths to R variables. In practice you will supply paths to your own files, for example:
 
 ```{r}
 #| eval: false
@@ -53,7 +56,7 @@ metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 
 ## Continuous monitoring data
 
-Use `readASRcont()` to import continuous monitoring data. The function reads the Excel file, runs a series of checks via `checkASRcont()`, and then formats the result for downstream use. The `tz` argument sets the time zone for the combined `DateTime` column (see `OlsonNames()` for valid values).
+Use `readASRcont()` to import continuous monitoring data. The function reads the Excel file, automatically runs a series of checks via `checkASRcont()`, and then formats the result for downstream use. The `tz` argument sets the time zone for the combined `DateTime` column (see `OlsonNames()` for valid values).  Be careful to specify the correct time zone, particularly one using a fixed offset (e.g., `Etc/GMT+5` for Eastern time) to avoid issues with daylight saving time transitions. If your data are in local time and the time zone observes DST, consider using a time zone like `America/New_York` that will automatically adjust for daylight savings.
 
 ```{r}
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
@@ -61,7 +64,7 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 
 ### Format requirements
 
-The workbook must contain the following columns (additional unrecognised columns will trigger an error):
+The continuous monitoring data workbook must contain the following columns (additional unrecognised columns will trigger an error):
 
 | Column | Description |
 |--------|-------------|
@@ -70,9 +73,27 @@ The workbook must contain the following columns (additional unrecognised columns
 | `Time` | Observation time as a full datetime string (e.g., `HH:MM:SS`), parseable by `lubridate::ymd_hms()` |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
 
+Currently, AquaSensR allows the following parameters.  Note the inclusion of the units in the parameter name.  Make sure the parameter name matches the units used in your data.
+
+```{r, echo = F}
+paramsASR |>
+  select(
+    Description = `Label`,
+    `Required file name` = `Parameter`,
+    Units = `uom`
+  ) |>
+  knitr::kable()
+```
+
+The list above can also be viewed in R with the `paramsASR` dataset, which is included in the package and used for the checks. 
+
+```{r}
+paramsASR
+```
+
 ### Checks performed
 
-`checkASRcont()` verifies the following and stops with an informative error if any check fails:
+The `readASRcont()` function imports the data and runs a series of checks using the `checkASRcont()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
 1. **Column names** — all columns are either `Site`, `Date`, `Time`, or a recognised parameter from `paramsASR`.
 2. **Required columns present** — `Site`, `Date`, and `Time` exist.
@@ -88,8 +109,8 @@ Adding an unrecognised column causes `checkASRcont()` to stop immediately:
 
 ```{r}
 #| error: true
-library(dplyr)
 
+# import the data for the example
 contdat_raw <- suppressWarnings(
   readxl::read_excel(contpth, na = c("NA", "na", ""), guess_max = Inf)
 ) |>
@@ -120,7 +141,7 @@ head(contdat)
 
 ## QC threshold metadata
 
-Use `readASRmeta()` to import the QC threshold metadata. The function reads the workbook, runs checks via `checkASRmeta()`, and returns a formatted data frame.
+The metadata file includes various information for the quality control checks applied to each parameter. Use `readASRmeta()` to import the QC threshold metadata. The function reads the workbook, runs checks via `checkASRmeta()`, and returns a formatted data frame.
 
 ```{r}
 metadat <- readASRmeta(metapth)
@@ -150,7 +171,7 @@ The workbook must contain exactly the following columns (all required; threshold
 
 ### Checks performed
 
-`checkASRmeta()` verifies the following and stops with an informative error if any check fails:
+The `readASRmeta()` function imports the metadata and runs a series of checks using the `checkASRmeta()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
 1. **Column names** — all columns are in the required list above.
 2. **All columns present** — every required column exists.
@@ -164,6 +185,7 @@ Supplying an unrecognised parameter name fails the parameter format check:
 
 ```{r}
 #| error: true
+# import the data for the example
 metadat_raw <- suppressWarnings(
   readxl::read_excel(metapth, na = c("NA", "na", ""), guess_max = Inf)
 )
@@ -181,3 +203,5 @@ After passing all checks, `readASRmeta()` returns a data frame with the columns 
 ```{r}
 head(metadat)
 ```
+
+The remaining functions in AquaSensR can now be used after the continuous data and metadata files are successfully imported.
