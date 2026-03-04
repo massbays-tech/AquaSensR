@@ -2,9 +2,9 @@
 
 AquaSensR requires two input files to use the functions in the package:
 
-1.  **Continuous monitoring data** — time series of sensor observations,
+1.  **Continuous monitoring data**: time series of sensor observations,
     one column per parameter.
-2.  **QC threshold metadata** — site- and parameter-specific thresholds
+2.  **QC threshold metadata**: site- and parameter-specific thresholds
     used by the four QC checks (gross range, spike, rate of change, and
     flatline).
 
@@ -38,8 +38,6 @@ The examples below use the files included with the package:
 contpth <- system.file("extdata/ExampleCont.xlsx", package = "AquaSensR")
 metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 ```
-
-------------------------------------------------------------------------
 
 ## Continuous monitoring data
 
@@ -156,18 +154,18 @@ function imports the data and runs a series of checks using the
 function. The checks evaluate the following and stops with an
 informative error if any check fails:
 
-1.  **Column names** — all columns are either `Site`, `Date`, `Time`, or
+1.  **Column names**: all columns are either `Site`, `Date`, `Time`, or
     a recognised parameter from `paramsASR`.
-2.  **Required columns present** — `Site`, `Date`, and `Time` exist.
-3.  **At least one parameter column** — at least one column matches an
+2.  **Required columns present**: `Site`, `Date`, and `Time` exist.
+3.  **At least one parameter column**: at least one column matches an
     entry in `paramsASR$Parameter`.
-4.  **Date format** — all values in `Date` parse successfully with
+4.  **Date format**: all values in `Date` parse successfully with
     [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html).
-5.  **Time format** — all values in `Time` parse successfully with
+5.  **Time format**: all values in `Time` parse successfully with
     [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html).
-6.  **No missing values** — no `NA` in any column.
-7.  **Numeric parameter columns** — all parameter columns contain
-    numeric values.
+6.  **No missing values**: no `NA` in any column.
+7.  **Numeric parameter columns**: all parameter columns contain numeric
+    values.
 
 ### Example: triggering an error
 
@@ -201,8 +199,8 @@ After passing all checks,
 [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
 returns a data frame with:
 
-- `Site` — site identifier (character)
-- `DateTime` — combined and time-zone-aware `POSIXct` column
+- `Site`: site identifier (character)
+- `DateTime`: combined and time-zone-aware `POSIXct` column
 - One numeric column per parameter present in the input file
 
 ``` r
@@ -218,8 +216,6 @@ head(contdat)
 #> 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.
 #> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
 ```
-
-------------------------------------------------------------------------
 
 ## QC threshold metadata
 
@@ -250,23 +246,23 @@ metadat <- readASRmeta(metapth)
 The workbook must contain exactly the following columns (all required;
 thresholds you do not want to apply should be left blank / `NA`):
 
-| Column             | Description                                                                            |
-|--------------------|----------------------------------------------------------------------------------------|
-| `Site`             | Site identifier matching those in the continuous data                                  |
-| `Parameter`        | Parameter name matching `paramsASR$Parameter`                                          |
-| `Depth`            | Sensor deployment depth (numeric; can be `NA`)                                         |
-| `GrMinFail`        | Gross range — lower fail threshold                                                     |
-| `GrMaxFail`        | Gross range — upper fail threshold                                                     |
-| `GrMinSuspect`     | Gross range — lower suspect threshold                                                  |
-| `GrMaxSuspect`     | Gross range — upper suspect threshold                                                  |
-| `SpikeFail`        | Spike — absolute step size for a fail flag                                             |
-| `SpikeSuspect`     | Spike — absolute step size for a suspect flag                                          |
-| `FlatFailN`        | Flatline — consecutive identical observations for a fail flag                          |
-| `FlatFailDelta`    | Flatline — maximum within-run absolute change treated as “identical” for fail          |
-| `FlatSuspectN`     | Flatline — consecutive identical observations for a suspect flag                       |
-| `FlatSuspectDelta` | Flatline — maximum within-run absolute change treated as “identical” for suspect       |
-| `RoCN`             | Rate of change — multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
-| `RoCHours`         | Rate of change — look-back window length in hours                                      |
+| Column             | Description                                                                           |
+|--------------------|---------------------------------------------------------------------------------------|
+| `Site`             | Site identifier matching those in the continuous data                                 |
+| `Parameter`        | Parameter name matching `paramsASR$Parameter`                                         |
+| `Depth`            | Sensor deployment depth (numeric; can be `NA`)                                        |
+| `GrMinFail`        | Gross range, lower fail threshold                                                     |
+| `GrMaxFail`        | Gross range, upper fail threshold                                                     |
+| `GrMinSuspect`     | Gross range, lower suspect threshold                                                  |
+| `GrMaxSuspect`     | Gross range, upper suspect threshold                                                  |
+| `SpikeFail`        | Spike, absolute step size for a fail flag                                             |
+| `SpikeSuspect`     | Spike, absolute step size for a suspect flag                                          |
+| `FlatFailN`        | Flatline, consecutive identical observations for a fail flag                          |
+| `FlatFailDelta`    | Flatline, maximum within-run absolute change treated as “identical” for fail          |
+| `FlatSuspectN`     | Flatline, consecutive identical observations for a suspect flag                       |
+| `FlatSuspectDelta` | Flatline, maximum within-run absolute change treated as “identical” for suspect       |
+| `RoCN`             | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
+| `RoCHours`         | Rate of change, look-back window length in hours                                      |
 
 ### Checks performed
 
@@ -277,13 +273,13 @@ function imports the metadata and runs a series of checks using the
 function. The checks evaluate the following and stops with an
 informative error if any check fails:
 
-1.  **Column names** — all columns are in the required list above.
-2.  **All columns present** — every required column exists.
-3.  **At least one parameter** — at least one value in `Parameter`
+1.  **Column names**: all columns are in the required list above.
+2.  **All columns present**: every required column exists.
+3.  **At least one parameter**: at least one value in `Parameter`
     matches `paramsASR$Parameter`.
-4.  **Parameter format** — all `Parameter` values match those in
+4.  **Parameter format**: all `Parameter` values match those in
     `paramsASR$Parameter`.
-5.  **Numeric columns** — all columns except `Site` and `Parameter`
+5.  **Numeric columns**: all columns except `Site` and `Parameter`
     contain only numeric or missing values.
 
 ### Example: triggering an error
