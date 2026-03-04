@@ -24,6 +24,7 @@ articles:
   navbar: ~
   contents: 
   - inputs
+  - qcoverview
 
 reference:
 - title: Read, check, and format data

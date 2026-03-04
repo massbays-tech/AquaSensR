@@ -141,7 +141,7 @@ head(contdat)
 
 ## QC threshold metadata
 
-The metadata file includes various information for the quality control checks applied to each parameter. Use `readASRmeta()` to import the QC threshold metadata. The function reads the workbook, runs checks via `checkASRmeta()`, and returns a formatted data frame.
+The metadata file includes various information for the quality control checks applied to each parameter (see the [quality control vignette](qcoverview.html) for details). Use `readASRmeta()` to import the QC threshold metadata. The function reads the workbook, runs checks via `checkASRmeta()`, and returns a formatted data frame.
 
 ```{r}
 metadat <- readASRmeta(metapth)
