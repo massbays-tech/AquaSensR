@@ -77,7 +77,7 @@
 <li>
 <strong>QC threshold metadata</strong> — site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).</li>
 </ol>
-<p>Both file types are Excel workbooks (<code>.xlsx</code>). This vignette describes how to import and validate each input dataset using the <code>readASR*</code> and <code>checkASR*</code> family of functions. Example files are included with the package and are used throughout.</p>
+<p>Both file types are Excel workbooks (<code>.xlsx</code>). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format. Example files with the correct format are included with the package and are used throughout.</p>
 <section class="level2"><h2 id="load-the-package">Load the package<a class="anchor" aria-label="anchor" href="#load-the-package"></a>
 </h2>
 <p>Load the package in an R session after installation:</p>
@@ -87,7 +87,7 @@
 </div>
 </section><section class="level2"><h2 id="file-paths">File paths<a class="anchor" aria-label="anchor" href="#file-paths"></a>
 </h2>
-<p>In practice you will supply paths to your own files, for example:</p>
+<p>First, specify the location of the two files by saving their paths to R variables. In practice you will supply paths to your own files, for example:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="st">"path/to/your/ContinuousData.xlsx"</span></span>
@@ -101,7 +101,7 @@
 </div>
 <hr></section><section class="level2"><h2 id="continuous-monitoring-data">Continuous monitoring data<a class="anchor" aria-label="anchor" href="#continuous-monitoring-data"></a>
 </h2>
-<p>Use <code><a href="../reference/readASRcont.html">readASRcont()</a></code> to import continuous monitoring data. The function reads the Excel file, runs a series of checks via <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code>, and then formats the result for downstream use. The <code>tz</code> argument sets the time zone for the combined <code>DateTime</code> column (see <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values).</p>
+<p>Use <code><a href="../reference/readASRcont.html">readASRcont()</a></code> to import continuous monitoring data. The function reads the Excel file, automatically runs a series of checks via <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code>, and then formats the result for downstream use. The <code>tz</code> argument sets the time zone for the combined <code>DateTime</code> column (see <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values). Be careful to specify the correct time zone, particularly one using a fixed offset (e.g., <code>Etc/GMT+5</code> for Eastern time) to avoid issues with daylight saving time transitions. If your data are in local time and the time zone observes DST, consider using a time zone like <code>America/New_York</code> that will automatically adjust for daylight savings.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
@@ -118,7 +118,7 @@
 </div>
 <section class="level3"><h3 id="format-requirements">Format requirements<a class="anchor" aria-label="anchor" href="#format-requirements"></a>
 </h3>
-<p>The workbook must contain the following columns (additional unrecognised columns will trigger an error):</p>
+<p>The continuous monitoring data workbook must contain the following columns (additional unrecognised columns will trigger an error):</p>
 <table class="table caption-top">
 <colgroup>
 <col style="width: 38%">
@@ -147,9 +147,223 @@
 <td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> (e.g., <code>Water Temp_C</code>)</td>
 </tr>
 </tbody>
-</table></section><section class="level3"><h3 id="checks-performed">Checks performed<a class="anchor" aria-label="anchor" href="#checks-performed"></a>
+</table>
+<p>Currently, AquaSensR allows the following parameters. Note the inclusion of the units in the parameter name. Make sure the parameter name matches the units used in your data.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table caption-top">
+<thead><tr class="header">
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Required file name</th>
+<th style="text-align: left;">Units</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Air Temp (C)</td>
+<td style="text-align: left;">Air Temp_C</td>
+<td style="text-align: left;">deg C</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Air Temp (F)</td>
+<td style="text-align: left;">Air Temp_F</td>
+<td style="text-align: left;">deg F</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Air BP (psi)</td>
+<td style="text-align: left;">Air BP_psi</td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Air BP (mmHg)</td>
+<td style="text-align: left;">Air BP_mmHg</td>
+<td style="text-align: left;">mmHg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Chlorophyll-a (μg/l)</td>
+<td style="text-align: left;">Chlorophylla_ug_l</td>
+<td style="text-align: left;">ug/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chlorophyll-a (RFU)</td>
+<td style="text-align: left;">Chlorophylla_RFU</td>
+<td style="text-align: left;">RFU</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pheophytin (μg/l)</td>
+<td style="text-align: left;">Pheophytin_ug_l</td>
+<td style="text-align: left;">ug/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pheophytin (RFU)</td>
+<td style="text-align: left;">Pheophytin_RFU</td>
+<td style="text-align: left;">RFU</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">pCO2 (ppm)</td>
+<td style="text-align: left;">pCO2_ppm</td>
+<td style="text-align: left;">ppm</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Conductivity (μS/cm)</td>
+<td style="text-align: left;">Conductivity_uS_cm</td>
+<td style="text-align: left;">uS/cm</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Salinity (ppt)</td>
+<td style="text-align: left;">Salinity_ppt</td>
+<td style="text-align: left;">ppt</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Specific Conductance (μS/cm)</td>
+<td style="text-align: left;">Sp Conductance_uS_cm</td>
+<td style="text-align: left;">uS/cm</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cyanobacteria (μg/l)</td>
+<td style="text-align: left;">Cyanobacteria_ug_l</td>
+<td style="text-align: left;">ug/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Phycocyanin (μg/l)</td>
+<td style="text-align: left;">Phycocyanin_ug_l</td>
+<td style="text-align: left;">ug/l</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Phycoerythrin (μg/l)</td>
+<td style="text-align: left;">Phycoerythrin_ug_l</td>
+<td style="text-align: left;">ug/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DO (mg/l)</td>
+<td style="text-align: left;">DO_mg_l</td>
+<td style="text-align: left;">mg/l</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DO Adjusted (mg/l)</td>
+<td style="text-align: left;">DO_adj_mg_l</td>
+<td style="text-align: left;">mg/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DO (% Sat)</td>
+<td style="text-align: left;">DO_pctsat</td>
+<td style="text-align: left;">%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CDOM (mg/l)</td>
+<td style="text-align: left;">CDOM_mg_l</td>
+<td style="text-align: left;">mg/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FDOM (mg/l)</td>
+<td style="text-align: left;">FDOM_mg_l</td>
+<td style="text-align: left;">mg/l</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E. coli (#/100ml)</td>
+<td style="text-align: left;">E. coli_#_100ml</td>
+<td style="text-align: left;">#/100ml</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">E. coli (CFU/100ml)</td>
+<td style="text-align: left;">E. coli_CFU_100ml</td>
+<td style="text-align: left;">CFU/100ml</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Discharge (cfs)</td>
+<td style="text-align: left;">Discharge_cfs</td>
+<td style="text-align: left;">cfs</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Nitrate (μg/l)</td>
+<td style="text-align: left;">Nitrate_ug_l</td>
+<td style="text-align: left;">ug/l</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PAR (μmol/m2/s)</td>
+<td style="text-align: left;">PAR_umol_m2_s</td>
+<td style="text-align: left;">umol/m2/s</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">pH</td>
+<td style="text-align: left;">pH_SU</td>
+<td style="text-align: left;">None</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">TDS (mg/l)</td>
+<td style="text-align: left;">TDS_mg_l</td>
+<td style="text-align: left;">mg/l</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TSS (mg/l)</td>
+<td style="text-align: left;">TSS_mg_l</td>
+<td style="text-align: left;">mg/l</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Turbidity (NTU)</td>
+<td style="text-align: left;">Turbidity_NTU</td>
+<td style="text-align: left;">NTU</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Turbidity (FNU)</td>
+<td style="text-align: left;">Turbidity_FNU</td>
+<td style="text-align: left;">FNU</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gage Height (ft)</td>
+<td style="text-align: left;">Gage Height_ft</td>
+<td style="text-align: left;">ft</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sensor Depth (ft)</td>
+<td style="text-align: left;">Sensor Depth_ft</td>
+<td style="text-align: left;">ft</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Water Pressure (psi)</td>
+<td style="text-align: left;">Water Pressure_psi</td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Water Pressure (mmHg)</td>
+<td style="text-align: left;">Water Pressure_mmHg</td>
+<td style="text-align: left;">mmHg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Water Temp (C)</td>
+<td style="text-align: left;">Water Temp_C</td>
+<td style="text-align: left;">deg C</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Water Temp (F)</td>
+<td style="text-align: left;">Water Temp_F</td>
+<td style="text-align: left;">deg F</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The list above can also be viewed in R with the <code>paramsASR</code> dataset, which is included in the package and used for the checks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">paramsASR</span></span>
+<span><span class="co">#&gt; # A tibble: 36 × 6</span></span>
+<span><span class="co">#&gt;    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;             &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;           &lt;chr&gt;                </span></span>
+<span><span class="co">#&gt;  1 Air Temp          Air Temp… deg C Air … Temperature, a… deg C                </span></span>
+<span><span class="co">#&gt;  2 Air Temp          Air Temp… deg F Air … Temperature, a… deg F                </span></span>
+<span><span class="co">#&gt;  3 Barometric Press… Air BP_p… psi   Air … Barometric pre… psi                  </span></span>
+<span><span class="co">#&gt;  4 Barometric Press… Air BP_m… mmHg  Air … Barometric pre… mmHg                 </span></span>
+<span><span class="co">#&gt;  5 Chlorophyll       Chloroph… ug/l  Chlo… Chlorophyll a … ug/l                 </span></span>
+<span><span class="co">#&gt;  6 Chlorophyll       Chloroph… RFU   Chlo… Chlorophyll a … RFU                  </span></span>
+<span><span class="co">#&gt;  7 Chlorophyll       Pheophyt… ug/l  Pheo… Pheophytin a    ug/l                 </span></span>
+<span><span class="co">#&gt;  8 Chlorophyll       Pheophyt… RFU   Pheo… Pheophytin a    RFU                  </span></span>
+<span><span class="co">#&gt;  9 CO2               pCO2_ppm  ppm   pCO2… Partial Pressu… ppm                  </span></span>
+<span><span class="co">#&gt; 10 Conductivity      Conducti… uS/cm Cond… Conductivity    uS/cm                </span></span>
+<span><span class="co">#&gt; # ℹ 26 more rows</span></span></code></pre></div>
+</div>
+</section><section class="level3"><h3 id="checks-performed">Checks performed<a class="anchor" aria-label="anchor" href="#checks-performed"></a>
 </h3>
-<p><code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> verifies the following and stops with an informative error if any check fails:</p>
+<p>The <code><a href="../reference/readASRcont.html">readASRcont()</a></code> function imports the data and runs a series of checks using the <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
 <ol type="1">
 <li>
 <strong>Column names</strong> — all columns are either <code>Site</code>, <code>Date</code>, <code>Time</code>, or a recognised parameter from <code>paramsASR</code>.</li>
@@ -169,17 +383,8 @@
 </h3>
 <p>Adding an unrecognised column causes <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> to stop immediately:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter, lag</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
-<span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># import the data for the example</span></span>
 <span><span class="va">contdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
 <span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -208,7 +413,7 @@
 <li>One numeric column per parameter present in the input file</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">contdat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
 <span><span class="co">#&gt;   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
@@ -223,9 +428,9 @@
 </div>
 <hr></section></section><section class="level2"><h2 id="qc-threshold-metadata">QC threshold metadata<a class="anchor" aria-label="anchor" href="#qc-threshold-metadata"></a>
 </h2>
-<p>Use <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> to import the QC threshold metadata. The function reads the workbook, runs checks via <code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code>, and returns a formatted data frame.</p>
+<p>The metadata file includes various information for the quality control checks applied to each parameter. Use <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> to import the QC threshold metadata. The function reads the workbook, runs checks via <code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code>, and returns a formatted data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRmeta.html">readASRmeta</a></span><span class="op">(</span><span class="va">metapth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running checks on continuous metadata...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
@@ -313,7 +518,7 @@
 </tbody>
 </table></section><section class="level3"><h3 id="checks-performed-1">Checks performed<a class="anchor" aria-label="anchor" href="#checks-performed-1"></a>
 </h3>
-<p><code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code> verifies the following and stops with an informative error if any check fails:</p>
+<p>The <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> function imports the metadata and runs a series of checks using the <code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
 <ol type="1">
 <li>
 <strong>Column names</strong> — all columns are in the required list above.</li>
@@ -329,8 +534,9 @@
 </h3>
 <p>Supplying an unrecognised parameter name fails the parameter format check:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">metadat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># import the data for the example</span></span>
+<span><span class="va">metadat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
 <span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">metapth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -350,7 +556,7 @@
 </h3>
 <p>After passing all checks, <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 15</span></span>
 <span><span class="co">#&gt;   Site   Parameter Depth GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail</span></span>
@@ -364,6 +570,7 @@
 <span><span class="co">#&gt; # ℹ 7 more variables: SpikeSuspect &lt;dbl&gt;, FlatFailN &lt;dbl&gt;, FlatFailDelta &lt;dbl&gt;,</span></span>
 <span><span class="co">#&gt; #   FlatSuspectN &lt;dbl&gt;, FlatSuspectDelta &lt;dbl&gt;, RoCN &lt;dbl&gt;, RoCHours &lt;dbl&gt;</span></span></code></pre></div>
 </div>
+<p>The remaining functions in AquaSensR can now be used after the continuous data and metadata files are successfully imported.</p>
 </section></section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);

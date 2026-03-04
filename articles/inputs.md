@@ -9,9 +9,9 @@ AquaSensR requires two input files to use the functions in the package:
     flatline).
 
 Both file types are Excel workbooks (`.xlsx`). This vignette describes
-how to import and validate each input dataset using the `readASR*` and
-`checkASR*` family of functions. Example files are included with the
-package and are used throughout.
+how to import and check each input dataset. It is critical that the
+input datasets follow the exact specified format. Example files with the
+correct format are included with the package and are used throughout.
 
 ## Load the package
 
@@ -23,7 +23,9 @@ library(AquaSensR)
 
 ## File paths
 
-In practice you will supply paths to your own files, for example:
+First, specify the location of the two files by saving their paths to R
+variables. In practice you will supply paths to your own files, for
+example:
 
 ``` r
 contpth <- "path/to/your/ContinuousData.xlsx"
@@ -44,12 +46,16 @@ metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 Use
 [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
 to import continuous monitoring data. The function reads the Excel file,
-runs a series of checks via
+automatically runs a series of checks via
 [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md),
 and then formats the result for downstream use. The `tz` argument sets
 the time zone for the combined `DateTime` column (see
 [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
-values).
+values). Be careful to specify the correct time zone, particularly one
+using a fixed offset (e.g., `Etc/GMT+5` for Eastern time) to avoid
+issues with daylight saving time transitions. If your data are in local
+time and the time zone observes DST, consider using a time zone like
+`America/New_York` that will automatically adjust for daylight savings.
 
 ``` r
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
@@ -67,8 +73,8 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 
 ### Format requirements
 
-The workbook must contain the following columns (additional unrecognised
-columns will trigger an error):
+The continuous monitoring data workbook must contain the following
+columns (additional unrecognised columns will trigger an error):
 
 | Column                        | Description                                                                                                                                                  |
 |-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -77,11 +83,78 @@ columns will trigger an error):
 | `Time`                        | Observation time as a full datetime string (e.g., `HH:MM:SS`), parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                             |
 
+Currently, AquaSensR allows the following parameters. Note the inclusion
+of the units in the parameter name. Make sure the parameter name matches
+the units used in your data.
+
+| Description                  | Required file name   | Units     |
+|:-----------------------------|:---------------------|:----------|
+| Air Temp (C)                 | Air Temp_C           | deg C     |
+| Air Temp (F)                 | Air Temp_F           | deg F     |
+| Air BP (psi)                 | Air BP_psi           | psi       |
+| Air BP (mmHg)                | Air BP_mmHg          | mmHg      |
+| Chlorophyll-a (μg/l)         | Chlorophylla_ug_l    | ug/l      |
+| Chlorophyll-a (RFU)          | Chlorophylla_RFU     | RFU       |
+| Pheophytin (μg/l)            | Pheophytin_ug_l      | ug/l      |
+| Pheophytin (RFU)             | Pheophytin_RFU       | RFU       |
+| pCO2 (ppm)                   | pCO2_ppm             | ppm       |
+| Conductivity (μS/cm)         | Conductivity_uS_cm   | uS/cm     |
+| Salinity (ppt)               | Salinity_ppt         | ppt       |
+| Specific Conductance (μS/cm) | Sp Conductance_uS_cm | uS/cm     |
+| Cyanobacteria (μg/l)         | Cyanobacteria_ug_l   | ug/l      |
+| Phycocyanin (μg/l)           | Phycocyanin_ug_l     | ug/l      |
+| Phycoerythrin (μg/l)         | Phycoerythrin_ug_l   | ug/l      |
+| DO (mg/l)                    | DO_mg_l              | mg/l      |
+| DO Adjusted (mg/l)           | DO_adj_mg_l          | mg/l      |
+| DO (% Sat)                   | DO_pctsat            | %         |
+| CDOM (mg/l)                  | CDOM_mg_l            | mg/l      |
+| FDOM (mg/l)                  | FDOM_mg_l            | mg/l      |
+| E. coli (#/100ml)            | E. coli\_#\_100ml    | \#/100ml  |
+| E. coli (CFU/100ml)          | E. coli_CFU_100ml    | CFU/100ml |
+| Discharge (cfs)              | Discharge_cfs        | cfs       |
+| Nitrate (μg/l)               | Nitrate_ug_l         | ug/l      |
+| PAR (μmol/m2/s)              | PAR_umol_m2_s        | umol/m2/s |
+| pH                           | pH_SU                | None      |
+| TDS (mg/l)                   | TDS_mg_l             | mg/l      |
+| TSS (mg/l)                   | TSS_mg_l             | mg/l      |
+| Turbidity (NTU)              | Turbidity_NTU        | NTU       |
+| Turbidity (FNU)              | Turbidity_FNU        | FNU       |
+| Gage Height (ft)             | Gage Height_ft       | ft        |
+| Sensor Depth (ft)            | Sensor Depth_ft      | ft        |
+| Water Pressure (psi)         | Water Pressure_psi   | psi       |
+| Water Pressure (mmHg)        | Water Pressure_mmHg  | mmHg      |
+| Water Temp (C)               | Water Temp_C         | deg C     |
+| Water Temp (F)               | Water Temp_F         | deg F     |
+
+The list above can also be viewed in R with the `paramsASR` dataset,
+which is included in the package and used for the checks.
+
+``` r
+paramsASR
+#> # A tibble: 36 × 6
+#>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
+#>    <chr>             <chr>     <chr> <chr> <chr>           <chr>                
+#>  1 Air Temp          Air Temp… deg C Air … Temperature, a… deg C                
+#>  2 Air Temp          Air Temp… deg F Air … Temperature, a… deg F                
+#>  3 Barometric Press… Air BP_p… psi   Air … Barometric pre… psi                  
+#>  4 Barometric Press… Air BP_m… mmHg  Air … Barometric pre… mmHg                 
+#>  5 Chlorophyll       Chloroph… ug/l  Chlo… Chlorophyll a … ug/l                 
+#>  6 Chlorophyll       Chloroph… RFU   Chlo… Chlorophyll a … RFU                  
+#>  7 Chlorophyll       Pheophyt… ug/l  Pheo… Pheophytin a    ug/l                 
+#>  8 Chlorophyll       Pheophyt… RFU   Pheo… Pheophytin a    RFU                  
+#>  9 CO2               pCO2_ppm  ppm   pCO2… Partial Pressu… ppm                  
+#> 10 Conductivity      Conducti… uS/cm Cond… Conductivity    uS/cm                
+#> # ℹ 26 more rows
+```
+
 ### Checks performed
 
+The
+[`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
+function imports the data and runs a series of checks using the
 [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md)
-verifies the following and stops with an informative error if any check
-fails:
+function. The checks evaluate the following and stops with an
+informative error if any check fails:
 
 1.  **Column names** — all columns are either `Site`, `Date`, `Time`, or
     a recognised parameter from `paramsASR`.
@@ -103,16 +176,7 @@ Adding an unrecognised column causes
 to stop immediately:
 
 ``` r
-library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
-
+# import the data for the example
 contdat_raw <- suppressWarnings(
   readxl::read_excel(contpth, na = c("NA", "na", ""), guess_max = Inf)
 ) |>
@@ -159,7 +223,8 @@ head(contdat)
 
 ## QC threshold metadata
 
-Use
+The metadata file includes various information for the quality control
+checks applied to each parameter. Use
 [`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
 to import the QC threshold metadata. The function reads the workbook,
 runs checks via
@@ -203,9 +268,12 @@ thresholds you do not want to apply should be left blank / `NA`):
 
 ### Checks performed
 
+The
+[`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
+function imports the metadata and runs a series of checks using the
 [`checkASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRmeta.md)
-verifies the following and stops with an informative error if any check
-fails:
+function. The checks evaluate the following and stops with an
+informative error if any check fails:
 
 1.  **Column names** — all columns are in the required list above.
 2.  **All columns present** — every required column exists.
@@ -222,6 +290,7 @@ Supplying an unrecognised parameter name fails the parameter format
 check:
 
 ``` r
+# import the data for the example
 metadat_raw <- suppressWarnings(
   readxl::read_excel(metapth, na = c("NA", "na", ""), guess_max = Inf)
 )
@@ -260,3 +329,6 @@ head(metadat)
 #> # ℹ 7 more variables: SpikeSuspect <dbl>, FlatFailN <dbl>, FlatFailDelta <dbl>,
 #> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCN <dbl>, RoCHours <dbl>
 ```
+
+The remaining functions in AquaSensR can now be used after the
+continuous data and metadata files are successfully imported.
