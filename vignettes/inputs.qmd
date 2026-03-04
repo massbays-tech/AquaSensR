@@ -21,8 +21,8 @@ library(dplyr)
 
 AquaSensR requires two input files to use the functions in the package:
 
-1. **Continuous monitoring data** — time series of sensor observations, one column per parameter.
-2. **QC threshold metadata** — site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
+1. **Continuous monitoring data**: time series of sensor observations, one column per parameter.
+2. **QC threshold metadata**: site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
 
 Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format.  Example files with the correct format are included with the package and are used throughout.
 
@@ -51,8 +51,6 @@ The examples below use the files included with the package:
 contpth <- system.file("extdata/ExampleCont.xlsx", package = "AquaSensR")
 metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 ```
-
----
 
 ## Continuous monitoring data
 
@@ -95,13 +93,13 @@ paramsASR
 
 The `readASRcont()` function imports the data and runs a series of checks using the `checkASRcont()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
-1. **Column names** — all columns are either `Site`, `Date`, `Time`, or a recognised parameter from `paramsASR`.
-2. **Required columns present** — `Site`, `Date`, and `Time` exist.
-3. **At least one parameter column** — at least one column matches an entry in `paramsASR$Parameter`.
-4. **Date format** — all values in `Date` parse successfully with `lubridate::ymd()`.
-5. **Time format** — all values in `Time` parse successfully with `lubridate::ymd_hms()`.
-6. **No missing values** — no `NA` in any column.
-7. **Numeric parameter columns** — all parameter columns contain numeric values.
+1. **Column names**: all columns are either `Site`, `Date`, `Time`, or a recognised parameter from `paramsASR`.
+2. **Required columns present**: `Site`, `Date`, and `Time` exist.
+3. **At least one parameter column**: at least one column matches an entry in `paramsASR$Parameter`.
+4. **Date format**: all values in `Date` parse successfully with `lubridate::ymd()`.
+5. **Time format**: all values in `Time` parse successfully with `lubridate::ymd_hms()`.
+6. **No missing values**: no `NA` in any column.
+7. **Numeric parameter columns**: all parameter columns contain numeric values.
 
 ### Example: triggering an error
 
@@ -129,15 +127,13 @@ checkASRcont(contdat_raw)
 
 After passing all checks, `readASRcont()` returns a data frame with:
 
-- `Site` — site identifier (character)
-- `DateTime` — combined and time-zone-aware `POSIXct` column
+- `Site`: site identifier (character)
+- `DateTime`: combined and time-zone-aware `POSIXct` column
 - One numeric column per parameter present in the input file
 
 ```{r}
 head(contdat)
 ```
-
----
 
 ## QC threshold metadata
 
@@ -156,28 +152,28 @@ The workbook must contain exactly the following columns (all required; threshold
 | `Site` | Site identifier matching those in the continuous data |
 | `Parameter` | Parameter name matching `paramsASR$Parameter` |
 | `Depth` | Sensor deployment depth (numeric; can be `NA`) |
-| `GrMinFail` | Gross range — lower fail threshold |
-| `GrMaxFail` | Gross range — upper fail threshold |
-| `GrMinSuspect` | Gross range — lower suspect threshold |
-| `GrMaxSuspect` | Gross range — upper suspect threshold |
-| `SpikeFail` | Spike — absolute step size for a fail flag |
-| `SpikeSuspect` | Spike — absolute step size for a suspect flag |
-| `FlatFailN` | Flatline — consecutive identical observations for a fail flag |
-| `FlatFailDelta` | Flatline — maximum within-run absolute change treated as "identical" for fail |
-| `FlatSuspectN` | Flatline — consecutive identical observations for a suspect flag |
-| `FlatSuspectDelta` | Flatline — maximum within-run absolute change treated as "identical" for suspect |
-| `RoCN` | Rate of change — multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
-| `RoCHours` | Rate of change — look-back window length in hours |
+| `GrMinFail` | Gross range, lower fail threshold |
+| `GrMaxFail` | Gross range, upper fail threshold |
+| `GrMinSuspect` | Gross range, lower suspect threshold |
+| `GrMaxSuspect` | Gross range, upper suspect threshold |
+| `SpikeFail` | Spike, absolute step size for a fail flag |
+| `SpikeSuspect` | Spike, absolute step size for a suspect flag |
+| `FlatFailN` | Flatline, consecutive identical observations for a fail flag |
+| `FlatFailDelta` | Flatline, maximum within-run absolute change treated as "identical" for fail |
+| `FlatSuspectN` | Flatline, consecutive identical observations for a suspect flag |
+| `FlatSuspectDelta` | Flatline, maximum within-run absolute change treated as "identical" for suspect |
+| `RoCN` | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
+| `RoCHours` | Rate of change, look-back window length in hours |
 
 ### Checks performed
 
 The `readASRmeta()` function imports the metadata and runs a series of checks using the `checkASRmeta()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
-1. **Column names** — all columns are in the required list above.
-2. **All columns present** — every required column exists.
-3. **At least one parameter** — at least one value in `Parameter` matches `paramsASR$Parameter`.
-4. **Parameter format** — all `Parameter` values match those in `paramsASR$Parameter`.
-5. **Numeric columns** — all columns except `Site` and `Parameter` contain only numeric or missing values.
+1. **Column names**: all columns are in the required list above.
+2. **All columns present**: every required column exists.
+3. **At least one parameter**: at least one value in `Parameter` matches `paramsASR$Parameter`.
+4. **Parameter format**: all `Parameter` values match those in `paramsASR$Parameter`.
+5. **Numeric columns**: all columns except `Site` and `Parameter` contain only numeric or missing values.
 
 ### Example: triggering an error
 
