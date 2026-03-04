@@ -9,3 +9,5 @@
 
 - [AquaSensR inputs and
   checks](https://massbays-tech.github.io/AquaSensR/articles/inputs.md):
+- [Quality control
+  overview](https://massbays-tech.github.io/AquaSensR/articles/qcoverview.md):

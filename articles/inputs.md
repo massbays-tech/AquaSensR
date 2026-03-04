@@ -224,7 +224,9 @@ head(contdat)
 ## QC threshold metadata
 
 The metadata file includes various information for the quality control
-checks applied to each parameter. Use
+checks applied to each parameter (see the [quality control
+vignette](https://massbays-tech.github.io/AquaSensR/articles/qcoverview.md)
+for details). Use
 [`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
 to import the QC threshold metadata. The function reads the workbook,
 runs checks via
