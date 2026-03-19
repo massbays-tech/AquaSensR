@@ -38,7 +38,7 @@ stacked subplots that share a common x-axis. Legend items are shown once
 and apply across all subplots.
 }
 \examples{
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 metapth <- system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR')
 
 contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)

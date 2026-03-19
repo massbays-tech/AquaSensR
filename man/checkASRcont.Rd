@@ -18,13 +18,20 @@ Check continuous monitoring data
 \details{
 This function is used internally within \code{\link{readASRcont}} to run several checks on the input data to verify correct formatting before downstream analysis.
 
+The input data can use either of two formats:
+\itemize{
+\item \strong{Separate columns}: \code{Site}, \code{Date}, \code{Time}, and at least one parameter column
+\item \strong{Combined column}: \code{Site}, \code{DateTime}, and at least one parameter column
+}
+
 The following checks are made:
 \itemize{
-\item Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
-\item Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
+\item Column names: Should include only Site, Date, Time, DateTime, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
+\item Required columns are present: Site and either Date + Time or DateTime are required for downstream analysis and upload to WQX
 \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
-\item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
-\item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
+\item Date format (separate columns only): Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
+\item Time format (separate columns only): Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
+\item DateTime format (combined column only): Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
 \item Missing values: No missing values in any columns
 \item Parameter columns should be numeric: All parameter columns should be numeric values
 }
@@ -32,7 +39,7 @@ The following checks are made:
 \examples{
 library(dplyr)
 
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
 contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
      guess_max = Inf)) |>

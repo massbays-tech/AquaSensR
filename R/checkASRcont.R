@@ -4,13 +4,20 @@
 #'
 #' @details This function is used internally within \code{\link{readASRcont}} to run several checks on the input data to verify correct formatting before downstream analysis.
 #'
+#' The input data can use either of two formats:
+#' \itemize{
+#'  \item \strong{Separate columns}: \code{Site}, \code{Date}, \code{Time}, and at least one parameter column
+#'  \item \strong{Combined column}: \code{Site}, \code{DateTime}, and at least one parameter column
+#' }
+#'
 #' The following checks are made:
 #' \itemize{
-#'  \item Column names: Should include only Site, Date, Time, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
-#'  \item Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
+#'  \item Column names: Should include only Site, Date, Time, DateTime, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
+#'  \item Required columns are present: Site and either Date + Time or DateTime are required for downstream analysis and upload to WQX
 #'  \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
-#'  \item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
-#'  \item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
+#'  \item Date format (separate columns only): Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
+#'  \item Time format (separate columns only): Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
+#'  \item DateTime format (combined column only): Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
 #'  \item Missing values: No missing values in any columns
 #'  \item Parameter columns should be numeric: All parameter columns should be numeric values
 #' }
@@ -22,7 +29,7 @@
 #' @examples
 #' library(dplyr)
 #'
-#' contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+#' contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 #'
 #' contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
 #'      guess_max = Inf)) |>
@@ -35,13 +42,16 @@ checkASRcont <- function(contdat) {
   message('Running checks on continuous data...\n')
 
   # globals
-  colnms <- c("Site", "Date", "Time")
   parms <- paramsASR$Parameter
+  valid_colnms <- c("Site", "Date", "Time", "DateTime")
+
+  # detect input format
+  has_datetime <- 'DateTime' %in% names(contdat)
 
   # check column names
   msg <- '\tChecking column names...'
   nms <- names(contdat)
-  chk <- nms %in% c(colnms, parms)
+  chk <- nms %in% c(valid_colnms, parms)
   if (any(!chk)) {
     tochk <- nms[!chk]
     stop(
@@ -53,12 +63,17 @@ checkASRcont <- function(contdat) {
   }
   message(paste(msg, 'OK'))
 
-  # check header columns
-  msg <- '\tChecking Site, Date, Time are present...'
-  nms <- names(contdat)
-  chk <- colnms %in% nms
+  # check required header columns
+  if (has_datetime) {
+    msg <- '\tChecking Site, DateTime are present...'
+    required <- c("Site", "DateTime")
+  } else {
+    msg <- '\tChecking Site, Date, Time are present...'
+    required <- c("Site", "Date", "Time")
+  }
+  chk <- required %in% nms
   if (any(!chk)) {
-    tochk <- colnms[!chk]
+    tochk <- required[!chk]
     stop(
       msg,
       '\n\tMissing the following columns: ',
@@ -81,35 +96,51 @@ checkASRcont <- function(contdat) {
   }
   message(paste(msg, 'OK'))
 
-  # check dates
-  msg <- '\tChecking date format...'
-  chk <- lubridate::ymd(contdat$Date, quiet = TRUE)
-  if (any(is.na(chk))) {
-    tochk <- which(is.na(chk))
-    stop(
-      msg,
-      '\n\tThe following rows have dates that are not in a recognizable format: ',
-      paste(tochk, collapse = ', '),
-      call. = FALSE
-    )
-  }
-  message(paste(msg, 'OK'))
+  # check date/time format
+  if (has_datetime) {
+    msg <- '\tChecking DateTime format...'
+    chk <- lubridate::ymd_hms(contdat$DateTime, quiet = TRUE)
+    if (any(is.na(chk))) {
+      tochk <- which(is.na(chk))
+      stop(
+        msg,
+        '\n\tThe following rows have DateTime values that are not in a recognizable format: ',
+        paste(tochk, collapse = ', '),
+        call. = FALSE
+      )
+    }
+    message(paste(msg, 'OK'))
+  } else {
+    # check dates
+    msg <- '\tChecking date format...'
+    chk <- lubridate::ymd(contdat$Date, quiet = TRUE)
+    if (any(is.na(chk))) {
+      tochk <- which(is.na(chk))
+      stop(
+        msg,
+        '\n\tThe following rows have dates that are not in a recognizable format: ',
+        paste(tochk, collapse = ', '),
+        call. = FALSE
+      )
+    }
+    message(paste(msg, 'OK'))
 
-  # check times
-  msg <- '\tChecking time format...'
-  chk1 <- lubridate::ymd_hms(contdat$Time, quiet = TRUE)
-  chk2 <- lubridate::hms(contdat$Time, quiet = TRUE)
-  chktime <- ifelse(is.na(chk1), !is.na(chk2), TRUE)
-  if (any(!chktime)) {
-    tochk <- which(!chktime)
-    stop(
-      msg,
-      '\n\tThe following rows have times that are not in a recognizable format: ',
-      paste(tochk, collapse = ', '),
-      call. = FALSE
-    )
+    # check times
+    msg <- '\tChecking time format...'
+    chk1 <- lubridate::ymd_hms(contdat$Time, quiet = TRUE)
+    chk2 <- lubridate::hms(contdat$Time, quiet = TRUE)
+    chktime <- ifelse(is.na(chk1), !is.na(chk2), TRUE)
+    if (any(!chktime)) {
+      tochk <- which(!chktime)
+      stop(
+        msg,
+        '\n\tThe following rows have times that are not in a recognizable format: ',
+        paste(tochk, collapse = ', '),
+        call. = FALSE
+      )
+    }
+    message(paste(msg, 'OK'))
   }
-  message(paste(msg, 'OK'))
 
   # check for missing values
   msg <- '\tChecking for missing values...'

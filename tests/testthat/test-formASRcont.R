@@ -43,3 +43,35 @@ test_that("formASRcont produces same result as readASRcont", {
   # Should have same column names
   expect_equal(names(result), names(tst$contdat))
 })
+
+test_that("formASRcont handles combined DateTime input", {
+  result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
+
+  # DateTime column should exist and be POSIXct with correct timezone
+  expect_true("DateTime" %in% names(result))
+  expect_s3_class(result$DateTime, "POSIXct")
+  expect_equal(attr(result$DateTime, "tzone"), "Etc/GMT+5")
+
+  # Date and Time columns should not be present (they were not in the input)
+  expect_false("Date" %in% names(result))
+  expect_false("Time" %in% names(result))
+})
+
+test_that("formASRcont combined format converts non-numeric columns to numeric", {
+  result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
+
+  numeric_cols <- setdiff(names(result), c("Site", "DateTime"))
+  for (col in numeric_cols) {
+    expect_true(
+      is.numeric(result[[col]]),
+      info = paste("Column", col, "should be numeric")
+    )
+  }
+})
+
+test_that("formASRcont combined format produces same result as readASRcont", {
+  result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
+
+  expect_equal(dim(result), dim(tst$contdat2))
+  expect_equal(names(result), names(tst$contdat2))
+})

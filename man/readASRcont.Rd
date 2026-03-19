@@ -21,7 +21,7 @@ Read continuous monitoring data from an external file
 }
 \examples{
 
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
 
 readASRcont(contpth, tz = 'Etc/GMT+5')
 }

@@ -9,7 +9,7 @@
 #'
 #' @examples
 #'
-#' contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+#' contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
 #'
 #' readASRcont(contpth, tz = 'Etc/GMT+5')
 readASRcont <- function(contpth, tz, runchk = TRUE) {

@@ -167,6 +167,44 @@ test_that("checkASRcont errors on missing values", {
   )
 })
 
+test_that("checkASRcont passes valid combined DateTime data", {
+  expect_no_error(checkASRcont(tst$contdatchk2))
+
+  result <- checkASRcont(tst$contdatchk2)
+  expect_equal(result, tst$contdatchk2)
+})
+
+test_that("checkASRcont errors on invalid DateTime format", {
+  bad_data <- tst$contdatchk2
+  bad_data$DateTime[1] <- "not-a-datetime"
+
+  expect_error(
+    checkASRcont(bad_data),
+    "\tChecking DateTime format...\n\tThe following rows have DateTime values that are not in a recognizable format: 1",
+    fixed = TRUE
+  )
+})
+
+test_that("checkASRcont errors when Site column missing (combined format)", {
+  bad_data <- tst$contdatchk2[, names(tst$contdatchk2) != "Site"]
+
+  expect_error(
+    checkASRcont(bad_data),
+    "\tChecking Site, DateTime are present...\n\tMissing the following columns: Site",
+    fixed = TRUE
+  )
+})
+
+test_that("checkASRcont errors when no parameter columns present (combined format)", {
+  bad_data <- tst$contdatchk2[, c("Site", "DateTime")]
+
+  expect_error(
+    checkASRcont(bad_data),
+    "\tChecking at least one parameter column is present...\n\tNo parameter columns found. Please include at least one from the Parameter column in paramsASR.",
+    fixed = TRUE
+  )
+})
+
 test_that("checkASRcont errors on non-numeric parameter values", {
   bad_data <- tst$contdatchk
   param_name <- 'Water Temp_C'

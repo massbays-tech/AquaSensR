@@ -6,8 +6,9 @@
 #' @details This function is used internally within \code{\link{readASRcont}} to format the input data for downstream analysis.  The formatting includes:
 #'
 #' \itemize{
-#'   \item Combine Date and Time columns: Combines into a single DateTime column, converts to POSIXct with the specified time zone.
-#'  \item Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.
+#'   \item Combine Date and Time columns (separate column format only): Combines into a single DateTime column, converts to POSIXct with the specified time zone.
+#'   \item Convert DateTime to POSIXct (combined column format only): Converts the existing DateTime column to POSIXct with the specified time zone.
+#'   \item Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.
 #' }
 #'
 #' @return A formatted data frame of the continuous data
@@ -15,7 +16,7 @@
 #' @export
 #'
 #' @examples
-#' contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+#' contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 #'
 #' contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
 #'      guess_max = Inf)) |>
@@ -25,15 +26,22 @@
 #'
 #' formASRcont(contdat, tz = 'Etc/GMT+5')
 formASRcont <- function(contdat, tz) {
-  # combine date and time into a single column, add time zone
-  out <- contdat |>
-    dplyr::mutate(
-      Time = gsub('(^.*\\s)', '', Time)
-    ) |>
-    tidyr::unite('DateTime', Date, Time, sep = ' ', remove = TRUE) |>
-    dplyr::mutate(
-      DateTime = lubridate::ymd_hms(DateTime, tz = tz)
-    )
+  # combine date and time into a single DateTime column, or convert existing
+  if ('DateTime' %in% names(contdat)) {
+    out <- contdat |>
+      dplyr::mutate(
+        DateTime = lubridate::ymd_hms(DateTime, tz = tz)
+      )
+  } else {
+    out <- contdat |>
+      dplyr::mutate(
+        Time = gsub('(^.*\\s)', '', Time)
+      ) |>
+      tidyr::unite('DateTime', Date, Time, sep = ' ', remove = TRUE) |>
+      dplyr::mutate(
+        DateTime = lubridate::ymd_hms(DateTime, tz = tz)
+      )
+  }
 
   # convert columns that are not Site, DateTime to numeric if not
   out <- out |>

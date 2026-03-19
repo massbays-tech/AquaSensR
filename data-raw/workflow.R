@@ -7,7 +7,7 @@ library(AquaSensR)
 # 1. File paths
 # ------------------------------------------------------------------------------
 # Replace with paths to your own files, or use the package example data:
-contpth <- system.file("extdata/ExampleCont.xlsx", package = "AquaSensR")
+contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 
 # ------------------------------------------------------------------------------
