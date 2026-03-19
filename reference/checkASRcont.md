@@ -46,6 +46,8 @@ The following checks are made:
 
 - Time format: Should be in a format that can be recognized by
   [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html)
+  or
+  [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html)
 
 - Missing values: No missing values in any columns
 

@@ -74,12 +74,12 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 The continuous monitoring data workbook must contain the following
 columns (additional unrecognised columns will trigger an error):
 
-| Column                        | Description                                                                                                                                                  |
-|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Site`                        | Site identifier                                                                                                                                              |
-| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)                                 |
-| `Time`                        | Observation time as a full datetime string (e.g., `HH:MM:SS`), parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                             |
+| Column                        | Description                                                                                                                                                                                                                              |
+|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Site`                        | Site identifier                                                                                                                                                                                                                          |
+| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)                                                                                                             |
+| `Time`                        | Observation time as a full datetime string (e.g., `HH:MM:SS`), parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) or [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                                                                                                         |
 
 Currently, AquaSensR allows the following parameters. Note the inclusion
 of the units in the parameter name. Make sure the parameter name matches
