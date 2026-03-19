@@ -5,6 +5,42 @@ test_that("checkASRcont passes valid data without errors", {
   expect_equal(result, tst$contdatchk)
 })
 
+test_that("checkASRcont accepts time as plain HH:MM:SS strings", {
+  plain_time_data <- tst$contdatchk
+  plain_time_data$Time <- format(
+    lubridate::ymd_hms(plain_time_data$Time),
+    "%H:%M:%S"
+  )
+
+  expect_no_error(checkASRcont(plain_time_data))
+
+  plain_time_data$Time[1] <- "not-a-time"
+  expect_error(
+    checkASRcont(plain_time_data),
+    "\tChecking time format...\n\tThe following rows have times that are not in a recognizable format: 1",
+    fixed = TRUE
+  )
+})
+
+test_that("checkASRcont accepts mixed time formats (datetime and plain HH:MM:SS)", {
+  mixed_time_data <- tst$contdatchk
+  # Convert even-indexed rows to plain HH:MM:SS, leave odd rows as "1899-12-31 HH:MM:SS"
+  even_rows <- seq(2, nrow(mixed_time_data), by = 2)
+  mixed_time_data$Time[even_rows] <- format(
+    lubridate::ymd_hms(mixed_time_data$Time[even_rows]),
+    "%H:%M:%S"
+  )
+
+  expect_no_error(checkASRcont(mixed_time_data))
+
+  mixed_time_data$Time[1] <- "not-a-time"
+  expect_error(
+    checkASRcont(mixed_time_data),
+    "\tChecking time format...\n\tThe following rows have times that are not in a recognizable format: 1",
+    fixed = TRUE
+  )
+})
+
 test_that("checkASRcont errors on invalid column names", {
   bad_data <- tst$contdatchk
   names(bad_data)[names(bad_data) == "Site"] <- "InvalidColumn"

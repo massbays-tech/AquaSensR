@@ -10,7 +10,7 @@
 #'  \item Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
 #'  \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
 #'  \item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
-#'  \item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
+#'  \item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
 #'  \item Missing values: No missing values in any columns
 #'  \item Parameter columns should be numeric: All parameter columns should be numeric values
 #' }
@@ -97,9 +97,11 @@ checkASRcont <- function(contdat) {
 
   # check times
   msg <- '\tChecking time format...'
-  chk <- lubridate::ymd_hms(contdat$Time, quiet = TRUE)
-  if (any(is.na(chk))) {
-    tochk <- which(is.na(chk))
+  chk1 <- lubridate::ymd_hms(contdat$Time, quiet = TRUE)
+  chk2 <- lubridate::hms(contdat$Time, quiet = TRUE)
+  chktime <- ifelse(is.na(chk1), !is.na(chk2), TRUE)
+  if (any(!chktime)) {
+    tochk <- which(!chktime)
     stop(
       msg,
       '\n\tThe following rows have times that are not in a recognizable format: ',
