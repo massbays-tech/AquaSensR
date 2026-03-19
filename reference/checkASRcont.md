@@ -27,27 +27,41 @@ This function is used internally within
 to run several checks on the input data to verify correct formatting
 before downstream analysis.
 
+The input data can use either of two formats:
+
+- **Separate columns**: `Site`, `Date`, `Time`, and at least one
+  parameter column
+
+- **Combined column**: `Site`, `DateTime`, and at least one parameter
+  column
+
 The following checks are made:
 
-- Column names: Should include only Site, Date, Time, and at least one
-  parameter column that matches the `Parameter` column in
+- Column names: Should include only Site, Date, Time, DateTime, and at
+  least one parameter column that matches the `Parameter` column in
   [`paramsASR`](https://massbays-tech.github.io/AquaSensR/reference/paramsASR.md)
 
-- Site, Date, Time are present: These columns are required for
-  downstream analysis and upload to WQX
+- Required columns are present: Site and either Date + Time or DateTime
+  are required for downstream analysis and upload to WQX
 
 - At least one parameter column is present: At least one parameter
   column that matches the `Parameter` column in
   [`paramsASR`](https://massbays-tech.github.io/AquaSensR/reference/paramsASR.md)
   is required for downstream analysis and upload to WQX
 
-- Date format: Should be in a format that can be recognized by
+- Date format (separate columns only): Should be in a format that can be
+  recognized by
   [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html)
 
-- Time format: Should be in a format that can be recognized by
+- Time format (separate columns only): Should be in a format that can be
+  recognized by
   [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html)
   or
   [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html)
+
+- DateTime format (combined column only): Should be in a format that can
+  be recognized by
+  [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html)
 
 - Missing values: No missing values in any columns
 
@@ -67,7 +81,7 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
 contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
      guess_max = Inf)) |>

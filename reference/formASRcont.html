@@ -68,13 +68,14 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is used internally within <code><a href="readASRcont.html">readASRcont</a></code> to format the input data for downstream analysis.  The formatting includes:</p>
-<ul><li><p>Combine Date and Time columns: Combines into a single DateTime column, converts to POSIXct with the specified time zone.</p></li>
+<ul><li><p>Combine Date and Time columns (separate column format only): Combines into a single DateTime column, converts to POSIXct with the specified time zone.</p></li>
+<li><p>Convert DateTime to POSIXct (combined column format only): Converts the existing DateTime column to POSIXct with the specified time zone.</p></li>
 <li><p>Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.</p></li>
 </ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont1.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'NA'</span>, <span class="st">'na'</span>, <span class="st">''</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>     guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>

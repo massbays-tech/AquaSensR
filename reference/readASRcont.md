@@ -33,15 +33,14 @@ downstream analysis
 ## Examples
 
 ``` r
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
 
 readASRcont(contpth, tz = 'Etc/GMT+5')
 #> Running checks on continuous data...
 #>  Checking column names... OK
-#>  Checking Site, Date, Time are present... OK
+#>  Checking Site, DateTime are present... OK
 #>  Checking at least one parameter column is present... OK
-#>  Checking date format... OK
-#>  Checking time format... OK
+#>  Checking DateTime format... OK
 #>  Checking for missing values... OK
 #>  Checking parameter columns for non-numeric values... OK
 #> 

@@ -19,7 +19,7 @@ The examples throughout this vignette use the example files bundled with
 the package. Import both files before proceeding:
 
 ``` r
-contpth <- system.file("extdata/ExampleCont.xlsx", package = "AquaSensR")
+contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")

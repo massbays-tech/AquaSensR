@@ -31,8 +31,12 @@ This function is used internally within
 to format the input data for downstream analysis. The formatting
 includes:
 
-- Combine Date and Time columns: Combines into a single DateTime column,
-  converts to POSIXct with the specified time zone.
+- Combine Date and Time columns (separate column format only): Combines
+  into a single DateTime column, converts to POSIXct with the specified
+  time zone.
+
+- Convert DateTime to POSIXct (combined column format only): Converts
+  the existing DateTime column to POSIXct with the specified time zone.
 
 - Convert non-numeric columns to numeric: Converts all columns except
   Site and DateTime to numeric if they are not already.
@@ -40,7 +44,7 @@ includes:
 ## Examples
 
 ``` r
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
 contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
      guess_max = Inf)) |>

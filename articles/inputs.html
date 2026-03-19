@@ -97,12 +97,14 @@
 <p>The examples below use the files included with the package:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleCont.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleCont1.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
 <span><span class="va">metapth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleMeta.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="continuous-monitoring-data">Continuous monitoring data<a class="anchor" aria-label="anchor" href="#continuous-monitoring-data"></a>
 </h2>
-<p>Use <code><a href="../reference/readASRcont.html">readASRcont()</a></code> to import continuous monitoring data. The function reads the Excel file, automatically runs a series of checks via <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code>, and then formats the result for downstream use. The <code>tz</code> argument sets the time zone for the combined <code>DateTime</code> column (see <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values). Be careful to specify the correct time zone, particularly one using a fixed offset (e.g., <code>Etc/GMT+5</code> for Eastern time) to avoid issues with daylight saving time transitions. If your data are in local time and the time zone observes DST, consider using a time zone like <code>America/New_York</code> that will automatically adjust for daylight savings.</p>
+<p>Use <code><a href="../reference/readASRcont.html">readASRcont()</a></code> to import continuous monitoring data. The function reads the Excel file, automatically runs a series of checks via <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code>, and then formats the result for downstream use. The <code>tz</code> argument sets the time zone for the output <code>DateTime</code> column (see <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values). Be careful to specify the correct time zone, particularly one using a fixed offset (e.g., <code>Etc/GMT+5</code> for Eastern time) to avoid issues with daylight saving time transitions. If your data are in local time and the time zone observes DST, consider using a time zone like <code>America/New_York</code> that will automatically adjust for daylight savings.</p>
+<p>AquaSensR accepts two input formats for the date and time information. The examples below demonstrate both.</p>
+<p><strong>Format 1</strong> — separate <code>Date</code> and <code>Time</code> columns (<code>ExampleCont1.xlsx</code>):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
@@ -117,9 +119,26 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; All checks passed!</span></span></code></pre></div>
 </div>
+<p><strong>Format 2</strong> — combined <code>DateTime</code> column (<code>ExampleCont2.xlsx</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">contpth2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleCont2.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
+<span><span class="va">contdat2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth2</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Running checks on continuous data...</span></span>
+<span><span class="co">#&gt;  Checking column names... OK</span></span>
+<span><span class="co">#&gt;  Checking Site, DateTime are present... OK</span></span>
+<span><span class="co">#&gt;  Checking at least one parameter column is present... OK</span></span>
+<span><span class="co">#&gt;  Checking DateTime format... OK</span></span>
+<span><span class="co">#&gt;  Checking for missing values... OK</span></span>
+<span><span class="co">#&gt;  Checking parameter columns for non-numeric values... OK</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; All checks passed!</span></span></code></pre></div>
+</div>
+<p>Both calls return identically structured output (see <a href="#output-format">Output format</a> below).</p>
 <section class="level3"><h3 id="format-requirements">Format requirements<a class="anchor" aria-label="anchor" href="#format-requirements"></a>
 </h3>
-<p>The continuous monitoring data workbook must contain the following columns (additional unrecognised columns will trigger an error):</p>
+<p>The continuous monitoring data workbook must follow one of two accepted schemas. Additional unrecognised columns will trigger an error.</p>
+<p><strong>Format 1: separate Date and Time columns</strong></p>
 <table class="table caption-top">
 <colgroup>
 <col style="width: 38%">
@@ -140,10 +159,34 @@
 </tr>
 <tr class="odd">
 <td><code>Time</code></td>
-<td>Observation time as a full datetime string (e.g., <code>HH:MM:SS</code>), parseable by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code>
-</td>
+<td>Observation time, parseable by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> (e.g., <code>1899-12-31 16:30:33</code>) or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code> (e.g., <code>16:30:33</code>)</td>
 </tr>
 <tr class="even">
+<td>At least one parameter column</td>
+<td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> (e.g., <code>Water Temp_C</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Format 2: combined DateTime column</strong></p>
+<table class="table caption-top">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 61%">
+</colgroup>
+<thead><tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>Site</code></td>
+<td>Site identifier</td>
+</tr>
+<tr class="even">
+<td><code>DateTime</code></td>
+<td>Combined date and time, parseable by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> (e.g., <code>2024-06-01 16:30:33</code>)</td>
+</tr>
+<tr class="odd">
 <td>At least one parameter column</td>
 <td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> (e.g., <code>Water Temp_C</code>)</td>
 </tr>
@@ -345,7 +388,7 @@
 </div>
 <p>The list above can also be viewed in R with the <code>paramsASR</code> dataset, which is included in the package and used for the checks.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">paramsASR</span></span>
 <span><span class="co">#&gt; # A tibble: 36 × 6</span></span>
 <span><span class="co">#&gt;    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`</span></span>
@@ -367,26 +410,27 @@
 <p>The <code><a href="../reference/readASRcont.html">readASRcont()</a></code> function imports the data and runs a series of checks using the <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
 <ol type="1">
 <li>
-<strong>Column names</strong>: all columns are either <code>Site</code>, <code>Date</code>, <code>Time</code>, or a recognised parameter from <code>paramsASR</code>.</li>
+<strong>Column names</strong>: all columns are either <code>Site</code>, <code>Date</code>, <code>Time</code>, <code>DateTime</code>, or a recognised parameter from <code>paramsASR</code>.</li>
 <li>
-<strong>Required columns present</strong>: <code>Site</code>, <code>Date</code>, and <code>Time</code> exist.</li>
+<strong>Required columns present</strong>: <code>Site</code> is always required, plus either <code>Date</code> and <code>Time</code> (Format 1) or <code>DateTime</code> (Format 2).</li>
 <li>
 <strong>At least one parameter column</strong>: at least one column matches an entry in <code>paramsASR$Parameter</code>.</li>
 <li>
-<strong>Date format</strong>: all values in <code>Date</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code>.</li>
+<strong>Date format</strong> <em>(Format 1 only)</em>: all values in <code>Date</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code>.</li>
 <li>
-<strong>Time format</strong>: all values in <code>Time</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code>.</li>
+<strong>Time format</strong> <em>(Format 1 only)</em>: all values in <code>Time</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code>.</li>
+<li>
+<strong>DateTime format</strong> <em>(Format 2 only)</em>: all values in <code>DateTime</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code>.</li>
 <li>
 <strong>No missing values</strong>: no <code>NA</code> in any column.</li>
 <li>
 <strong>Numeric parameter columns</strong>: all parameter columns contain numeric values.</li>
 </ol></section><section class="level3"><h3 id="example-triggering-an-error">Example: triggering an error<a class="anchor" aria-label="anchor" href="#example-triggering-an-error"></a>
 </h3>
-<p>Adding an unrecognised column causes <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> to stop immediately:</p>
+<p>Adding an unrecognised column causes <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> to stop immediately. The following examples demonstrate this for both formats.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># import the data for the example</span></span>
-<span><span class="va">contdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">contdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
 <span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span></span>
@@ -394,7 +438,6 @@
 <span>    <span class="va">as.character</span></span>
 <span>  <span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># add a column that is not in paramsASR</span></span>
 <span><span class="va">contdat_raw</span><span class="op">$</span><span class="va">BadColumn</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/checkASRcont.html">checkASRcont</a></span><span class="op">(</span><span class="va">contdat_raw</span><span class="op">)</span></span>
@@ -405,17 +448,31 @@
 </div>
 </section><section class="level3"><h3 id="output-format">Output format<a class="anchor" aria-label="anchor" href="#output-format"></a>
 </h3>
-<p>After passing all checks, <code><a href="../reference/readASRcont.html">readASRcont()</a></code> returns a data frame with:</p>
+<p>After passing all checks, <code><a href="../reference/readASRcont.html">readASRcont()</a></code> returns a data frame with the same structure regardless of input format:</p>
 <ul>
 <li>
 <code>Site</code>: site identifier (character)</li>
 <li>
-<code>DateTime</code>: combined and time-zone-aware <code>POSIXct</code> column</li>
+<code>DateTime</code>: time-zone-aware <code>POSIXct</code> column</li>
 <li>One numeric column per parameter present in the input file</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">contdat</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
+<span><span class="co">#&gt;   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;  &lt;dttm&gt;                       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;              &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 sud096 2024-08-14 13:56:33           24.2      76.9    6.44               410.</span></span>
+<span><span class="co">#&gt; 2 sud096 2024-08-14 13:56:43           24.2      76.7    6.43               410.</span></span>
+<span><span class="co">#&gt; 3 sud096 2024-08-14 13:56:53           24.2      76.6    6.42               410.</span></span>
+<span><span class="co">#&gt; 4 sud096 2024-08-14 13:57:03           24.2      76.5    6.41               410.</span></span>
+<span><span class="co">#&gt; 5 sud096 2024-08-14 13:57:13           24.2      76.3    6.4                409 </span></span>
+<span><span class="co">#&gt; 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.</span></span>
+<span><span class="co">#&gt; # ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span></code></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">contdat2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
 <span><span class="co">#&gt;   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;  &lt;dttm&gt;                       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;              &lt;dbl&gt;</span></span>
@@ -431,7 +488,7 @@
 </h2>
 <p>The metadata file includes various information for the quality control checks applied to each parameter (see the <a href="qcoverview.html">quality control vignette</a> for details). Use <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> to import the QC threshold metadata. The function reads the workbook, runs checks via <code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code>, and returns a formatted data frame.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRmeta.html">readASRmeta</a></span><span class="op">(</span><span class="va">metapth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running checks on continuous metadata...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
@@ -535,7 +592,7 @@
 </h3>
 <p>Supplying an unrecognised parameter name fails the parameter format check:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># import the data for the example</span></span>
 <span><span class="va">metadat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
 <span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">metapth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
@@ -557,7 +614,7 @@
 </h3>
 <p>After passing all checks, <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 15</span></span>
 <span><span class="co">#&gt;   Site   Parameter Depth GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail</span></span>

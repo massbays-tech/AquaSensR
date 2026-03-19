@@ -35,7 +35,7 @@ metapth <- "path/to/your/Metadata.xlsx"
 The examples below use the files included with the package:
 
 ``` r
-contpth <- system.file("extdata/ExampleCont.xlsx", package = "AquaSensR")
+contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 ```
 
@@ -47,13 +47,18 @@ to import continuous monitoring data. The function reads the Excel file,
 automatically runs a series of checks via
 [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md),
 and then formats the result for downstream use. The `tz` argument sets
-the time zone for the combined `DateTime` column (see
+the time zone for the output `DateTime` column (see
 [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
 values). Be careful to specify the correct time zone, particularly one
 using a fixed offset (e.g., `Etc/GMT+5` for Eastern time) to avoid
 issues with daylight saving time transitions. If your data are in local
 time and the time zone observes DST, consider using a time zone like
 `America/New_York` that will automatically adjust for daylight savings.
+
+AquaSensR accepts two input formats for the date and time information.
+The examples below demonstrate both.
+
+**Format 1** — separate `Date` and `Time` columns (`ExampleCont1.xlsx`):
 
 ``` r
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
@@ -69,17 +74,46 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 #> All checks passed!
 ```
 
+**Format 2** — combined `DateTime` column (`ExampleCont2.xlsx`):
+
+``` r
+contpth2 <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
+contdat2 <- readASRcont(contpth2, tz = "Etc/GMT+5")
+#> Running checks on continuous data...
+#>  Checking column names... OK
+#>  Checking Site, DateTime are present... OK
+#>  Checking at least one parameter column is present... OK
+#>  Checking DateTime format... OK
+#>  Checking for missing values... OK
+#>  Checking parameter columns for non-numeric values... OK
+#> 
+#> All checks passed!
+```
+
+Both calls return identically structured output (see [Output
+format](#output-format) below).
+
 ### Format requirements
 
-The continuous monitoring data workbook must contain the following
-columns (additional unrecognised columns will trigger an error):
+The continuous monitoring data workbook must follow one of two accepted
+schemas. Additional unrecognised columns will trigger an error.
 
-| Column                        | Description                                                                                                                                                                                                                              |
-|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Site`                        | Site identifier                                                                                                                                                                                                                          |
-| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)                                                                                                             |
-| `Time`                        | Observation time as a full datetime string (e.g., `HH:MM:SS`), parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) or [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                                                                                                         |
+**Format 1: separate Date and Time columns**
+
+| Column                        | Description                                                                                                                                                                                                                                  |
+|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Site`                        | Site identifier                                                                                                                                                                                                                              |
+| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)                                                                                                                 |
+| `Time`                        | Observation time, parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) (e.g., `1899-12-31 16:30:33`) or [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html) (e.g., `16:30:33`) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                                                                                                             |
+
+**Format 2: combined DateTime column**
+
+| Column                        | Description                                                                                                                                         |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Site`                        | Site identifier                                                                                                                                     |
+| `DateTime`                    | Combined date and time, parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) (e.g., `2024-06-01 16:30:33`) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                    |
 
 Currently, AquaSensR allows the following parameters. Note the inclusion
 of the units in the parameter name. Make sure the parameter name matches
@@ -154,27 +188,35 @@ function imports the data and runs a series of checks using the
 function. The checks evaluate the following and stops with an
 informative error if any check fails:
 
-1.  **Column names**: all columns are either `Site`, `Date`, `Time`, or
-    a recognised parameter from `paramsASR`.
-2.  **Required columns present**: `Site`, `Date`, and `Time` exist.
+1.  **Column names**: all columns are either `Site`, `Date`, `Time`,
+    `DateTime`, or a recognised parameter from `paramsASR`.
+2.  **Required columns present**: `Site` is always required, plus either
+    `Date` and `Time` (Format 1) or `DateTime` (Format 2).
 3.  **At least one parameter column**: at least one column matches an
     entry in `paramsASR$Parameter`.
-4.  **Date format**: all values in `Date` parse successfully with
+4.  **Date format** *(Format 1 only)*: all values in `Date` parse
+    successfully with
     [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html).
-5.  **Time format**: all values in `Time` parse successfully with
+5.  **Time format** *(Format 1 only)*: all values in `Time` parse
+    successfully with
+    [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html)
+    or
+    [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html).
+6.  **DateTime format** *(Format 2 only)*: all values in `DateTime`
+    parse successfully with
     [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html).
-6.  **No missing values**: no `NA` in any column.
-7.  **Numeric parameter columns**: all parameter columns contain numeric
+7.  **No missing values**: no `NA` in any column.
+8.  **Numeric parameter columns**: all parameter columns contain numeric
     values.
 
 ### Example: triggering an error
 
 Adding an unrecognised column causes
 [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md)
-to stop immediately:
+to stop immediately. The following examples demonstrate this for both
+formats.
 
 ``` r
-# import the data for the example
 contdat_raw <- suppressWarnings(
   readxl::read_excel(contpth, na = c("NA", "na", ""), guess_max = Inf)
 ) |>
@@ -183,7 +225,6 @@ contdat_raw <- suppressWarnings(
     as.character
   ))
 
-# add a column that is not in paramsASR
 contdat_raw$BadColumn <- 1
 
 checkASRcont(contdat_raw)
@@ -197,14 +238,28 @@ checkASRcont(contdat_raw)
 
 After passing all checks,
 [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
-returns a data frame with:
+returns a data frame with the same structure regardless of input format:
 
 - `Site`: site identifier (character)
-- `DateTime`: combined and time-zone-aware `POSIXct` column
+- `DateTime`: time-zone-aware `POSIXct` column
 - One numeric column per parameter present in the input file
 
 ``` r
 head(contdat)
+#> # A tibble: 6 × 9
+#>   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
+#>   <chr>  <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
+#> 1 sud096 2024-08-14 13:56:33           24.2      76.9    6.44               410.
+#> 2 sud096 2024-08-14 13:56:43           24.2      76.7    6.43               410.
+#> 3 sud096 2024-08-14 13:56:53           24.2      76.6    6.42               410.
+#> 4 sud096 2024-08-14 13:57:03           24.2      76.5    6.41               410.
+#> 5 sud096 2024-08-14 13:57:13           24.2      76.3    6.4                409 
+#> 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.
+#> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
+```
+
+``` r
+head(contdat2)
 #> # A tibble: 6 × 9
 #>   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
 #>   <chr>  <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>

@@ -64,11 +64,14 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is used internally within <code><a href="readASRcont.html">readASRcont</a></code> to run several checks on the input data to verify correct formatting before downstream analysis.</p>
-<p>The following checks are made:</p><ul><li><p>Column names: Should include only Site, Date, Time, and at least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
-<li><p>Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX</p></li>
+<p>The input data can use either of two formats:</p><ul><li><p><strong>Separate columns</strong>: <code>Site</code>, <code>Date</code>, <code>Time</code>, and at least one parameter column</p></li>
+<li><p><strong>Combined column</strong>: <code>Site</code>, <code>DateTime</code>, and at least one parameter column</p></li>
+</ul><p>The following checks are made:</p><ul><li><p>Column names: Should include only Site, Date, Time, DateTime, and at least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
+<li><p>Required columns are present: Site and either Date + Time or DateTime are required for downstream analysis and upload to WQX</p></li>
 <li><p>At least one parameter column is present: At least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code> is required for downstream analysis and upload to WQX</p></li>
-<li><p>Date format: Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code></p></li>
-<li><p>Time format: Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code></p></li>
+<li><p>Date format (separate columns only): Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code></p></li>
+<li><p>Time format (separate columns only): Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code></p></li>
+<li><p>DateTime format (combined column only): Should be in a format that can be recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code></p></li>
 <li><p>Missing values: No missing values in any columns</p></li>
 <li><p>Parameter columns should be numeric: All parameter columns should be numeric values</p></li>
 </ul></div>
@@ -85,7 +88,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     intersect, setdiff, setequal, union</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont1.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'NA'</span>, <span class="st">'na'</span>, <span class="st">''</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>     guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>

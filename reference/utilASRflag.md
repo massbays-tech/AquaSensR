@@ -72,7 +72,7 @@ authors](https://leppott.github.io/ContDataQC/authors.html#citation).
 ## Examples
 
 ``` r
-contpth <- system.file('extdata/ExampleCont.xlsx', package = 'AquaSensR')
+contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 metapth <- system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR')
 
 contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
