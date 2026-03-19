@@ -24,7 +24,7 @@ The following checks are made:
 \item Site, Date, Time are present: These columns are required for downstream analysis and upload to WQX
 \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
 \item Date format: Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
-\item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
+\item Time format: Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
 \item Missing values: No missing values in any columns
 \item Parameter columns should be numeric: All parameter columns should be numeric values
 }
