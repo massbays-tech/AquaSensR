@@ -19,8 +19,12 @@ readASRcont <- function(contpth, tz, runchk = TRUE) {
     guess_max = Inf
   )) |>
     dplyr::mutate(dplyr::across(
-      dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-      as.character
+      dplyr::any_of(c("DateTime", "Time")) & dplyr::where(~ inherits(.x, "POSIXct")),
+      function(x) format(x, '%Y-%m-%d %H:%M:%S')
+    )) |>
+    dplyr::mutate(dplyr::across(
+      dplyr::any_of("Date") & dplyr::where(~ inherits(.x, c("POSIXct", "Date"))),
+      function(x) format(x, '%Y-%m-%d')
     ))
 
   # run checks
