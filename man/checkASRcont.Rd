@@ -29,23 +29,17 @@ The following checks are made:
 \item Column names: Should include only Site, Date, Time, DateTime, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
 \item Required columns are present: Site and either Date + Time or DateTime are required for downstream analysis and upload to WQX
 \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
-\item Date format (separate columns only): Should be in a format that can be recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}}
-\item Time format (separate columns only): Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}} or \code{\link[lubridate:hms]{lubridate::hms()}}
-\item DateTime format (combined column only): Should be in a format that can be recognized by \code{\link[lubridate:ymd_hms]{lubridate::ymd_hms()}}
+\item Date format (separate columns only): Should be in a format recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}} (e.g. \code{"2024-06-01"})
+\item Time format (separate columns only): Should be parseable by \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} using 24-hour (\code{"16:30:33"}), 12-hour AM/PM (\code{"4:30:33 PM"}), or Excel-prefixed (\code{"1899-12-31 16:30:33"}) formats
+\item DateTime format (combined column only): Should be parseable by \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} using 24-hour or 12-hour AM/PM formats (e.g. \code{"2024-06-01 16:30:33"} or \code{"2024-06-01 4:30:33 PM"})
 \item Missing values: No missing values in any columns
 \item Parameter columns should be numeric: All parameter columns should be numeric values
 }
 }
 \examples{
-library(dplyr)
-
 contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
-contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
-     guess_max = Inf)) |>
-   dplyr::mutate(dplyr::across(
-     dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-   as.character))
+contdat <- utilASRimportcont(contpth)
 
 checkASRcont(contdat)
 }

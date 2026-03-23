@@ -83,7 +83,7 @@ The continuous monitoring data workbook must follow one of two accepted schemas.
 |--------|-------------|
 | `Site` | Site identifier |
 | `Date` | Observation date, parseable by `lubridate::ymd()` (e.g., `2024-06-01`) |
-| `Time` | Observation time, parseable by `lubridate::ymd_hms()` (e.g., `1899-12-31 16:30:33`) or `lubridate::hms()` (e.g., `16:30:33`) |
+| `Time` | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
 
 **Format 2: combined DateTime column**
@@ -91,7 +91,7 @@ The continuous monitoring data workbook must follow one of two accepted schemas.
 | Column | Description |
 |--------|-------------|
 | `Site` | Site identifier |
-| `DateTime` | Combined date and time, parseable by `lubridate::ymd_hms()` (e.g., `2024-06-01 16:30:33`) |
+| `DateTime` | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
 
 Currently, AquaSensR allows the following parameters.  Note the inclusion of the units in the parameter name.  Make sure the parameter name matches the units used in your data.
@@ -120,8 +120,8 @@ The `readASRcont()` function imports the data and runs a series of checks using 
 2. **Required columns present**: `Site` is always required, plus either `Date` and `Time` (Format 1) or `DateTime` (Format 2).
 3. **At least one parameter column**: at least one column matches an entry in `paramsASR$Parameter`.
 4. **Date format** *(Format 1 only)*: all values in `Date` parse successfully with `lubridate::ymd()`.
-5. **Time format** *(Format 1 only)*: all values in `Time` parse successfully with `lubridate::ymd_hms()` or `lubridate::hms()`.
-6. **DateTime format** *(Format 2 only)*: all values in `DateTime` parse successfully with `lubridate::ymd_hms()`.
+5. **Time format** *(Format 1 only)*: all values in `Time` are parseable by `lubridate::parse_date_time()` in 24-hour, 12-hour AM/PM, or Excel-native formats.
+6. **DateTime format** *(Format 2 only)*: all values in `DateTime` are parseable by `lubridate::parse_date_time()` in 24-hour or 12-hour AM/PM formats.
 7. **No missing values**: no `NA` in any column.
 8. **Numeric parameter columns**: all parameter columns contain numeric values.
 
@@ -132,13 +132,11 @@ Adding an unrecognised column causes `checkASRcont()` to stop immediately. The f
 ```{r}
 #| error: true
 
+nms <- names(readxl::read_excel(contpth, n_max = 0))
+col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 contdat_raw <- suppressWarnings(
-  readxl::read_excel(contpth, na = c("NA", "na", ""), guess_max = Inf)
-) |>
-  mutate(across(
-    where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-    as.character
-  ))
+  readxl::read_excel(contpth, col_types = col_types, na = c("NA", "na", ""), guess_max = Inf)
+)
 
 contdat_raw$BadColumn <- 1
 

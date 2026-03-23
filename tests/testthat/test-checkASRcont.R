@@ -7,10 +7,7 @@ test_that("checkASRcont passes valid data without errors", {
 
 test_that("checkASRcont accepts time as plain HH:MM:SS strings", {
   plain_time_data <- tst$contdatchk
-  plain_time_data$Time <- format(
-    lubridate::ymd_hms(plain_time_data$Time),
-    "%H:%M:%S"
-  )
+  # data from read_cont_raw() is already in HH:MM:SS format
 
   expect_no_error(checkASRcont(plain_time_data))
 
@@ -22,14 +19,28 @@ test_that("checkASRcont accepts time as plain HH:MM:SS strings", {
   )
 })
 
+test_that("checkASRcont accepts 12-hour AM/PM time format", {
+  ampm_time_data <- tst$contdatchk
+  ampm_time_data$Time <- format(
+    lubridate::parse_date_time(ampm_time_data$Time, orders = c('HMS', 'ymd HMS')),
+    "%I:%M:%S %p"
+  )
+
+  expect_no_error(checkASRcont(ampm_time_data))
+
+  ampm_time_data$Time[1] <- "not-a-time"
+  expect_error(
+    checkASRcont(ampm_time_data),
+    "\tChecking time format...\n\tThe following rows have times that are not in a recognizable format: 1",
+    fixed = TRUE
+  )
+})
+
 test_that("checkASRcont accepts mixed time formats (datetime and plain HH:MM:SS)", {
   mixed_time_data <- tst$contdatchk
-  # Convert even-indexed rows to plain HH:MM:SS, leave odd rows as "1899-12-31 HH:MM:SS"
-  even_rows <- seq(2, nrow(mixed_time_data), by = 2)
-  mixed_time_data$Time[even_rows] <- format(
-    lubridate::ymd_hms(mixed_time_data$Time[even_rows]),
-    "%H:%M:%S"
-  )
+  # Set odd rows to Excel-prefixed "1899-12-31 HH:MM:SS", leave even rows as plain "HH:MM:SS"
+  odd_rows <- seq(1, nrow(mixed_time_data), by = 2)
+  mixed_time_data$Time[odd_rows] <- paste0("1899-12-31 ", mixed_time_data$Time[odd_rows])
 
   expect_no_error(checkASRcont(mixed_time_data))
 

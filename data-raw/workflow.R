@@ -8,6 +8,9 @@ library(AquaSensR)
 # ------------------------------------------------------------------------------
 # Replace with paths to your own files, or use the package example data:
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
+# contpth <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
+# contpth <- '~/Desktop/GRBGB_DO_sat_2023_clean_datetime_noTZ.xlsx'
+# contpth <- '~/Desktop/GRBGB_DO_sat_2023_clean_datetime_UTC.xlsx'
 metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 
 # ------------------------------------------------------------------------------

@@ -42,15 +42,9 @@ flag_make_md <- function(site, ...) {
 tst <- list(
   # continuous data - separate Date/Time format (ExampleCont1)
   contpth = system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR'),
-  contdatchk = suppressWarnings(readxl::read_excel(
-    system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR'),
-    na = c('NA', 'na', ''),
-    guess_max = Inf
-  )) |>
-    dplyr::mutate(dplyr::across(
-      dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-      as.character
-    )),
+  contdatchk = utilASRimportcont(
+    system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
+  ),
   contdat = readASRcont(
     system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR'),
     tz = 'Etc/GMT+5',
@@ -58,15 +52,9 @@ tst <- list(
   ),
   # continuous data - combined DateTime format (ExampleCont2)
   contpth2 = system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR'),
-  contdatchk2 = suppressWarnings(readxl::read_excel(
-    system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR'),
-    na = c('NA', 'na', ''),
-    guess_max = Inf
-  )) |>
-    dplyr::mutate(dplyr::across(
-      dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-      as.character
-    )),
+  contdatchk2 = utilASRimportcont(
+    system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
+  ),
   contdat2 = readASRcont(
     system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR'),
     tz = 'Etc/GMT+5',

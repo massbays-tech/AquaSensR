@@ -9,7 +9,7 @@ readASRcont(contpth, tz, runchk = TRUE)
 \arguments{
 \item{contpth}{character string of path to the continuous data file}
 
-\item{tz}{character string of time zone for the date and time columns  See \code{OlsonNames()} for acceptable time zones.}
+\item{tz}{character string of time zone for the date and time columns.  See \code{OlsonNames()} for acceptable time zones.}
 
 \item{runchk}{logical to run data checks with \code{\link{checkASRcont}}}
 }
@@ -18,6 +18,12 @@ A formatted continuous monitoring data frame that can be used for downstream ana
 }
 \description{
 Read continuous monitoring data from an external file
+}
+\details{
+The file is imported via \code{\link{utilASRimportcont}}, which forces
+\code{Date}, \code{Time}, and \code{DateTime} columns to character and
+converts Excel numeric serial representations to human-readable strings
+before checks are run.
 }
 \examples{
 
