@@ -16,7 +16,7 @@ readASRcont(contpth, tz, runchk = TRUE)
 
 - tz:
 
-  character string of time zone for the date and time columns See
+  character string of time zone for the date and time columns. See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for acceptable
   time zones.
 
@@ -29,6 +29,14 @@ readASRcont(contpth, tz, runchk = TRUE)
 
 A formatted continuous monitoring data frame that can be used for
 downstream analysis
+
+## Details
+
+The file is imported via
+[`utilASRimportcont`](https://massbays-tech.github.io/AquaSensR/reference/utilASRimportcont.md),
+which forces `Date`, `Time`, and `DateTime` columns to character and
+converts Excel numeric serial representations to human-readable strings
+before checks are run.
 
 ## Examples
 

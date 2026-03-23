@@ -89,6 +89,13 @@ metadata.
 - [`utilASRflagupdate()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflagupdate.md)
   : Update QC flag severity
 
+## Utility functions
+
+Additional miscellaneous functions used internally by other functions.
+
+- [`utilASRimportcont()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRimportcont.md)
+  : Import continuous monitoring data from an Excel file
+
 ## Supplementary datasets
 
 Supplementary datasets for the read, quality control, and analysis

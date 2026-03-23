@@ -31,12 +31,19 @@ This function is used internally within
 to format the input data for downstream analysis. The formatting
 includes:
 
-- Combine Date and Time columns (separate column format only): Combines
-  into a single DateTime column, converts to POSIXct with the specified
-  time zone.
+- Combine Date and Time columns (separate column format only): The
+  `Time` column is parsed flexibly using
+  [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+  (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and
+  reformatted to `HH:MM:SS` before being united with `Date` into a
+  single `DateTime` column, which is then converted to POSIXct with the
+  specified time zone.
 
-- Convert DateTime to POSIXct (combined column format only): Converts
-  the existing DateTime column to POSIXct with the specified time zone.
+- Convert DateTime to POSIXct (combined column format only): The
+  `DateTime` column is parsed flexibly using
+  [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+  (accepting 24-hour and 12-hour AM/PM formats) and converted to POSIXct
+  with the specified time zone.
 
 - Convert non-numeric columns to numeric: Converts all columns except
   Site and DateTime to numeric if they are not already.
@@ -46,11 +53,7 @@ includes:
 ``` r
 contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
-contdat <- suppressWarnings(readxl::read_excel(contpth, na = c('NA', 'na', ''),
-     guess_max = Inf)) |>
-   dplyr::mutate(dplyr::across(
-     dplyr::where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-   as.character))
+contdat <- utilASRimportcont(contpth)
 
 formASRcont(contdat, tz = 'Etc/GMT+5')
 #> # A tibble: 927 × 9

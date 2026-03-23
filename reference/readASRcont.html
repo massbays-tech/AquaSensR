@@ -58,7 +58,7 @@
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
-<dd><p>character string of time zone for the date and time columns  See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for acceptable time zones.</p></dd>
+<dd><p>character string of time zone for the date and time columns.  See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for acceptable time zones.</p></dd>
 
 
 <dt id="arg-runchk">runchk<a class="anchor" aria-label="anchor" href="#arg-runchk"></a></dt>
@@ -68,6 +68,13 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A formatted continuous monitoring data frame that can be used for downstream analysis</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The file is imported via <code><a href="utilASRimportcont.html">utilASRimportcont</a></code>, which forces
+<code>Date</code>, <code>Time</code>, and <code>DateTime</code> columns to character and
+converts Excel numeric serial representations to human-readable strings
+before checks are run.</p>
     </div>
 
     <div class="section level2">

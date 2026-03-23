@@ -159,7 +159,7 @@
 </tr>
 <tr class="odd">
 <td><code>Time</code></td>
-<td>Observation time, parseable by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> (e.g., <code>1899-12-31 16:30:33</code>) or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code> (e.g., <code>16:30:33</code>)</td>
+<td>Observation time in 24-hour (e.g., <code>16:30:33</code>), 12-hour AM/PM (e.g., <code>4:30:33 PM</code>), or Excel-native format (e.g., <code>1899-12-31 16:30:33</code>)</td>
 </tr>
 <tr class="even">
 <td>At least one parameter column</td>
@@ -184,7 +184,7 @@
 </tr>
 <tr class="even">
 <td><code>DateTime</code></td>
-<td>Combined date and time, parseable by <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> (e.g., <code>2024-06-01 16:30:33</code>)</td>
+<td>Combined date and time in 24-hour (e.g., <code>2024-06-01 16:30:33</code>) or 12-hour AM/PM (e.g., <code>2024-06-01 4:30:33 PM</code>) format</td>
 </tr>
 <tr class="odd">
 <td>At least one parameter column</td>
@@ -418,9 +418,9 @@
 <li>
 <strong>Date format</strong> <em>(Format 1 only)</em>: all values in <code>Date</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code>.</li>
 <li>
-<strong>Time format</strong> <em>(Format 1 only)</em>: all values in <code>Time</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code> or <code><a href="https://lubridate.tidyverse.org/reference/hms.html" class="external-link">lubridate::hms()</a></code>.</li>
+<strong>Time format</strong> <em>(Format 1 only)</em>: all values in <code>Time</code> are parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> in 24-hour, 12-hour AM/PM, or Excel-native formats.</li>
 <li>
-<strong>DateTime format</strong> <em>(Format 2 only)</em>: all values in <code>DateTime</code> parse successfully with <code><a href="https://lubridate.tidyverse.org/reference/ymd_hms.html" class="external-link">lubridate::ymd_hms()</a></code>.</li>
+<strong>DateTime format</strong> <em>(Format 2 only)</em>: all values in <code>DateTime</code> are parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> in 24-hour or 12-hour AM/PM formats.</li>
 <li>
 <strong>No missing values</strong>: no <code>NA</code> in any column.</li>
 <li>
@@ -430,13 +430,11 @@
 <p>Adding an unrecognised column causes <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> to stop immediately. The following examples demonstrate this for both formats.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">contdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
-<span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">.x</span>, <span class="st">"POSIXct"</span><span class="op">)</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">.x</span>, <span class="st">"Date"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="va">as.character</span></span>
-<span>  <span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, n_max <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">col_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">nms</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Date"</span>, <span class="st">"Time"</span>, <span class="st">"DateTime"</span><span class="op">)</span>, <span class="st">"text"</span>, <span class="st">"guess"</span><span class="op">)</span></span>
+<span><span class="va">contdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, col_types <span class="op">=</span> <span class="va">col_types</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">contdat_raw</span><span class="op">$</span><span class="va">BadColumn</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span></span>

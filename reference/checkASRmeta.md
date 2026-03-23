@@ -52,6 +52,14 @@ The following checks are made:
 
 ``` r
 library(dplyr)
+#> 
+#> Attaching package: ‘dplyr’
+#> The following objects are masked from ‘package:stats’:
+#> 
+#>     filter, lag
+#> The following objects are masked from ‘package:base’:
+#> 
+#>     intersect, setdiff, setequal, union
 
 metapth <- system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR')
 

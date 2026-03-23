@@ -100,20 +100,20 @@ schemas. Additional unrecognised columns will trigger an error.
 
 **Format 1: separate Date and Time columns**
 
-| Column                        | Description                                                                                                                                                                                                                                  |
-|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Site`                        | Site identifier                                                                                                                                                                                                                              |
-| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)                                                                                                                 |
-| `Time`                        | Observation time, parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) (e.g., `1899-12-31 16:30:33`) or [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html) (e.g., `16:30:33`) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                                                                                                             |
+| Column                        | Description                                                                                                                              |
+|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `Site`                        | Site identifier                                                                                                                          |
+| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)             |
+| `Time`                        | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                         |
 
 **Format 2: combined DateTime column**
 
-| Column                        | Description                                                                                                                                         |
-|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Site`                        | Site identifier                                                                                                                                     |
-| `DateTime`                    | Combined date and time, parseable by [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html) (e.g., `2024-06-01 16:30:33`) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                                    |
+| Column                        | Description                                                                                                             |
+|-------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `Site`                        | Site identifier                                                                                                         |
+| `DateTime`                    | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                        |
 
 Currently, AquaSensR allows the following parameters. Note the inclusion
 of the units in the parameter name. Make sure the parameter name matches
@@ -197,14 +197,14 @@ informative error if any check fails:
 4.  **Date format** *(Format 1 only)*: all values in `Date` parse
     successfully with
     [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html).
-5.  **Time format** *(Format 1 only)*: all values in `Time` parse
-    successfully with
-    [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html)
-    or
-    [`lubridate::hms()`](https://lubridate.tidyverse.org/reference/hms.html).
-6.  **DateTime format** *(Format 2 only)*: all values in `DateTime`
-    parse successfully with
-    [`lubridate::ymd_hms()`](https://lubridate.tidyverse.org/reference/ymd_hms.html).
+5.  **Time format** *(Format 1 only)*: all values in `Time` are
+    parseable by
+    [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+    in 24-hour, 12-hour AM/PM, or Excel-native formats.
+6.  **DateTime format** *(Format 2 only)*: all values in `DateTime` are
+    parseable by
+    [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+    in 24-hour or 12-hour AM/PM formats.
 7.  **No missing values**: no `NA` in any column.
 8.  **Numeric parameter columns**: all parameter columns contain numeric
     values.
@@ -217,13 +217,11 @@ to stop immediately. The following examples demonstrate this for both
 formats.
 
 ``` r
+nms <- names(readxl::read_excel(contpth, n_max = 0))
+col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 contdat_raw <- suppressWarnings(
-  readxl::read_excel(contpth, na = c("NA", "na", ""), guess_max = Inf)
-) |>
-  mutate(across(
-    where(~ inherits(.x, "POSIXct") | inherits(.x, "Date")),
-    as.character
-  ))
+  readxl::read_excel(contpth, col_types = col_types, na = c("NA", "na", ""), guess_max = Inf)
+)
 
 contdat_raw$BadColumn <- 1
 
