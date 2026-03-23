@@ -38,7 +38,13 @@ reference:
   desc: >
     Functions for flagging suspect and failed data based on user-defined metadata.
   contents:
-  - contains('flag')
+  - anlzASRflag
+  - starts_with('utilASRflag')
+- title: Utility functions
+  desc: >
+    Additional miscellaneous functions used internally by other functions.
+  contents: 
+  - utilASRimportcont
 - title: Supplementary datasets
   desc: >
     Supplementary datasets for the read, quality control, and analysis functions.

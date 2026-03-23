@@ -6,7 +6,10 @@
       "Read(//c/Program Files/R//**)",
       "Read(//c//**)",
       "Bash(\"/c/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"\nlibrary\\(readxl\\); library\\(writexl\\); library\\(dplyr\\); library\\(lubridate\\)\ndat <- suppressWarnings\\(read_excel\\('C:/proj/AquaSensR/inst/extdata/ExampleCont1.xlsx', na = c\\('NA','na',''\\), guess_max = Inf\\)\\)\ncat\\('Columns:', paste\\(names\\(dat\\), collapse=', '\\), '\\\\n'\\)\nprint\\(head\\(dat, 3\\)\\)\ncat\\('Date class:', class\\(dat\\\\$Date\\), '\\\\n'\\)\ncat\\('Time class:', class\\(dat\\\\$Time\\), '\\\\n'\\)\n\")",
-      "Bash(\"/c/Program Files/R/R-4.4.2/bin/Rscript.exe\" data-raw/make_ExampleCont2.R)"
+      "Bash(\"/c/Program Files/R/R-4.4.2/bin/Rscript.exe\" data-raw/make_ExampleCont2.R)",
+      "Bash(Rscript -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\")",
+      "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\" 2>&1)",
+      "Bash(\"/c/Program Files/R/R-4.3.2/bin/Rscript.exe\" -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\" 2>&1)"
     ]
   }
 }
