@@ -74,9 +74,9 @@
     <p>AquaSensR requires two input files to use the functions in the package:</p>
 <ol type="1">
 <li>
-<strong>Continuous monitoring data</strong>: time series of sensor observations, one column per parameter.</li>
+<strong>Continuous monitoring data</strong>: time series of sensor observations at a site, one column per parameter.</li>
 <li>
-<strong>QC threshold metadata</strong>: site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).</li>
+<strong>QC threshold metadata</strong>: parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).</li>
 </ol>
 <p>Both file types are Excel workbooks (<code>.xlsx</code>). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format. Example files with the correct format are included with the package and are used throughout.</p>
 <section class="level2"><h2 id="load-the-package">Load the package<a class="anchor" aria-label="anchor" href="#load-the-package"></a>
@@ -110,7 +110,7 @@
 <code class="sourceCode R"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running checks on continuous data...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
-<span><span class="co">#&gt;  Checking Site, Date, Time are present... OK</span></span>
+<span><span class="co">#&gt;  Checking Date, Time are present... OK</span></span>
 <span><span class="co">#&gt;  Checking at least one parameter column is present... OK</span></span>
 <span><span class="co">#&gt;  Checking date format... OK</span></span>
 <span><span class="co">#&gt;  Checking time format... OK</span></span>
@@ -126,7 +126,7 @@
 <span><span class="va">contdat2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth2</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running checks on continuous data...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
-<span><span class="co">#&gt;  Checking Site, DateTime are present... OK</span></span>
+<span><span class="co">#&gt;  Checking DateTime is present... OK</span></span>
 <span><span class="co">#&gt;  Checking at least one parameter column is present... OK</span></span>
 <span><span class="co">#&gt;  Checking DateTime format... OK</span></span>
 <span><span class="co">#&gt;  Checking for missing values... OK</span></span>
@@ -150,18 +150,14 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>Site</code></td>
-<td>Site identifier</td>
-</tr>
-<tr class="even">
 <td><code>Date</code></td>
 <td>Observation date, parseable by <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code> (e.g., <code>2024-06-01</code>)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>Time</code></td>
 <td>Observation time in 24-hour (e.g., <code>16:30:33</code>), 12-hour AM/PM (e.g., <code>4:30:33 PM</code>), or Excel-native format (e.g., <code>1899-12-31 16:30:33</code>)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>At least one parameter column</td>
 <td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> (e.g., <code>Water Temp_C</code>)</td>
 </tr>
@@ -179,14 +175,10 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>Site</code></td>
-<td>Site identifier</td>
-</tr>
-<tr class="even">
 <td><code>DateTime</code></td>
 <td>Combined date and time in 24-hour (e.g., <code>2024-06-01 16:30:33</code>) or 12-hour AM/PM (e.g., <code>2024-06-01 4:30:33 PM</code>) format</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>At least one parameter column</td>
 <td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> (e.g., <code>Water Temp_C</code>)</td>
 </tr>
@@ -410,9 +402,9 @@
 <p>The <code><a href="../reference/readASRcont.html">readASRcont()</a></code> function imports the data and runs a series of checks using the <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
 <ol type="1">
 <li>
-<strong>Column names</strong>: all columns are either <code>Site</code>, <code>Date</code>, <code>Time</code>, <code>DateTime</code>, or a recognised parameter from <code>paramsASR</code>.</li>
+<strong>Column names</strong>: all columns are either <code>Date</code>, <code>Time</code>, <code>DateTime</code>, or a recognised parameter from <code>paramsASR</code>.</li>
 <li>
-<strong>Required columns present</strong>: <code>Site</code> is always required, plus either <code>Date</code> and <code>Time</code> (Format 1) or <code>DateTime</code> (Format 2).</li>
+<strong>Required columns present</strong>: either <code>Date</code> and <code>Time</code> (Format 1) or <code>DateTime</code> (Format 2).</li>
 <li>
 <strong>At least one parameter column</strong>: at least one column matches an entry in <code>paramsASR$Parameter</code>.</li>
 <li>
@@ -433,7 +425,12 @@
 <code class="sourceCode R"><span><span class="va">nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, n_max <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">col_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">nms</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Date"</span>, <span class="st">"Time"</span>, <span class="st">"DateTime"</span><span class="op">)</span>, <span class="st">"text"</span>, <span class="st">"guess"</span><span class="op">)</span></span>
 <span><span class="va">contdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
-<span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">contpth</span>, col_types <span class="op">=</span> <span class="va">col_types</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span></span>
+<span>    <span class="va">contpth</span>,</span>
+<span>    col_types <span class="op">=</span> <span class="va">col_types</span>,</span>
+<span>    na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>,</span>
+<span>    guess_max <span class="op">=</span> <span class="cn">Inf</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">contdat_raw</span><span class="op">$</span><span class="va">BadColumn</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
@@ -449,37 +446,35 @@
 <p>After passing all checks, <code><a href="../reference/readASRcont.html">readASRcont()</a></code> returns a data frame with the same structure regardless of input format:</p>
 <ul>
 <li>
-<code>Site</code>: site identifier (character)</li>
-<li>
 <code>DateTime</code>: time-zone-aware <code>POSIXct</code> column</li>
 <li>One numeric column per parameter present in the input file</li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">contdat</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
-<span><span class="co">#&gt;   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;dttm&gt;                       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;              &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 sud096 2024-08-14 13:56:33           24.2      76.9    6.44               410.</span></span>
-<span><span class="co">#&gt; 2 sud096 2024-08-14 13:56:43           24.2      76.7    6.43               410.</span></span>
-<span><span class="co">#&gt; 3 sud096 2024-08-14 13:56:53           24.2      76.6    6.42               410.</span></span>
-<span><span class="co">#&gt; 4 sud096 2024-08-14 13:57:03           24.2      76.5    6.41               410.</span></span>
-<span><span class="co">#&gt; 5 sud096 2024-08-14 13:57:13           24.2      76.3    6.4                409 </span></span>
-<span><span class="co">#&gt; 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 8</span></span>
+<span><span class="co">#&gt;   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
+<span><span class="co">#&gt;   &lt;dttm&gt;                       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;              &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 2024-08-14 13:56:33           24.2      76.9    6.44               410.</span></span>
+<span><span class="co">#&gt; 2 2024-08-14 13:56:43           24.2      76.7    6.43               410.</span></span>
+<span><span class="co">#&gt; 3 2024-08-14 13:56:53           24.2      76.6    6.42               410.</span></span>
+<span><span class="co">#&gt; 4 2024-08-14 13:57:03           24.2      76.5    6.41               410.</span></span>
+<span><span class="co">#&gt; 5 2024-08-14 13:57:13           24.2      76.3    6.4                409 </span></span>
+<span><span class="co">#&gt; 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.</span></span>
 <span><span class="co">#&gt; # ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span></code></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">contdat2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
-<span><span class="co">#&gt;   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;dttm&gt;                       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;              &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 sud096 2024-08-14 13:56:33           24.2      76.9    6.44               410.</span></span>
-<span><span class="co">#&gt; 2 sud096 2024-08-14 13:56:43           24.2      76.7    6.43               410.</span></span>
-<span><span class="co">#&gt; 3 sud096 2024-08-14 13:56:53           24.2      76.6    6.42               410.</span></span>
-<span><span class="co">#&gt; 4 sud096 2024-08-14 13:57:03           24.2      76.5    6.41               410.</span></span>
-<span><span class="co">#&gt; 5 sud096 2024-08-14 13:57:13           24.2      76.3    6.4                409 </span></span>
-<span><span class="co">#&gt; 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 8</span></span>
+<span><span class="co">#&gt;   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span></span>
+<span><span class="co">#&gt;   &lt;dttm&gt;                       &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;              &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 2024-08-14 13:56:33           24.2      76.9    6.44               410.</span></span>
+<span><span class="co">#&gt; 2 2024-08-14 13:56:43           24.2      76.7    6.43               410.</span></span>
+<span><span class="co">#&gt; 3 2024-08-14 13:56:53           24.2      76.6    6.42               410.</span></span>
+<span><span class="co">#&gt; 4 2024-08-14 13:57:03           24.2      76.5    6.41               410.</span></span>
+<span><span class="co">#&gt; 5 2024-08-14 13:57:13           24.2      76.3    6.4                409 </span></span>
+<span><span class="co">#&gt; 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.</span></span>
 <span><span class="co">#&gt; # ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span></code></pre></div>
 </div>
 </section></section><section class="level2"><h2 id="qc-threshold-metadata">QC threshold metadata<a class="anchor" aria-label="anchor" href="#qc-threshold-metadata"></a>
@@ -511,17 +506,9 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>Site</code></td>
-<td>Site identifier matching those in the continuous data</td>
-</tr>
-<tr class="even">
 <td><code>Parameter</code></td>
 <td>Parameter name matching <code>paramsASR$Parameter</code>
 </td>
-</tr>
-<tr class="odd">
-<td><code>Depth</code></td>
-<td>Sensor deployment depth (numeric; can be <code>NA</code>)</td>
 </tr>
 <tr class="even">
 <td><code>GrMinFail</code></td>
@@ -585,7 +572,7 @@
 <li>
 <strong>Parameter format</strong>: all <code>Parameter</code> values match those in <code>paramsASR$Parameter</code>.</li>
 <li>
-<strong>Numeric columns</strong>: all columns except <code>Site</code> and <code>Parameter</code> contain only numeric or missing values.</li>
+<strong>Numeric columns</strong>: all columns except <code>Parameter</code> contain only numeric or missing values.</li>
 </ol></section><section class="level3"><h3 id="example-triggering-an-error-1">Example: triggering an error<a class="anchor" aria-label="anchor" href="#example-triggering-an-error-1"></a>
 </h3>
 <p>Supplying an unrecognised parameter name fails the parameter format check:</p>
@@ -614,17 +601,17 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadat</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 15</span></span>
-<span><span class="co">#&gt;   Site   Parameter Depth GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 sud096 Water Te…    NA        -1        30         -0.5           28         2</span></span>
-<span><span class="co">#&gt; 2 sud096 DO_pctsat    NA        -1       120          0            100        25</span></span>
-<span><span class="co">#&gt; 3 sud096 DO_mg_l      NA         1        18          2             16         4</span></span>
-<span><span class="co">#&gt; 4 sud096 Conducti…    NA        10      1500         20           1200        10</span></span>
-<span><span class="co">#&gt; 5 sud096 TDS_mg_l     NA        10      1500         20           1200       100</span></span>
-<span><span class="co">#&gt; 6 sud096 Salinity…    NA         2        41          3             37         5</span></span>
-<span><span class="co">#&gt; # ℹ 7 more variables: SpikeSuspect &lt;dbl&gt;, FlatFailN &lt;dbl&gt;, FlatFailDelta &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   FlatSuspectN &lt;dbl&gt;, FlatSuspectDelta &lt;dbl&gt;, RoCN &lt;dbl&gt;, RoCHours &lt;dbl&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 6 × 13</span></span>
+<span><span class="co">#&gt;   Parameter GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail SpikeSuspect</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 Water Te…        -1        30         -0.5           28         2          1.5</span></span>
+<span><span class="co">#&gt; 2 DO_pctsat        -1       120          0            100        25         10  </span></span>
+<span><span class="co">#&gt; 3 DO_mg_l           1        18          2             16         4          2  </span></span>
+<span><span class="co">#&gt; 4 Conducti…        10      1500         20           1200        10          5  </span></span>
+<span><span class="co">#&gt; 5 TDS_mg_l         10      1500         20           1200       100         50  </span></span>
+<span><span class="co">#&gt; 6 Salinity…         2        41          3             37         5          3  </span></span>
+<span><span class="co">#&gt; # ℹ 6 more variables: FlatFailN &lt;dbl&gt;, FlatFailDelta &lt;dbl&gt;, FlatSuspectN &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   FlatSuspectDelta &lt;dbl&gt;, RoCN &lt;dbl&gt;, RoCHours &lt;dbl&gt;</span></span></code></pre></div>
 </div>
 <p>The remaining functions in AquaSensR can now be used after the continuous data and metadata files are successfully imported.</p>
 </section></section><script id="quarto-html-after-body" type="application/javascript">

@@ -2,11 +2,10 @@
 
 AquaSensR requires two input files to use the functions in the package:
 
-1.  **Continuous monitoring data**: time series of sensor observations,
-    one column per parameter.
-2.  **QC threshold metadata**: site- and parameter-specific thresholds
-    used by the four QC checks (gross range, spike, rate of change, and
-    flatline).
+1.  **Continuous monitoring data**: time series of sensor observations
+    at a site, one column per parameter.
+2.  **QC threshold metadata**: parameter-specific thresholds used by the
+    four QC checks (gross range, spike, rate of change, and flatline).
 
 Both file types are Excel workbooks (`.xlsx`). This vignette describes
 how to import and check each input dataset. It is critical that the
@@ -64,7 +63,7 @@ The examples below demonstrate both.
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 #> Running checks on continuous data...
 #>  Checking column names... OK
-#>  Checking Site, Date, Time are present... OK
+#>  Checking Date, Time are present... OK
 #>  Checking at least one parameter column is present... OK
 #>  Checking date format... OK
 #>  Checking time format... OK
@@ -81,7 +80,7 @@ contpth2 <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
 contdat2 <- readASRcont(contpth2, tz = "Etc/GMT+5")
 #> Running checks on continuous data...
 #>  Checking column names... OK
-#>  Checking Site, DateTime are present... OK
+#>  Checking DateTime is present... OK
 #>  Checking at least one parameter column is present... OK
 #>  Checking DateTime format... OK
 #>  Checking for missing values... OK
@@ -102,7 +101,6 @@ schemas. Additional unrecognised columns will trigger an error.
 
 | Column                        | Description                                                                                                                              |
 |-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `Site`                        | Site identifier                                                                                                                          |
 | `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)             |
 | `Time`                        | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                         |
@@ -111,7 +109,6 @@ schemas. Additional unrecognised columns will trigger an error.
 
 | Column                        | Description                                                                                                             |
 |-------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `Site`                        | Site identifier                                                                                                         |
 | `DateTime`                    | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                        |
 
@@ -188,10 +185,10 @@ function imports the data and runs a series of checks using the
 function. The checks evaluate the following and stops with an
 informative error if any check fails:
 
-1.  **Column names**: all columns are either `Site`, `Date`, `Time`,
-    `DateTime`, or a recognised parameter from `paramsASR`.
-2.  **Required columns present**: `Site` is always required, plus either
-    `Date` and `Time` (Format 1) or `DateTime` (Format 2).
+1.  **Column names**: all columns are either `Date`, `Time`, `DateTime`,
+    or a recognised parameter from `paramsASR`.
+2.  **Required columns present**: either `Date` and `Time` (Format 1) or
+    `DateTime` (Format 2).
 3.  **At least one parameter column**: at least one column matches an
     entry in `paramsASR$Parameter`.
 4.  **Date format** *(Format 1 only)*: all values in `Date` parse
@@ -220,7 +217,12 @@ formats.
 nms <- names(readxl::read_excel(contpth, n_max = 0))
 col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 contdat_raw <- suppressWarnings(
-  readxl::read_excel(contpth, col_types = col_types, na = c("NA", "na", ""), guess_max = Inf)
+  readxl::read_excel(
+    contpth,
+    col_types = col_types,
+    na = c("NA", "na", ""),
+    guess_max = Inf
+  )
 )
 
 contdat_raw$BadColumn <- 1
@@ -238,35 +240,34 @@ After passing all checks,
 [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
 returns a data frame with the same structure regardless of input format:
 
-- `Site`: site identifier (character)
 - `DateTime`: time-zone-aware `POSIXct` column
 - One numeric column per parameter present in the input file
 
 ``` r
 head(contdat)
-#> # A tibble: 6 × 9
-#>   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
-#>   <chr>  <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
-#> 1 sud096 2024-08-14 13:56:33           24.2      76.9    6.44               410.
-#> 2 sud096 2024-08-14 13:56:43           24.2      76.7    6.43               410.
-#> 3 sud096 2024-08-14 13:56:53           24.2      76.6    6.42               410.
-#> 4 sud096 2024-08-14 13:57:03           24.2      76.5    6.41               410.
-#> 5 sud096 2024-08-14 13:57:13           24.2      76.3    6.4                409 
-#> 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.
+#> # A tibble: 6 × 8
+#>   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
+#>   <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
+#> 1 2024-08-14 13:56:33           24.2      76.9    6.44               410.
+#> 2 2024-08-14 13:56:43           24.2      76.7    6.43               410.
+#> 3 2024-08-14 13:56:53           24.2      76.6    6.42               410.
+#> 4 2024-08-14 13:57:03           24.2      76.5    6.41               410.
+#> 5 2024-08-14 13:57:13           24.2      76.3    6.4                409 
+#> 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.
 #> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
 ```
 
 ``` r
 head(contdat2)
-#> # A tibble: 6 × 9
-#>   Site   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
-#>   <chr>  <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
-#> 1 sud096 2024-08-14 13:56:33           24.2      76.9    6.44               410.
-#> 2 sud096 2024-08-14 13:56:43           24.2      76.7    6.43               410.
-#> 3 sud096 2024-08-14 13:56:53           24.2      76.6    6.42               410.
-#> 4 sud096 2024-08-14 13:57:03           24.2      76.5    6.41               410.
-#> 5 sud096 2024-08-14 13:57:13           24.2      76.3    6.4                409 
-#> 6 sud096 2024-08-14 13:57:23           24.2      76.3    6.39               409.
+#> # A tibble: 6 × 8
+#>   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
+#>   <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
+#> 1 2024-08-14 13:56:33           24.2      76.9    6.44               410.
+#> 2 2024-08-14 13:56:43           24.2      76.7    6.43               410.
+#> 3 2024-08-14 13:56:53           24.2      76.6    6.42               410.
+#> 4 2024-08-14 13:57:03           24.2      76.5    6.41               410.
+#> 5 2024-08-14 13:57:13           24.2      76.3    6.4                409 
+#> 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.
 #> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
 ```
 
@@ -301,9 +302,7 @@ thresholds you do not want to apply should be left blank / `NA`):
 
 | Column             | Description                                                                           |
 |--------------------|---------------------------------------------------------------------------------------|
-| `Site`             | Site identifier matching those in the continuous data                                 |
 | `Parameter`        | Parameter name matching `paramsASR$Parameter`                                         |
-| `Depth`            | Sensor deployment depth (numeric; can be `NA`)                                        |
 | `GrMinFail`        | Gross range, lower fail threshold                                                     |
 | `GrMaxFail`        | Gross range, upper fail threshold                                                     |
 | `GrMinSuspect`     | Gross range, lower suspect threshold                                                  |
@@ -332,8 +331,8 @@ informative error if any check fails:
     matches `paramsASR$Parameter`.
 4.  **Parameter format**: all `Parameter` values match those in
     `paramsASR$Parameter`.
-5.  **Numeric columns**: all columns except `Site` and `Parameter`
-    contain only numeric or missing values.
+5.  **Numeric columns**: all columns except `Parameter` contain only
+    numeric or missing values.
 
 ### Example: triggering an error
 
@@ -368,17 +367,17 @@ table above, with all threshold columns coerced to numeric.
 
 ``` r
 head(metadat)
-#> # A tibble: 6 × 15
-#>   Site   Parameter Depth GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail
-#>   <chr>  <chr>     <dbl>     <dbl>     <dbl>        <dbl>        <dbl>     <dbl>
-#> 1 sud096 Water Te…    NA        -1        30         -0.5           28         2
-#> 2 sud096 DO_pctsat    NA        -1       120          0            100        25
-#> 3 sud096 DO_mg_l      NA         1        18          2             16         4
-#> 4 sud096 Conducti…    NA        10      1500         20           1200        10
-#> 5 sud096 TDS_mg_l     NA        10      1500         20           1200       100
-#> 6 sud096 Salinity…    NA         2        41          3             37         5
-#> # ℹ 7 more variables: SpikeSuspect <dbl>, FlatFailN <dbl>, FlatFailDelta <dbl>,
-#> #   FlatSuspectN <dbl>, FlatSuspectDelta <dbl>, RoCN <dbl>, RoCHours <dbl>
+#> # A tibble: 6 × 13
+#>   Parameter GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail SpikeSuspect
+#>   <chr>         <dbl>     <dbl>        <dbl>        <dbl>     <dbl>        <dbl>
+#> 1 Water Te…        -1        30         -0.5           28         2          1.5
+#> 2 DO_pctsat        -1       120          0            100        25         10  
+#> 3 DO_mg_l           1        18          2             16         4          2  
+#> 4 Conducti…        10      1500         20           1200        10          5  
+#> 5 TDS_mg_l         10      1500         20           1200       100         50  
+#> 6 Salinity…         2        41          3             37         5          3  
+#> # ℹ 6 more variables: FlatFailN <dbl>, FlatFailDelta <dbl>, FlatSuspectN <dbl>,
+#> #   FlatSuspectDelta <dbl>, RoCN <dbl>, RoCHours <dbl>
 ```
 
 The remaining functions in AquaSensR can now be used after the

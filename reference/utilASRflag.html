@@ -69,18 +69,16 @@ one of the entries in the <code>Parameter</code> column of <code>metadat</code>.
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame with columns <code>Site</code>, <code>DateTime</code>, the
+    <p>A data frame with columns <code>DateTime</code>, the
 selected parameter, and four flag columns: <code>gross_flag</code>,
 <code>spike_flag</code>, <code>roc_flag</code>, and <code>flat_flag</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Applies four independent QC checks to the selected parameter for
-every site in <code>contdat</code>, matching thresholds from <code>metadat</code> by
-<code>Site</code> and <code>Parameter</code>.  Each check produces its own flag
+    <p>Applies four independent QC checks to the selected parameter in <code>contdat</code>, matching thresholds from <code>metadat</code> by <code>Parameter</code>.  Each check produces its own flag
 (<code>"pass"</code>, <code>"suspect"</code>, or <code>"fail"</code>) so the user can see
 exactly which criteria fired.  If multiple metadata rows match a given
-site/parameter pair the first row is used and a warning is issued.</p>
+parameter the first row is used and a warning is issued.</p>
 <p><strong>Gross range</strong> (<code>gross_flag</code>) — Observations below <code>GrMinFail</code>
 or above <code>GrMaxFail</code> are flagged <code>"fail"</code>.  Observations below
 <code>GrMinSuspect</code> or above <code>GrMaxSuspect</code> (but within the fail bounds) are
@@ -101,7 +99,7 @@ where the absolute step from the previous observation is within
 <code>FlatSuspectDelta</code> (or <code>FlatFailDelta</code>) units.  Observations
 whose run length reaches <code>FlatSuspectN</code> (or <code>FlatFailN</code>) are
 flagged.</p>
-<p>Data are sorted by <code>Site</code> and <code>DateTime</code> before processing.</p>
+<p>Data are sorted by <code>DateTime</code> before processing.</p>
 <p>Underlying concepts and code for this function borrow heavily from those
 in the <a href="https://leppott.github.io/ContDataQC" class="external-link">ContDataQC</a> package.  Any
 credit for the approach should go to the
@@ -117,21 +115,20 @@ credit for the approach should go to the
 <span class="r-in"><span><span class="va">metadat</span> <span class="op">&lt;-</span> <span class="fu"><a href="readASRmeta.html">readASRmeta</a></span><span class="op">(</span><span class="va">metapth</span>, runchk <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">utilASRflag</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">metadat</span>, param <span class="op">=</span> <span class="st">'Water Temp_C'</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Site   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> sud096 2024-08-14 <span style="color: #949494;">13:56:33</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> sud096 2024-08-14 <span style="color: #949494;">13:56:43</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> sud096 2024-08-14 <span style="color: #949494;">13:56:53</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> sud096 2024-08-14 <span style="color: #949494;">13:57:03</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> sud096 2024-08-14 <span style="color: #949494;">13:57:13</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> sud096 2024-08-14 <span style="color: #949494;">13:57:23</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> sud096 2024-08-14 <span style="color: #949494;">13:57:33</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> sud096 2024-08-14 <span style="color: #949494;">13:57:43</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> sud096 2024-08-14 <span style="color: #949494;">13:57:53</span>           24.2 pass       pass       pass    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> sud096 2024-08-14 <span style="color: #949494;">13:58:03</span>           24.2 pass       pass       pass    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    DateTime            `Water Temp_C` gross_flag spike_flag roc_flag flat_flag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2024-08-14 <span style="color: #949494;">13:56:33</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2024-08-14 <span style="color: #949494;">13:56:43</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2024-08-14 <span style="color: #949494;">13:56:53</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2024-08-14 <span style="color: #949494;">13:57:03</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2024-08-14 <span style="color: #949494;">13:57:13</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2024-08-14 <span style="color: #949494;">13:57:23</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2024-08-14 <span style="color: #949494;">13:57:33</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-08-14 <span style="color: #949494;">13:57:43</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-08-14 <span style="color: #949494;">13:57:53</span>           24.2 pass       pass       pass     pass     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-08-14 <span style="color: #949494;">13:58:03</span>           24.2 pass       pass       pass     pass     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 917 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: flat_flag &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

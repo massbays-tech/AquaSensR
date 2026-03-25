@@ -64,10 +64,10 @@
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is used internally within <code><a href="readASRcont.html">readASRcont</a></code> to run several checks on the input data to verify correct formatting before downstream analysis.</p>
-<p>The input data can use either of two formats:</p><ul><li><p><strong>Separate columns</strong>: <code>Site</code>, <code>Date</code>, <code>Time</code>, and at least one parameter column</p></li>
-<li><p><strong>Combined column</strong>: <code>Site</code>, <code>DateTime</code>, and at least one parameter column</p></li>
-</ul><p>The following checks are made:</p><ul><li><p>Column names: Should include only Site, Date, Time, DateTime, and at least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
-<li><p>Required columns are present: Site and either Date + Time or DateTime are required for downstream analysis and upload to WQX</p></li>
+<p>The input data can use either of two formats:</p><ul><li><p><strong>Separate columns</strong>: <code>Date</code>, <code>Time</code>, and at least one parameter column</p></li>
+<li><p><strong>Combined column</strong>: <code>DateTime</code>, and at least one parameter column</p></li>
+</ul><p>The following checks are made:</p><ul><li><p>Column names: Should include only Date, Time, DateTime, and at least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
+<li><p>Required columns are present: Either Date + Time or DateTime are required for downstream analysis and upload to WQX</p></li>
 <li><p>At least one parameter column is present: At least one parameter column that matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code> is required for downstream analysis and upload to WQX</p></li>
 <li><p>Date format (separate columns only): Should be in a format recognized by <code><a href="https://lubridate.tidyverse.org/reference/ymd.html" class="external-link">lubridate::ymd()</a></code> (e.g. <code>"2024-06-01"</code>)</p></li>
 <li><p>Time format (separate columns only): Should be parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> using 24-hour (<code>"16:30:33"</code>), 12-hour AM/PM (<code>"4:30:33 PM"</code>), or Excel-prefixed (<code>"1899-12-31 16:30:33"</code>) formats</p></li>
@@ -85,7 +85,7 @@
 <span class="r-in"><span><span class="fu">checkASRcont</span><span class="op">(</span><span class="va">contdat</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running checks on continuous data...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking column names... OK</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking Site, Date, Time are present... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking Date, Time are present... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking at least one parameter column is present... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking date format... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking time format... OK</span>
@@ -93,21 +93,21 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking parameter columns for non-numeric values... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> All checks passed!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 10</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Site   Date       Time    `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> sud096 2024-08-14 13:56:…           24.2      76.9    6.44               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> sud096 2024-08-14 13:56:…           24.2      76.7    6.43               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> sud096 2024-08-14 13:56:…           24.2      76.6    6.42               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> sud096 2024-08-14 13:57:…           24.2      76.5    6.41               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> sud096 2024-08-14 13:57:…           24.2      76.3    6.4                409 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> sud096 2024-08-14 13:57:…           24.2      76.3    6.39               409.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> sud096 2024-08-14 13:57:…           24.2      76.2    6.39               409.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> sud096 2024-08-14 13:57:…           24.2      76.1    6.38               409.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> sud096 2024-08-14 13:57:…           24.2      76.5    6.41               404.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> sud096 2024-08-14 13:58:…           24.2      77.6    6.5                399.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Date       Time  `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm TDS_mg_l</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2024-08-14 13:5…           24.2      76.9    6.44               410.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2024-08-14 13:5…           24.2      76.7    6.43               410.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2024-08-14 13:5…           24.2      76.6    6.42               410.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2024-08-14 13:5…           24.2      76.5    6.41               410.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2024-08-14 13:5…           24.2      76.3    6.4                409       266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2024-08-14 13:5…           24.2      76.3    6.39               409.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2024-08-14 13:5…           24.2      76.2    6.39               409.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-08-14 13:5…           24.2      76.1    6.38               409.      266</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-08-14 13:5…           24.2      76.5    6.41               404.      262</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-08-14 13:5…           24.2      77.6    6.5                399.      259</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 917 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

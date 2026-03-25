@@ -28,18 +28,16 @@ utilASRflag(contdat, metadat, param)
 
 ## Value
 
-A data frame with columns `Site`, `DateTime`, the selected parameter,
-and four flag columns: `gross_flag`, `spike_flag`, `roc_flag`, and
-`flat_flag`.
+A data frame with columns `DateTime`, the selected parameter, and four
+flag columns: `gross_flag`, `spike_flag`, `roc_flag`, and `flat_flag`.
 
 ## Details
 
-Applies four independent QC checks to the selected parameter for every
-site in `contdat`, matching thresholds from `metadat` by `Site` and
-`Parameter`. Each check produces its own flag (`"pass"`, `"suspect"`, or
-`"fail"`) so the user can see exactly which criteria fired. If multiple
-metadata rows match a given site/parameter pair the first row is used
-and a warning is issued.
+Applies four independent QC checks to the selected parameter in
+`contdat`, matching thresholds from `metadat` by `Parameter`. Each check
+produces its own flag (`"pass"`, `"suspect"`, or `"fail"`) so the user
+can see exactly which criteria fired. If multiple metadata rows match a
+given parameter the first row is used and a warning is issued.
 
 **Gross range** (`gross_flag`) — Observations below `GrMinFail` or above
 `GrMaxFail` are flagged `"fail"`. Observations below `GrMinSuspect` or
@@ -62,7 +60,7 @@ absolute step from the previous observation is within `FlatSuspectDelta`
 (or `FlatFailDelta`) units. Observations whose run length reaches
 `FlatSuspectN` (or `FlatFailN`) are flagged.
 
-Data are sorted by `Site` and `DateTime` before processing.
+Data are sorted by `DateTime` before processing.
 
 Underlying concepts and code for this function borrow heavily from those
 in the [ContDataQC](https://leppott.github.io/ContDataQC) package. Any
@@ -79,19 +77,18 @@ contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
 metadat <- readASRmeta(metapth, runchk = FALSE)
 
 utilASRflag(contdat, metadat, param = 'Water Temp_C')
-#> # A tibble: 927 × 7
-#>    Site   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag
-#>    <chr>  <dttm>                       <dbl> <chr>      <chr>      <chr>   
-#>  1 sud096 2024-08-14 13:56:33           24.2 pass       pass       pass    
-#>  2 sud096 2024-08-14 13:56:43           24.2 pass       pass       pass    
-#>  3 sud096 2024-08-14 13:56:53           24.2 pass       pass       pass    
-#>  4 sud096 2024-08-14 13:57:03           24.2 pass       pass       pass    
-#>  5 sud096 2024-08-14 13:57:13           24.2 pass       pass       pass    
-#>  6 sud096 2024-08-14 13:57:23           24.2 pass       pass       pass    
-#>  7 sud096 2024-08-14 13:57:33           24.2 pass       pass       pass    
-#>  8 sud096 2024-08-14 13:57:43           24.2 pass       pass       pass    
-#>  9 sud096 2024-08-14 13:57:53           24.2 pass       pass       pass    
-#> 10 sud096 2024-08-14 13:58:03           24.2 pass       pass       pass    
+#> # A tibble: 927 × 6
+#>    DateTime            `Water Temp_C` gross_flag spike_flag roc_flag flat_flag
+#>    <dttm>                       <dbl> <chr>      <chr>      <chr>    <chr>    
+#>  1 2024-08-14 13:56:33           24.2 pass       pass       pass     pass     
+#>  2 2024-08-14 13:56:43           24.2 pass       pass       pass     pass     
+#>  3 2024-08-14 13:56:53           24.2 pass       pass       pass     pass     
+#>  4 2024-08-14 13:57:03           24.2 pass       pass       pass     pass     
+#>  5 2024-08-14 13:57:13           24.2 pass       pass       pass     pass     
+#>  6 2024-08-14 13:57:23           24.2 pass       pass       pass     pass     
+#>  7 2024-08-14 13:57:33           24.2 pass       pass       pass     pass     
+#>  8 2024-08-14 13:57:43           24.2 pass       pass       pass     pass     
+#>  9 2024-08-14 13:57:53           24.2 pass       pass       pass     pass     
+#> 10 2024-08-14 13:58:03           24.2 pass       pass       pass     pass     
 #> # ℹ 917 more rows
-#> # ℹ 1 more variable: flat_flag <chr>
 ```

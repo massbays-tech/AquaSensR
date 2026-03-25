@@ -25,7 +25,7 @@ metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 #> Running checks on continuous data...
 #>  Checking column names... OK
-#>  Checking Site, Date, Time are present... OK
+#>  Checking Date, Time are present... OK
 #>  Checking at least one parameter column is present... OK
 #>  Checking date format... OK
 #>  Checking time format... OK
@@ -44,9 +44,9 @@ metadat <- readASRmeta(metapth)
 #> All checks passed!
 ```
 
-`contdat` is a data frame with columns `Site`, `DateTime`, and one
-numeric column per parameter. `metadat` contains the site- and
-parameter-specific QC thresholds for each check. See the [inputs
+`contdat` is a data frame with columns `DateTime`, and one numeric
+column per parameter. `metadat` contains the parameter-specific QC
+thresholds for each check. See the [inputs
 vignette](https://massbays-tech.github.io/AquaSensR/articles/inputs.md)
 for more information on the required formats.
 
@@ -54,7 +54,7 @@ for more information on the required formats.
 
 [`utilASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflag.md)
 is the primary QC function. It applies four independent checks to the
-chosen parameter for each site in `contdat`.
+chosen parameter in `contdat`.
 
 ### Arguments
 
@@ -73,16 +73,15 @@ Pass the two data frames and the name of the parameter to evaluate:
 ``` r
 flagdat <- utilASRflag(contdat, metadat, param = "Water Temp_C")
 head(flagdat)
-#> # A tibble: 6 × 7
-#>   Site   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag
-#>   <chr>  <dttm>                       <dbl> <chr>      <chr>      <chr>   
-#> 1 sud096 2024-08-14 13:56:33           24.2 pass       pass       pass    
-#> 2 sud096 2024-08-14 13:56:43           24.2 pass       pass       pass    
-#> 3 sud096 2024-08-14 13:56:53           24.2 pass       pass       pass    
-#> 4 sud096 2024-08-14 13:57:03           24.2 pass       pass       pass    
-#> 5 sud096 2024-08-14 13:57:13           24.2 pass       pass       pass    
-#> 6 sud096 2024-08-14 13:57:23           24.2 pass       pass       pass    
-#> # ℹ 1 more variable: flat_flag <chr>
+#> # A tibble: 6 × 6
+#>   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag flat_flag
+#>   <dttm>                       <dbl> <chr>      <chr>      <chr>    <chr>    
+#> 1 2024-08-14 13:56:33           24.2 pass       pass       pass     pass     
+#> 2 2024-08-14 13:56:43           24.2 pass       pass       pass     pass     
+#> 3 2024-08-14 13:56:53           24.2 pass       pass       pass     pass     
+#> 4 2024-08-14 13:57:03           24.2 pass       pass       pass     pass     
+#> 5 2024-08-14 13:57:13           24.2 pass       pass       pass     pass     
+#> 6 2024-08-14 13:57:23           24.2 pass       pass       pass     pass
 ```
 
 ### Output
@@ -92,7 +91,6 @@ returns a data frame with the following columns:
 
 | Column       | Description                        |
 |--------------|------------------------------------|
-| `Site`       | Site identifier                    |
 | `DateTime`   | Observation timestamp              |
 | *`param`*    | The evaluated parameter values     |
 | `gross_flag` | Flag from the gross range check    |
@@ -105,9 +103,9 @@ Each flag column contains one of three values: `"pass"`, `"suspect"`, or
 observation can receive any combination of flags across the four
 columns.
 
-If no metadata row matches a site/parameter combination the function
-leaves all flags for that site as `"pass"` and continues. If multiple
-metadata rows match, the first row is used and a warning is issued.
+If no metadata row matches a parameter the function leaves all flags as
+`"pass"` and continues. If multiple metadata rows match, the first row
+is used and a warning is issued.
 
 ## QC checks explained
 
@@ -115,10 +113,10 @@ AquaSensR implements four QC checks that reflect widely used sensor data
 quality standards. The underlying concepts and code borrow heavily from
 the [ContDataQC](https://leppott.github.io/ContDataQC) package. All
 threshold values are set in the metadata file and can be customised per
-site and parameter. Manual update of these thresholds is likely
-necessary to avoide false positives and negatives. Importantly, these
-flags require manual verification and should not be used to
-automatically exclude data without review.
+parameter. Manual update of these thresholds is likely necessary to
+avoide false positives and negatives. Importantly, these flags require
+manual verification and should not be used to automatically exclude data
+without review.
 
 ### 1. Gross range
 
@@ -171,11 +169,11 @@ that difference to fixed thresholds:
 - \|diff\| ≥ `SpikeSuspect` return `"suspect"`
 - \|diff\| ≥ `SpikeFail` return `"fail"`
 
-The first observation in each site’s series has no predecessor and is
-always left as `"pass"`. Because the spike check flags the observation
-at the large step, a single anomalous reading embedded in otherwise
-stable data will generate two flagged observations — one for the step up
-(or down) to the outlier, and one for the step back to baseline.
+The first observation in each series has no predecessor and is always
+left as `"pass"`. Because the spike check flags the observation at the
+large step, a single anomalous reading embedded in otherwise stable data
+will generate two flagged observations — one for the step up (or down)
+to the outlier, and one for the step back to baseline.
 
 The spike thresholds are absolute. For example, a 5 °C step is flagged
 regardless of whether the surrounding series is calm or noisy. The
@@ -306,8 +304,3 @@ value, and timestamp. Items in the legend can be clicked to toggle
 visibility of a check or severity level, which is useful for reviewing
 specific flags in a busy plot. The plot can also be zoomed and panned to
 focus on specific periods.
-
-When `flagdat` contains more than one site, the plot produces vertically
-stacked subplots that share a common x-axis, with the site name and
-parameter label on each y-axis. The legend is shown once and applies to
-all subplots.

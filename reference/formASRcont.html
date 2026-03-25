@@ -70,7 +70,7 @@
     <p>This function is used internally within <code><a href="readASRcont.html">readASRcont</a></code> to format the input data for downstream analysis.  The formatting includes:</p>
 <ul><li><p>Combine Date and Time columns (separate column format only): The <code>Time</code> column is parsed flexibly using <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and reformatted to <code>HH:MM:SS</code> before being united with <code>Date</code> into a single <code>DateTime</code> column, which is then converted to POSIXct with the specified time zone.</p></li>
 <li><p>Convert DateTime to POSIXct (combined column format only): The <code>DateTime</code> column is parsed flexibly using <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> (accepting 24-hour and 12-hour AM/PM formats) and converted to POSIXct with the specified time zone.</p></li>
-<li><p>Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.</p></li>
+<li><p>Convert non-numeric columns to numeric: Converts all columns except DateTime to numeric if they are not already.</p></li>
 </ul></div>
 
     <div class="section level2">
@@ -80,19 +80,19 @@
 <span class="r-in"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="utilASRimportcont.html">utilASRimportcont</a></span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">formASRcont</span><span class="op">(</span><span class="va">contdat</span>, tz <span class="op">=</span> <span class="st">'Etc/GMT+5'</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 9</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Site  DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> sud0… 2024-08-14 <span style="color: #949494;">13:56:33</span>           24.2      76.9    6.44               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> sud0… 2024-08-14 <span style="color: #949494;">13:56:43</span>           24.2      76.7    6.43               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> sud0… 2024-08-14 <span style="color: #949494;">13:56:53</span>           24.2      76.6    6.42               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> sud0… 2024-08-14 <span style="color: #949494;">13:57:03</span>           24.2      76.5    6.41               410.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> sud0… 2024-08-14 <span style="color: #949494;">13:57:13</span>           24.2      76.3    6.4                409 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> sud0… 2024-08-14 <span style="color: #949494;">13:57:23</span>           24.2      76.3    6.39               409.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> sud0… 2024-08-14 <span style="color: #949494;">13:57:33</span>           24.2      76.2    6.39               409.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> sud0… 2024-08-14 <span style="color: #949494;">13:57:43</span>           24.2      76.1    6.38               409.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> sud0… 2024-08-14 <span style="color: #949494;">13:57:53</span>           24.2      76.5    6.41               404.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> sud0… 2024-08-14 <span style="color: #949494;">13:58:03</span>           24.2      77.6    6.5                399.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2024-08-14 <span style="color: #949494;">13:56:33</span>           24.2      76.9    6.44               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2024-08-14 <span style="color: #949494;">13:56:43</span>           24.2      76.7    6.43               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2024-08-14 <span style="color: #949494;">13:56:53</span>           24.2      76.6    6.42               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2024-08-14 <span style="color: #949494;">13:57:03</span>           24.2      76.5    6.41               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2024-08-14 <span style="color: #949494;">13:57:13</span>           24.2      76.3    6.4                409 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2024-08-14 <span style="color: #949494;">13:57:23</span>           24.2      76.3    6.39               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2024-08-14 <span style="color: #949494;">13:57:33</span>           24.2      76.2    6.39               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-08-14 <span style="color: #949494;">13:57:43</span>           24.2      76.1    6.38               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-08-14 <span style="color: #949494;">13:57:53</span>           24.2      76.5    6.41               404.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-08-14 <span style="color: #949494;">13:58:03</span>           24.2      77.6    6.5                399.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 917 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span>
 </code></pre></div>

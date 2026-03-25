@@ -29,20 +29,19 @@ before downstream analysis.
 
 The input data can use either of two formats:
 
-- **Separate columns**: `Site`, `Date`, `Time`, and at least one
-  parameter column
-
-- **Combined column**: `Site`, `DateTime`, and at least one parameter
+- **Separate columns**: `Date`, `Time`, and at least one parameter
   column
+
+- **Combined column**: `DateTime`, and at least one parameter column
 
 The following checks are made:
 
-- Column names: Should include only Site, Date, Time, DateTime, and at
-  least one parameter column that matches the `Parameter` column in
+- Column names: Should include only Date, Time, DateTime, and at least
+  one parameter column that matches the `Parameter` column in
   [`paramsASR`](https://massbays-tech.github.io/AquaSensR/reference/paramsASR.md)
 
-- Required columns are present: Site and either Date + Time or DateTime
-  are required for downstream analysis and upload to WQX
+- Required columns are present: Either Date + Time or DateTime are
+  required for downstream analysis and upload to WQX
 
 - At least one parameter column is present: At least one parameter
   column that matches the `Parameter` column in
@@ -79,7 +78,7 @@ contdat <- utilASRimportcont(contpth)
 checkASRcont(contdat)
 #> Running checks on continuous data...
 #>  Checking column names... OK
-#>  Checking Site, Date, Time are present... OK
+#>  Checking Date, Time are present... OK
 #>  Checking at least one parameter column is present... OK
 #>  Checking date format... OK
 #>  Checking time format... OK
@@ -87,19 +86,19 @@ checkASRcont(contdat)
 #>  Checking parameter columns for non-numeric values... OK
 #> 
 #> All checks passed!
-#> # A tibble: 927 × 10
-#>    Site   Date       Time    `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
-#>    <chr>  <chr>      <chr>            <dbl>     <dbl>   <dbl>              <dbl>
-#>  1 sud096 2024-08-14 13:56:…           24.2      76.9    6.44               410.
-#>  2 sud096 2024-08-14 13:56:…           24.2      76.7    6.43               410.
-#>  3 sud096 2024-08-14 13:56:…           24.2      76.6    6.42               410.
-#>  4 sud096 2024-08-14 13:57:…           24.2      76.5    6.41               410.
-#>  5 sud096 2024-08-14 13:57:…           24.2      76.3    6.4                409 
-#>  6 sud096 2024-08-14 13:57:…           24.2      76.3    6.39               409.
-#>  7 sud096 2024-08-14 13:57:…           24.2      76.2    6.39               409.
-#>  8 sud096 2024-08-14 13:57:…           24.2      76.1    6.38               409.
-#>  9 sud096 2024-08-14 13:57:…           24.2      76.5    6.41               404.
-#> 10 sud096 2024-08-14 13:58:…           24.2      77.6    6.5                399.
+#> # A tibble: 927 × 9
+#>    Date       Time  `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm TDS_mg_l
+#>    <chr>      <chr>          <dbl>     <dbl>   <dbl>              <dbl>    <dbl>
+#>  1 2024-08-14 13:5…           24.2      76.9    6.44               410.      266
+#>  2 2024-08-14 13:5…           24.2      76.7    6.43               410.      266
+#>  3 2024-08-14 13:5…           24.2      76.6    6.42               410.      266
+#>  4 2024-08-14 13:5…           24.2      76.5    6.41               410.      266
+#>  5 2024-08-14 13:5…           24.2      76.3    6.4                409       266
+#>  6 2024-08-14 13:5…           24.2      76.3    6.39               409.      266
+#>  7 2024-08-14 13:5…           24.2      76.2    6.39               409.      266
+#>  8 2024-08-14 13:5…           24.2      76.1    6.38               409.      266
+#>  9 2024-08-14 13:5…           24.2      76.5    6.41               404.      262
+#> 10 2024-08-14 13:5…           24.2      77.6    6.5                399.      259
 #> # ℹ 917 more rows
-#> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
+#> # ℹ 2 more variables: Salinity_ppt <dbl>, pH_SU <dbl>
 ```
