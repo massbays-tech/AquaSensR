@@ -8,7 +8,7 @@
 #' \itemize{
 #'   \item Combine Date and Time columns (separate column format only): The \code{Time} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and reformatted to \code{HH:MM:SS} before being united with \code{Date} into a single \code{DateTime} column, which is then converted to POSIXct with the specified time zone.
 #'   \item Convert DateTime to POSIXct (combined column format only): The \code{DateTime} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour and 12-hour AM/PM formats) and converted to POSIXct with the specified time zone.
-#'   \item Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.
+#'   \item Convert non-numeric columns to numeric: Converts all columns except DateTime to numeric if they are not already.
 #' }
 #'
 #' @return A formatted data frame of the continuous data
@@ -26,17 +26,24 @@ formASRcont <- function(contdat, tz) {
   if ('DateTime' %in% names(contdat)) {
     out <- contdat |>
       dplyr::mutate(
-        DateTime = lubridate::parse_date_time(DateTime,
-          orders = c('ymd IMSp', 'ymd HMS', 'ymd HM'), tz = tz)
+        DateTime = lubridate::parse_date_time(
+          DateTime,
+          orders = c('ymd IMSp', 'ymd HMS', 'ymd HM'),
+          tz = tz
+        )
       )
   } else {
     out <- contdat |>
       dplyr::mutate(
         Time = format(
-          lubridate::parse_date_time(Time,
+          lubridate::parse_date_time(
+            Time,
             orders = c('IMSp', 'HMS', 'HM', 'ymd IMSp', 'ymd HMS', 'ymd HM'),
-            quiet = TRUE),
-          '%H:%M:%S', tz = 'UTC')
+            quiet = TRUE
+          ),
+          '%H:%M:%S',
+          tz = 'UTC'
+        )
       ) |>
       tidyr::unite('DateTime', Date, Time, sep = ' ', remove = TRUE) |>
       dplyr::mutate(
@@ -44,11 +51,11 @@ formASRcont <- function(contdat, tz) {
       )
   }
 
-  # convert columns that are not Site, DateTime to numeric if not
+  # convert columns that are not DateTime to numeric if not
   out <- out |>
     dplyr::mutate(
       dplyr::across(
-        -c(Site, DateTime),
+        -c(DateTime),
         ~ if (!is.numeric(.x)) as.numeric(.x) else .x
       )
     )

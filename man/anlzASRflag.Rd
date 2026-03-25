@@ -32,10 +32,6 @@ Marker \strong{shape} indicates severity:
 }
 An observation flagged by multiple checks appears as a marker for each
 check that fired, allowing all sources of concern to be visible.
-
-When \code{flagdat} contains more than one site, the plot uses vertically
-stacked subplots that share a common x-axis. Legend items are shown once
-and apply across all subplots.
 }
 \examples{
 contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')

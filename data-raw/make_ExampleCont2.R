@@ -19,7 +19,7 @@ dat2 <- dat |>
     .before = 1
   ) |>
   select(-Date, -Time) |>
-  select(Site, DateTime, everything())
+  select(DateTime, everything())
 
 write_xlsx(dat2, 'inst/extdata/ExampleCont2.xlsx')
 cat('ExampleCont2.xlsx written with', nrow(dat2), 'rows\n')

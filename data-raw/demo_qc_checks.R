@@ -17,38 +17,36 @@ devtools::load_all(".")
 set.seed(42)
 
 # 15-minute intervals over 5 days
-n         <- 5L * 24L * 4L   # 480 observations
+n <- 5L * 24L * 4L # 480 observations
 base_time <- as.POSIXct("2024-06-01 00:00:00", tz = "Etc/GMT+5")
-times     <- base_time + seq(0L, by = 15L * 60L, length.out = n)
+times <- base_time + seq(0L, by = 15L * 60L, length.out = n)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-# Build a minimal contdat frame for a single site
-make_cd <- function(site, vals) {
-  df <- data.frame(Site = site, DateTime = times, stringsAsFactors = FALSE)
+# Build a minimal contdat frame
+make_cd <- function(vals) {
+  df <- data.frame(DateTime = times, stringsAsFactors = FALSE)
   df[["Water Temp_C"]] <- vals
   df
 }
 
 # Build a metadat row with all columns; supply only the thresholds you need
-make_md <- function(site, ...) {
+make_md <- function(...) {
   base <- list(
-    Site            = site,
-    Parameter       = "Water Temp_C",
-    Depth           = NA_real_,
-    GrMinFail       = NA_real_,
-    GrMaxFail       = NA_real_,
-    GrMinSuspect    = NA_real_,
-    GrMaxSuspect    = NA_real_,
-    SpikeFail       = NA_real_,
-    SpikeSuspect    = NA_real_,
-    RoCN            = NA_real_,
-    RoCHours        = NA_real_,
-    FlatFailN       = NA_real_,
-    FlatFailDelta   = NA_real_,
-    FlatSuspectN    = NA_real_,
+    Parameter = "Water Temp_C",
+    GrMinFail = NA_real_,
+    GrMaxFail = NA_real_,
+    GrMinSuspect = NA_real_,
+    GrMaxSuspect = NA_real_,
+    SpikeFail = NA_real_,
+    SpikeSuspect = NA_real_,
+    RoCN = NA_real_,
+    RoCHours = NA_real_,
+    FlatFailN = NA_real_,
+    FlatFailDelta = NA_real_,
+    FlatSuspectN = NA_real_,
     FlatSuspectDelta = NA_real_
   )
   args <- list(...)
@@ -69,16 +67,19 @@ make_md <- function(site, ...) {
 #           fail markers at the extreme injections.
 # ===========================================================================
 
-v1              <- rnorm(n, mean = 20, sd = 0.4)
-v1[c(80, 81)]   <- c(1.5, 1.0)    # suspect low
-v1[c(160, 161)] <- c(-5.5, -6.0)  # fail low
-v1[c(280, 281)] <- c(30.5, 31.0)  # suspect high
-v1[c(380, 381)] <- c(35.5, 36.0)  # fail high
+v1 <- rnorm(n, mean = 20, sd = 0.4)
+v1[c(80, 81)] <- c(1.5, 1.0) # suspect low
+v1[c(160, 161)] <- c(-5.5, -6.0) # fail low
+v1[c(280, 281)] <- c(30.5, 31.0) # suspect high
+v1[c(380, 381)] <- c(35.5, 36.0) # fail high
 
-cd1 <- make_cd("Gross Range", v1)
-md1 <- make_md("Gross Range",
-               GrMinFail    = -5,  GrMaxFail    = 35,
-               GrMinSuspect =  2,  GrMaxSuspect = 30)
+cd1 <- make_cd(v1)
+md1 <- make_md(
+  GrMinFail = -5,
+  GrMaxFail = 35,
+  GrMinSuspect = 2,
+  GrMaxSuspect = 30
+)
 
 fd1 <- utilASRflag(cd1, md1, "Water Temp_C")
 
@@ -98,14 +99,14 @@ fd1 <- utilASRflag(cd1, md1, "Water Temp_C")
 # Expect 8 flagged markers total (2 per blip × 4 blips).
 # ===========================================================================
 
-v2          <- rnorm(n, mean = 20, sd = 0.15)
-v2[100]     <- v2[99]  + 5.5   # suspect upward
-v2[200]     <- v2[199] - 5.5   # suspect downward
-v2[300]     <- v2[299] + 9.5   # fail upward
-v2[400]     <- v2[399] - 9.5   # fail downward
+v2 <- rnorm(n, mean = 20, sd = 0.15)
+v2[100] <- v2[99] + 5.5 # suspect upward
+v2[200] <- v2[199] - 5.5 # suspect downward
+v2[300] <- v2[299] + 9.5 # fail upward
+v2[400] <- v2[399] - 9.5 # fail downward
 
-cd2 <- make_cd("Spike", v2)
-md2 <- make_md("Spike", SpikeSuspect = 4, SpikeFail = 8)
+cd2 <- make_cd(v2)
+md2 <- make_md(SpikeSuspect = 4, SpikeFail = 8)
 
 fd2 <- utilASRflag(cd2, md2, "Water Temp_C")
 
@@ -151,13 +152,13 @@ fd2 <- utilASRflag(cd2, md2, "Water Temp_C")
 # ===========================================================================
 
 v3 <- c(
-  rnorm(119, mean = 20.0, sd = 0.01),  # stable baseline
-  rnorm(241, mean = 22.5, sd = 0.01),  # shifted up +2.5 °C at obs 120
-  rnorm(120, mean = 20.0, sd = 0.01)   # shifted back down at obs 360
+  rnorm(119, mean = 20.0, sd = 0.01), # stable baseline
+  rnorm(241, mean = 22.5, sd = 0.01), # shifted up +2.5 °C at obs 120
+  rnorm(120, mean = 20.0, sd = 0.01) # shifted back down at obs 360
 )
 
-cd3 <- make_cd("Rate of Change", v3)
-md3 <- make_md("Rate of Change", RoCN = 8, RoCHours = 25)
+cd3 <- make_cd(v3)
+md3 <- make_md(RoCN = 8, RoCHours = 25)
 
 fd3 <- utilASRflag(cd3, md3, "Water Temp_C")
 
@@ -179,19 +180,22 @@ fd3 <- utilASRflag(cd3, md3, "Water Temp_C")
 #     - FlatFailN    = 10 -> not reached
 # ===========================================================================
 
-v4              <- rnorm(n, mean = 20, sd = 0.4)
+v4 <- rnorm(n, mean = 20, sd = 0.4)
 # ensure a clean break into the long stuck period
-v4[149]         <- 22.0        # force large boundary diff
-v4[150:165]     <- 20.00       # long stuck: 16 obs, run grows to 15
+v4[149] <- 22.0 # force large boundary diff
+v4[150:165] <- 20.00 # long stuck: 16 obs, run grows to 15
 
 # ensure a clean break into the short stuck period
-v4[309]         <- 22.0
-v4[310:315]     <- 20.00       # short stuck: 6 obs, run grows to 5
+v4[309] <- 22.0
+v4[310:315] <- 20.00 # short stuck: 6 obs, run grows to 5
 
-cd4 <- make_cd("Flatline", v4)
-md4 <- make_md("Flatline",
-               FlatSuspectN    = 5,  FlatSuspectDelta = 0.02,
-               FlatFailN       = 10, FlatFailDelta    = 0.02)
+cd4 <- make_cd(v4)
+md4 <- make_md(
+  FlatSuspectN = 5,
+  FlatSuspectDelta = 0.02,
+  FlatFailN = 10,
+  FlatFailDelta = 0.02
+)
 
 fd4 <- utilASRflag(cd4, md4, "Water Temp_C")
 
@@ -199,7 +203,7 @@ fd4 <- utilASRflag(cd4, md4, "Water Temp_C")
 # Plots
 # ===========================================================================
 
-anlzASRflag(fd1)   # gross range
-anlzASRflag(fd2)   # spike
-anlzASRflag(fd3)   # rate of change
-anlzASRflag(fd4)   # flatline
+anlzASRflag(fd1) # gross range
+anlzASRflag(fd2) # spike
+anlzASRflag(fd3) # rate of change
+anlzASRflag(fd4) # flatline

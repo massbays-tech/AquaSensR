@@ -21,8 +21,8 @@ library(dplyr)
 
 AquaSensR requires two input files to use the functions in the package:
 
-1. **Continuous monitoring data**: time series of sensor observations, one column per parameter.
-2. **QC threshold metadata**: site- and parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
+1. **Continuous monitoring data**: time series of sensor observations at a site, one column per parameter.
+2. **QC threshold metadata**: parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
 
 Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format.  Example files with the correct format are included with the package and are used throughout.
 
@@ -81,7 +81,6 @@ The continuous monitoring data workbook must follow one of two accepted schemas.
 
 | Column | Description |
 |--------|-------------|
-| `Site` | Site identifier |
 | `Date` | Observation date, parseable by `lubridate::ymd()` (e.g., `2024-06-01`) |
 | `Time` | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
@@ -90,7 +89,6 @@ The continuous monitoring data workbook must follow one of two accepted schemas.
 
 | Column | Description |
 |--------|-------------|
-| `Site` | Site identifier |
 | `DateTime` | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
 
@@ -116,8 +114,8 @@ paramsASR
 
 The `readASRcont()` function imports the data and runs a series of checks using the `checkASRcont()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
-1. **Column names**: all columns are either `Site`, `Date`, `Time`, `DateTime`, or a recognised parameter from `paramsASR`.
-2. **Required columns present**: `Site` is always required, plus either `Date` and `Time` (Format 1) or `DateTime` (Format 2).
+1. **Column names**: all columns are either `Date`, `Time`, `DateTime`, or a recognised parameter from `paramsASR`.
+2. **Required columns present**: either `Date` and `Time` (Format 1) or `DateTime` (Format 2).
 3. **At least one parameter column**: at least one column matches an entry in `paramsASR$Parameter`.
 4. **Date format** *(Format 1 only)*: all values in `Date` parse successfully with `lubridate::ymd()`.
 5. **Time format** *(Format 1 only)*: all values in `Time` are parseable by `lubridate::parse_date_time()` in 24-hour, 12-hour AM/PM, or Excel-native formats.
@@ -135,7 +133,12 @@ Adding an unrecognised column causes `checkASRcont()` to stop immediately. The f
 nms <- names(readxl::read_excel(contpth, n_max = 0))
 col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 contdat_raw <- suppressWarnings(
-  readxl::read_excel(contpth, col_types = col_types, na = c("NA", "na", ""), guess_max = Inf)
+  readxl::read_excel(
+    contpth,
+    col_types = col_types,
+    na = c("NA", "na", ""),
+    guess_max = Inf
+  )
 )
 
 contdat_raw$BadColumn <- 1
@@ -147,7 +150,6 @@ checkASRcont(contdat_raw)
 
 After passing all checks, `readASRcont()` returns a data frame with the same structure regardless of input format:
 
-- `Site`: site identifier (character)
 - `DateTime`: time-zone-aware `POSIXct` column
 - One numeric column per parameter present in the input file
 
@@ -173,9 +175,7 @@ The workbook must contain exactly the following columns (all required; threshold
 
 | Column | Description |
 |--------|-------------|
-| `Site` | Site identifier matching those in the continuous data |
 | `Parameter` | Parameter name matching `paramsASR$Parameter` |
-| `Depth` | Sensor deployment depth (numeric; can be `NA`) |
 | `GrMinFail` | Gross range, lower fail threshold |
 | `GrMaxFail` | Gross range, upper fail threshold |
 | `GrMinSuspect` | Gross range, lower suspect threshold |
@@ -197,7 +197,7 @@ The `readASRmeta()` function imports the metadata and runs a series of checks us
 2. **All columns present**: every required column exists.
 3. **At least one parameter**: at least one value in `Parameter` matches `paramsASR$Parameter`.
 4. **Parameter format**: all `Parameter` values match those in `paramsASR$Parameter`.
-5. **Numeric columns**: all columns except `Site` and `Parameter` contain only numeric or missing values.
+5. **Numeric columns**: all columns except `Parameter` contain only numeric or missing values.
 
 ### Example: triggering an error
 

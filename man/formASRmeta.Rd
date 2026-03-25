@@ -19,7 +19,7 @@ Format continuous metadata
 This function is used internally within \code{\link{readASRmeta}} to format the input data for downstream analysis.  The formatting includes:
 
 \itemize{
-\item Convert non-numeric columns to numeric: Converts all columns except Site and Parameter to numeric if they are not already.
+\item Convert non-numeric columns to numeric: Converts all columns except Parameter to numeric if they are not already.
 }
 }
 \examples{

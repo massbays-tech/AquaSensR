@@ -1,8 +1,8 @@
 test_that("formASRmeta converts non-numeric columns to numeric", {
   result <- formASRmeta(tst$metadatchk)
 
-  # All columns except Site and Parameter should be numeric
-  numeric_cols <- setdiff(names(result), c("Site", "Parameter"))
+  # All columns except Parameter should be numeric
+  numeric_cols <- setdiff(names(result), c("Parameter"))
 
   for (col in numeric_cols) {
     expect_true(
@@ -10,13 +10,6 @@ test_that("formASRmeta converts non-numeric columns to numeric", {
       info = paste("Column", col, "should be numeric")
     )
   }
-})
-
-test_that("formASRmeta preserves Site column", {
-  result <- formASRmeta(tst$metadatchk)
-
-  expect_true("Site" %in% names(result))
-  expect_equal(result$Site, tst$metadatchk$Site)
 })
 
 test_that("formASRmeta produces same result as readASRmeta", {

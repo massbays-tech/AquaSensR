@@ -54,7 +54,7 @@ test_that("checkASRcont accepts mixed time formats (datetime and plain HH:MM:SS)
 
 test_that("checkASRcont errors on invalid column names", {
   bad_data <- tst$contdatchk
-  names(bad_data)[names(bad_data) == "Site"] <- "InvalidColumn"
+  names(bad_data)[names(bad_data) == "Date"] <- "InvalidColumn"
 
   expect_error(
     checkASRcont(bad_data),
@@ -64,18 +64,18 @@ test_that("checkASRcont errors on invalid column names", {
 })
 
 test_that("checkASRcont errors when required columns are missing", {
-  # Missing Site column
-  bad_data <- tst$contdatchk[, names(tst$contdatchk) != "Site"]
+  # Missing Date column
+  bad_data <- tst$contdatchk[, names(tst$contdatchk) != "Date"]
 
   expect_error(
     checkASRcont(bad_data),
-    "\tChecking Site, Date, Time are present...\n\tMissing the following columns: Site",
+    "\tChecking Date, Time are present...\n\tMissing the following columns: Date",
     fixed = TRUE
   )
 })
 
 test_that("checkASRcont errors when no parameter columns present", {
-  bad_data <- tst$contdatchk[, c("Site", "Date", "Time")]
+  bad_data <- tst$contdatchk[, c("Date", "Time")]
 
   expect_error(
     checkASRcont(bad_data),
@@ -139,43 +139,6 @@ test_that("checkASRcont errors on missing values", {
     expected_msg,
     fixed = TRUE
   )
-
-  bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
-  bad_data[[param_name]][3] <- NA
-  param_name <- 'Site'
-  bad_data[[param_name]][2] <- NA
-
-  expected_msg <- paste0(
-    "\tChecking for missing values...\n\t",
-    "The following columns have missing values in the following rows: ",
-    "Site (2); Water Temp_C (3)"
-  )
-
-  expect_error(
-    checkASRcont(bad_data),
-    expected_msg,
-    fixed = TRUE
-  )
-
-  bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
-  bad_data[[param_name]][1] <- NA
-  bad_data[[param_name]][3] <- NA
-  param_name <- 'Site'
-  bad_data[[param_name]][2] <- NA
-
-  expected_msg <- paste0(
-    "\tChecking for missing values...\n\t",
-    "The following columns have missing values in the following rows: ",
-    "Site (2); Water Temp_C (1, 3)"
-  )
-
-  expect_error(
-    checkASRcont(bad_data),
-    expected_msg,
-    fixed = TRUE
-  )
 })
 
 test_that("checkASRcont passes valid combined DateTime data", {
@@ -196,18 +159,20 @@ test_that("checkASRcont errors on invalid DateTime format", {
   )
 })
 
-test_that("checkASRcont errors when Site column missing (combined format)", {
-  bad_data <- tst$contdatchk2[, names(tst$contdatchk2) != "Site"]
+test_that("checkASRcont errors when DateTime column missing (combined format)", {
+  # Removing DateTime causes the function to treat the data as separate-column
+  # format, so it reports Date and Time as missing
+  bad_data <- tst$contdatchk2[, names(tst$contdatchk2) != "DateTime"]
 
   expect_error(
     checkASRcont(bad_data),
-    "\tChecking Site, DateTime are present...\n\tMissing the following columns: Site",
+    "\tChecking Date, Time are present...\n\tMissing the following columns: Date, Time",
     fixed = TRUE
   )
 })
 
 test_that("checkASRcont errors when no parameter columns present (combined format)", {
-  bad_data <- tst$contdatchk2[, c("Site", "DateTime")]
+  bad_data <- tst$contdatchk2[, c("DateTime")]
 
   expect_error(
     checkASRcont(bad_data),

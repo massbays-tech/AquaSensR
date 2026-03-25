@@ -5,7 +5,7 @@
 #' @details This function is used internally within \code{\link{readASRmeta}} to format the input data for downstream analysis.  The formatting includes:
 #'
 #' \itemize{
-#'  \item Convert non-numeric columns to numeric: Converts all columns except Site and Parameter to numeric if they are not already.
+#'  \item Convert non-numeric columns to numeric: Converts all columns except Parameter to numeric if they are not already.
 #' }
 #'
 #' @return A formatted data frame of the continuous data
@@ -20,11 +20,11 @@
 #'
 #' formASRmeta(metadat)
 formASRmeta <- function(metadat) {
-  # convert columns that are not Site, Parameter to numeric if not
+  # convert columns that are not Parameter to numeric if not
   out <- metadat |>
     dplyr::mutate(
       dplyr::across(
-        -c(Site, Parameter),
+        -c(Parameter),
         ~ if (!is.numeric(.x)) as.numeric(.x) else .x
       )
     )

@@ -6,11 +6,11 @@
 #'
 #' The following checks are made:
 #' \itemize{
-#'  \item Column names: Should include only Site, Parameter, Depth, GrMinFail, GrMaxFail, GrMinSuspect, GrMaxSuspect, SpikeFail, SpikeSuspect, FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCN, and RoCHours
+#'  \item Column names: Should include only Parameter, GrMinFail, GrMaxFail, GrMinSuspect, GrMaxSuspect, SpikeFail, SpikeSuspect, FlatFailN, FlatFailDelta, FlatSuspectN, FlatSuspectDelta, RoCN, and RoCHours
 #'  \item All columns present: All columns from the previous check should be present
 #'  \item At least one parameter is present: At least one parameter in the \code{Parameter} column matches the \code{Parameter} column in \code{\link{paramsASR}}
 #'  \item Parameter format: All parameters listed in the \code{Parameter} column should match those in the \code{Parameter} column in \code{\link{paramsASR}}
-#'  \item Numeric columns: All columns except \code{Site} and \code{Parameter} should be numeric values
+#'  \item Numeric columns: All columns except \code{Parameter} should be numeric values
 #' }
 #'
 #' @return \code{metadat} is returned as is if no errors are found, otherwise an informative error message is returned prompting the user to make the required correction to the raw data before proceeding.
@@ -31,9 +31,7 @@ checkASRmeta <- function(metadat) {
 
   # globals
   colnms <- c(
-    "Site",
     "Parameter",
-    "Depth",
     "GrMinFail",
     "GrMaxFail",
     "GrMinSuspect",
@@ -110,7 +108,7 @@ checkASRmeta <- function(metadat) {
   # check columns for non-numeric values
   msg <- '\tChecking columns for non-numeric values...'
   nms <- names(metadat)
-  nms <- nms[!nms %in% c("Site", "Parameter")]
+  nms <- nms[!nms %in% c("Parameter")]
   chk <- sapply(nms, function(x) {
     suppressWarnings(as.numeric(na.omit(metadat[[x]]))) |> is.na() |> any()
   })

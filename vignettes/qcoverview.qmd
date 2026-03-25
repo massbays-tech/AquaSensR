@@ -35,11 +35,11 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 metadat <- readASRmeta(metapth)
 ```
 
-`contdat` is a data frame with columns `Site`, `DateTime`, and one numeric column per parameter. `metadat` contains the site- and parameter-specific QC thresholds for each check. See the [inputs vignette](inputs.html) for more information on the required formats.
+`contdat` is a data frame with columns `DateTime`, and one numeric column per parameter. `metadat` contains the parameter-specific QC thresholds for each check. See the [inputs vignette](inputs.html) for more information on the required formats.
 
 ## `utilASRflag()` to flag continuous data
 
-`utilASRflag()` is the primary QC function. It applies four independent checks to the chosen parameter for each site in `contdat`.
+`utilASRflag()` is the primary QC function. It applies four independent checks to the chosen parameter in `contdat`.
 
 ### Arguments
 
@@ -66,7 +66,6 @@ head(flagdat)
 
 | Column | Description |
 |--------|-------------|
-| `Site` | Site identifier |
 | `DateTime` | Observation timestamp |
 | *`param`* | The evaluated parameter values |
 | `gross_flag` | Flag from the gross range check |
@@ -76,11 +75,11 @@ head(flagdat)
 
 Each flag column contains one of three values: `"pass"`, `"suspect"`, or `"fail"`. Checks are independent of each other such that a single observation can receive any combination of flags across the four columns.
 
-If no metadata row matches a site/parameter combination the function leaves all flags for that site as `"pass"` and continues. If multiple metadata rows match, the first row is used and a warning is issued.
+If no metadata row matches a parameter the function leaves all flags as `"pass"` and continues. If multiple metadata rows match, the first row is used and a warning is issued.
 
 ## QC checks explained
 
-AquaSensR implements four QC checks that reflect widely used sensor data quality standards. The underlying concepts and code borrow heavily from the [ContDataQC](https://leppott.github.io/ContDataQC) package. All threshold values are set in the metadata file and can be customised per site and parameter.  Manual update of these thresholds is likely necessary to avoide false positives and negatives.  Importantly, these flags require manual verification and should not be used to automatically exclude data without review.
+AquaSensR implements four QC checks that reflect widely used sensor data quality standards. The underlying concepts and code borrow heavily from the [ContDataQC](https://leppott.github.io/ContDataQC) package. All threshold values are set in the metadata file and can be customised per parameter.  Manual update of these thresholds is likely necessary to avoide false positives and negatives.  Importantly, these flags require manual verification and should not be used to automatically exclude data without review.
 
 ### 1. Gross range
 
@@ -117,7 +116,7 @@ The spike check detects sudden, anomalous jumps (either up or down) between cons
 - |diff| ≥ `SpikeSuspect` return `"suspect"`
 - |diff| ≥ `SpikeFail` return `"fail"`
 
-The first observation in each site's series has no predecessor and is always left as `"pass"`. Because the spike check flags the observation at the large step, a single anomalous reading embedded in otherwise stable data will generate two flagged observations — one for the step up (or down) to the outlier, and one for the step back to baseline.
+The first observation in each series has no predecessor and is always left as `"pass"`. Because the spike check flags the observation at the large step, a single anomalous reading embedded in otherwise stable data will generate two flagged observations — one for the step up (or down) to the outlier, and one for the step back to baseline.
 
 The spike thresholds are absolute.  For example, a 5 °C step is flagged regardless of whether the surrounding series is calm or noisy. The rate-of-change check (below) evaluates potentially spurious changes when relative variability matters.
 
@@ -197,5 +196,3 @@ The plot shows all observations as a continuous line. Non-passing observations a
 | Fail | Cross (×) |
 
 An observation flagged by more than one check appears as overlying markers for each check, so that all potential issues remain visible. Hovering over a marker reveals the check name, severity, parameter value, and timestamp. Items in the legend can be clicked to toggle visibility of a check or severity level, which is useful for reviewing specific flags in a busy plot.  The plot can also be zoomed and panned to focus on specific periods.
-
-When `flagdat` contains more than one site, the plot produces vertically stacked subplots that share a common x-axis, with the site name and parameter label on each y-axis. The legend is shown once and applies to all subplots.

@@ -16,7 +16,7 @@ Must match one of the parameter columns present in \code{contdat} and
 one of the entries in the \code{Parameter} column of \code{metadat}.}
 }
 \value{
-A data frame with columns \code{Site}, \code{DateTime}, the
+A data frame with columns \code{DateTime}, the
 selected parameter, and four flag columns: \code{gross_flag},
 \code{spike_flag}, \code{roc_flag}, and \code{flat_flag}.
 }
@@ -24,12 +24,10 @@ selected parameter, and four flag columns: \code{gross_flag},
 Flag continuous monitoring data with QC criteria
 }
 \details{
-Applies four independent QC checks to the selected parameter for
-every site in \code{contdat}, matching thresholds from \code{metadat} by
-\code{Site} and \code{Parameter}.  Each check produces its own flag
+Applies four independent QC checks to the selected parameter in \code{contdat}, matching thresholds from \code{metadat} by \code{Parameter}.  Each check produces its own flag
 (\code{"pass"}, \code{"suspect"}, or \code{"fail"}) so the user can see
 exactly which criteria fired.  If multiple metadata rows match a given
-site/parameter pair the first row is used and a warning is issued.
+parameter the first row is used and a warning is issued.
 
 \strong{Gross range} (\code{gross_flag}) — Observations below \code{GrMinFail}
 or above \code{GrMaxFail} are flagged \code{"fail"}.  Observations below
@@ -55,7 +53,7 @@ where the absolute step from the previous observation is within
 whose run length reaches \code{FlatSuspectN} (or \code{FlatFailN}) are
 flagged.
 
-Data are sorted by \code{Site} and \code{DateTime} before processing.
+Data are sorted by \code{DateTime} before processing.
 
 Underlying concepts and code for this function borrow heavily from those
 in the \href{https://leppott.github.io/ContDataQC}{ContDataQC} package.  Any

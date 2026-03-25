@@ -6,12 +6,10 @@
 #'   Must match one of the parameter columns present in \code{contdat} and
 #'   one of the entries in the \code{Parameter} column of \code{metadat}.
 #'
-#' @details Applies four independent QC checks to the selected parameter for
-#' every site in \code{contdat}, matching thresholds from \code{metadat} by
-#' \code{Site} and \code{Parameter}.  Each check produces its own flag
+#' @details Applies four independent QC checks to the selected parameter in \code{contdat}, matching thresholds from \code{metadat} by \code{Parameter}.  Each check produces its own flag
 #' (\code{"pass"}, \code{"suspect"}, or \code{"fail"}) so the user can see
 #' exactly which criteria fired.  If multiple metadata rows match a given
-#' site/parameter pair the first row is used and a warning is issued.
+#' parameter the first row is used and a warning is issued.
 #'
 #' \strong{Gross range} (\code{gross_flag}) — Observations below \code{GrMinFail}
 #' or above \code{GrMaxFail} are flagged \code{"fail"}.  Observations below
@@ -37,14 +35,14 @@
 #' whose run length reaches \code{FlatSuspectN} (or \code{FlatFailN}) are
 #' flagged.
 #'
-#' Data are sorted by \code{Site} and \code{DateTime} before processing.
+#' Data are sorted by \code{DateTime} before processing.
 #'
 #' Underlying concepts and code for this function borrow heavily from those
 #' in the [ContDataQC](https://leppott.github.io/ContDataQC) package.  Any
 #' credit for the approach should go to the
 #' [ContDataQC authors](https://leppott.github.io/ContDataQC/authors.html#citation).
 #'
-#' @return A data frame with columns \code{Site}, \code{DateTime}, the
+#' @return A data frame with columns \code{DateTime}, the
 #'   selected parameter, and four flag columns: \code{gross_flag},
 #'   \code{spike_flag}, \code{roc_flag}, and \code{flat_flag}.
 #'
@@ -76,46 +74,36 @@ utilASRflag <- function(contdat, metadat, param) {
     stop("'", param, "' not found in metadat$Parameter.", call. = FALSE)
   }
 
-  # sort by Site then DateTime so consecutive checks are meaningful
-  dat <- contdat[order(contdat$Site, contdat$DateTime), ]
+  # sort by DateTime so consecutive checks are meaningful
+  dat <- contdat[order(contdat$DateTime), ]
 
   # build output skeleton
-  out <- dat[, c("Site", "DateTime", param)]
+  out <- dat[, c("DateTime", param)]
   out$gross_flag <- "pass"
   out$spike_flag <- "pass"
   out$roc_flag <- "pass"
   out$flat_flag <- "pass"
 
-  for (site in unique(dat$Site)) {
-    site_idx <- which(dat$Site == site)
+  meta_rows <- metadat[metadat$Parameter == param, ]
 
-    meta_rows <- metadat[metadat$Site == site & metadat$Parameter == param, ]
-
-    if (nrow(meta_rows) == 0L) {
-      next
-    }
-
-    if (nrow(meta_rows) > 1L) {
-      warning(
-        "Multiple metadata rows for site '",
-        site,
-        "' parameter '",
-        param,
-        "'. Using the first row.",
-        call. = FALSE
-      )
-      meta_rows <- meta_rows[1L, ]
-    }
-
-    vals <- dat[[param]][site_idx]
-    datetimes <- dat$DateTime[site_idx]
-    init <- rep("pass", length(site_idx))
-
-    out$gross_flag[site_idx] <- utilASRflaggross(init, vals, meta_rows)
-    out$spike_flag[site_idx] <- utilASRflagspike(init, vals, meta_rows)
-    out$roc_flag[site_idx] <- utilASRflagroc(init, vals, datetimes, meta_rows)
-    out$flat_flag[site_idx] <- utilASRflagflatline(init, vals, meta_rows)
+  if (nrow(meta_rows) > 1L) {
+    warning(
+      "Multiple metadata rows for parameter '",
+      param,
+      "'. Using the first row.",
+      call. = FALSE
+    )
+    meta_rows <- meta_rows[1L, ]
   }
+
+  vals <- dat[[param]]
+  datetimes <- dat$DateTime
+  init <- rep("pass", nrow(dat))
+
+  out$gross_flag <- utilASRflaggross(init, vals, meta_rows)
+  out$spike_flag <- utilASRflagspike(init, vals, meta_rows)
+  out$roc_flag <- utilASRflagroc(init, vals, datetimes, meta_rows)
+  out$flat_flag <- utilASRflagflatline(init, vals, meta_rows)
 
   out
 }

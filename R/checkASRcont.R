@@ -6,14 +6,14 @@
 #'
 #' The input data can use either of two formats:
 #' \itemize{
-#'  \item \strong{Separate columns}: \code{Site}, \code{Date}, \code{Time}, and at least one parameter column
-#'  \item \strong{Combined column}: \code{Site}, \code{DateTime}, and at least one parameter column
+#'  \item \strong{Separate columns}: \code{Date}, \code{Time}, and at least one parameter column
+#'  \item \strong{Combined column}: \code{DateTime}, and at least one parameter column
 #' }
 #'
 #' The following checks are made:
 #' \itemize{
-#'  \item Column names: Should include only Site, Date, Time, DateTime, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
-#'  \item Required columns are present: Site and either Date + Time or DateTime are required for downstream analysis and upload to WQX
+#'  \item Column names: Should include only Date, Time, DateTime, and at least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}}
+#'  \item Required columns are present: Either Date + Time or DateTime are required for downstream analysis and upload to WQX
 #'  \item At least one parameter column is present: At least one parameter column that matches the \code{Parameter} column in \code{\link{paramsASR}} is required for downstream analysis and upload to WQX
 #'  \item Date format (separate columns only): Should be in a format recognized by \code{\link[lubridate:ymd]{lubridate::ymd()}} (e.g. \code{"2024-06-01"})
 #'  \item Time format (separate columns only): Should be parseable by \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} using 24-hour (\code{"16:30:33"}), 12-hour AM/PM (\code{"4:30:33 PM"}), or Excel-prefixed (\code{"1899-12-31 16:30:33"}) formats
@@ -37,7 +37,7 @@ checkASRcont <- function(contdat) {
 
   # globals
   parms <- paramsASR$Parameter
-  valid_colnms <- c("Site", "Date", "Time", "DateTime")
+  valid_colnms <- c("Date", "Time", "DateTime")
 
   # detect input format
   has_datetime <- 'DateTime' %in% names(contdat)
@@ -59,11 +59,11 @@ checkASRcont <- function(contdat) {
 
   # check required header columns
   if (has_datetime) {
-    msg <- '\tChecking Site, DateTime are present...'
-    required <- c("Site", "DateTime")
+    msg <- '\tChecking DateTime is present...'
+    required <- c("DateTime")
   } else {
-    msg <- '\tChecking Site, Date, Time are present...'
-    required <- c("Site", "Date", "Time")
+    msg <- '\tChecking Date, Time are present...'
+    required <- c("Date", "Time")
   }
   chk <- required %in% nms
   if (any(!chk)) {
@@ -93,8 +93,11 @@ checkASRcont <- function(contdat) {
   # check date/time format
   if (has_datetime) {
     msg <- '\tChecking DateTime format...'
-    chk <- lubridate::parse_date_time(contdat$DateTime,
-      orders = c('ymd IMSp', 'ymd HMS', 'ymd HM'), quiet = TRUE)
+    chk <- lubridate::parse_date_time(
+      contdat$DateTime,
+      orders = c('ymd IMSp', 'ymd HMS', 'ymd HM'),
+      quiet = TRUE
+    )
     if (any(is.na(chk))) {
       tochk <- which(is.na(chk))
       stop(
@@ -122,8 +125,11 @@ checkASRcont <- function(contdat) {
 
     # check times
     msg <- '\tChecking time format...'
-    chk <- lubridate::parse_date_time(contdat$Time,
-      orders = c('IMSp', 'HMS', 'HM', 'ymd IMSp', 'ymd HMS', 'ymd HM'), quiet = TRUE)
+    chk <- lubridate::parse_date_time(
+      contdat$Time,
+      orders = c('IMSp', 'HMS', 'HM', 'ymd IMSp', 'ymd HMS', 'ymd HM'),
+      quiet = TRUE
+    )
     if (any(is.na(chk))) {
       tochk <- which(is.na(chk))
       stop(

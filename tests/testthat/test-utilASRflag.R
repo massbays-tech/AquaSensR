@@ -3,12 +3,12 @@
 # ---------------------------------------------------------------------------
 
 test_that("utilASRflag returns correct structure and all-pass baseline", {
-  cd     <- flag_make_cd("SiteA", rep(20, flag_n_obs))
-  md     <- flag_make_md("SiteA")
+  cd     <- flag_make_cd(rep(20, flag_n_obs))
+  md     <- flag_make_md()
   result <- utilASRflag(cd, md, "Water Temp_C")
 
   expect_s3_class(result, "data.frame")
-  expect_named(result, c("Site", "DateTime", "Water Temp_C",
+  expect_named(result, c("DateTime", "Water Temp_C",
                           "gross_flag", "spike_flag", "roc_flag", "flat_flag"))
   expect_equal(nrow(result), flag_n_obs)
   expect_true(all(result$gross_flag == "pass"))
@@ -22,22 +22,22 @@ test_that("utilASRflag returns correct structure and all-pass baseline", {
 # ---------------------------------------------------------------------------
 
 test_that("utilASRflag errors on unrecognised parameter", {
-  cd <- flag_make_cd("SiteA", rep(20, flag_n_obs))
-  md <- flag_make_md("SiteA")
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
   expect_error(utilASRflag(cd, md, "Fake_Param"), "not a recognised parameter")
 })
 
 test_that("utilASRflag errors when param column missing from contdat", {
-  cd <- flag_make_cd("SiteA", rep(20, flag_n_obs))
-  md <- flag_make_md("SiteA")
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
   md[["Parameter"]] <- "pH_SU"
   expect_error(utilASRflag(cd, md, "pH_SU"), "column not found in contdat")
 })
 
 test_that("utilASRflag errors when param not in metadat", {
-  cd <- flag_make_cd("SiteA", rep(20, flag_n_obs))
+  cd <- flag_make_cd(rep(20, flag_n_obs))
   cd[["pH_SU"]] <- 7.0
-  md <- flag_make_md("SiteA")   # metadata only covers Water Temp_C
+  md <- flag_make_md()   # metadata only covers Water Temp_C
   expect_error(utilASRflag(cd, md, "pH_SU"), "not found in metadat")
 })
 
@@ -46,18 +46,9 @@ test_that("utilASRflag errors when param not in metadat", {
 # ---------------------------------------------------------------------------
 
 test_that("utilASRflag warns and uses first row on duplicate metadata", {
-  cd <- flag_make_cd("SiteA", rep(20, flag_n_obs))
-  md <- rbind(flag_make_md("SiteA"), flag_make_md("SiteA"))
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- rbind(flag_make_md(), flag_make_md())
   expect_warning(utilASRflag(cd, md, "Water Temp_C"), "Multiple metadata rows")
-})
-
-test_that("utilASRflag skips sites absent from metadata", {
-  cd <- rbind(flag_make_cd("SiteA", rep(20, flag_n_obs)),
-              flag_make_cd("SiteB", rep(99, flag_n_obs)))
-  md <- flag_make_md("SiteA", GrMaxFail = 35)
-
-  result <- utilASRflag(cd, md, "Water Temp_C")
-  expect_true(all(result$gross_flag[result$Site == "SiteB"] == "pass"))
 })
 
 # ---------------------------------------------------------------------------
@@ -71,8 +62,8 @@ test_that("utilASRflag gross_flag fires for suspect and fail on both bounds", {
   vals[15] <- 31.0   # above GrMaxSuspect = 30 -> suspect
   vals[22] <- 36.0   # above GrMaxFail    = 35 -> fail
 
-  cd <- flag_make_cd("SiteA", vals)
-  md <- flag_make_md("SiteA", GrMinFail = -5, GrMaxFail = 35,
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(GrMinFail = -5, GrMaxFail = 35,
                      GrMinSuspect = 2, GrMaxSuspect = 30)
 
   result <- utilASRflag(cd, md, "Water Temp_C")
@@ -96,8 +87,8 @@ test_that("utilASRflag spike_flag fires for suspect and fail steps", {
   vals[8]  <- vals[7]  + 5    # step >= SpikeSuspect = 4 -> suspect
   vals[20] <- vals[19] + 10   # step >= SpikeFail    = 8 -> fail
 
-  cd <- flag_make_cd("SiteA", vals)
-  md <- flag_make_md("SiteA", SpikeSuspect = 4, SpikeFail = 8)
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(SpikeSuspect = 4, SpikeFail = 8)
 
   result <- utilASRflag(cd, md, "Water Temp_C")
 
@@ -112,6 +103,15 @@ test_that("utilASRflag spike_flag fires for suspect and fail steps", {
 # Rate of change
 # ---------------------------------------------------------------------------
 
+test_that("utilASRflag skips roc check when RoCN set but RoCHours is NA", {
+  vals    <- c(rep(20, 19), rep(30, flag_n_obs - 19L))  # large level shift
+  cd      <- flag_make_cd(vals)
+  md      <- flag_make_md(RoCN = 4)  # RoCHours stays NA -> check skipped
+
+  result  <- utilASRflag(cd, md, "Water Temp_C")
+  expect_true(all(result$roc_flag == "pass"))
+})
+
 test_that("utilASRflag roc_flag fires at level shift in stable series", {
   # 19 obs at 20 then a level shift to 30 (step = 10).
   # At obs 20: window = obs 1-20, sd(c(rep(20, 19), 30)) = sqrt(5) ~ 2.236,
@@ -119,8 +119,8 @@ test_that("utilASRflag roc_flag fires at level shift in stable series", {
   # All subsequent diffs = 0 -> pass.
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
 
-  cd <- flag_make_cd("SiteA", vals)
-  md <- flag_make_md("SiteA", RoCN = 4, RoCHours = 25)
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(RoCN = 4, RoCHours = 25)
 
   result <- utilASRflag(cd, md, "Water Temp_C")
 
@@ -150,9 +150,8 @@ test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
     seq(20.1, 20.5, by = 0.1)
   )
 
-  cd <- flag_make_cd("SiteA", vals)
-  md <- flag_make_md("SiteA",
-                     FlatSuspectN = 5,  FlatSuspectDelta = 0.02,
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(FlatSuspectN = 5,  FlatSuspectDelta = 0.02,
                      FlatFailN   = 10,  FlatFailDelta    = 0.02)
 
   result <- utilASRflag(cd, md, "Water Temp_C")
@@ -163,29 +162,4 @@ test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
   expect_true(all(result$gross_flag == "pass"))
   expect_true(all(result$spike_flag == "pass"))
   expect_true(all(result$roc_flag   == "pass"))
-})
-
-# ---------------------------------------------------------------------------
-# Multiple sites
-# ---------------------------------------------------------------------------
-
-test_that("utilASRflag processes multiple sites independently", {
-  vals_a      <- rep(20, flag_n_obs)
-  vals_b      <- rep(20, flag_n_obs)
-  vals_a[5]   <- 40   # fail gross for SiteA obs 5
-  vals_b[20]  <- 40   # fail gross for SiteB obs 20
-
-  cd <- rbind(flag_make_cd("SiteA", vals_a), flag_make_cd("SiteB", vals_b))
-  md <- rbind(flag_make_md("SiteA", GrMaxFail = 35),
-              flag_make_md("SiteB", GrMaxFail = 35))
-
-  result <- utilASRflag(cd, md, "Water Temp_C")
-
-  res_a <- result[result$Site == "SiteA", ]
-  res_b <- result[result$Site == "SiteB", ]
-
-  expect_equal(res_a$gross_flag[5],  "fail")
-  expect_true(all(res_a$gross_flag[-5]  == "pass"))
-  expect_equal(res_b$gross_flag[20], "fail")
-  expect_true(all(res_b$gross_flag[-20] == "pass"))
 })

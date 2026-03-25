@@ -23,7 +23,7 @@ This function is used internally within \code{\link{readASRcont}} to format the 
 \itemize{
 \item Combine Date and Time columns (separate column format only): The \code{Time} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and reformatted to \code{HH:MM:SS} before being united with \code{Date} into a single \code{DateTime} column, which is then converted to POSIXct with the specified time zone.
 \item Convert DateTime to POSIXct (combined column format only): The \code{DateTime} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour and 12-hour AM/PM formats) and converted to POSIXct with the specified time zone.
-\item Convert non-numeric columns to numeric: Converts all columns except Site and DateTime to numeric if they are not already.
+\item Convert non-numeric columns to numeric: Converts all columns except DateTime to numeric if they are not already.
 }
 }
 \examples{

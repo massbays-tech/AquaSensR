@@ -16,8 +16,8 @@ test_that("formASRcont combines Date and Time columns into DateTime", {
 test_that("formASRcont converts non-numeric columns to numeric", {
   result <- formASRcont(tst$contdatchk, tz = 'Etc/GMT+5')
 
-  # All columns except Site and DateTime should be numeric
-  numeric_cols <- setdiff(names(result), c("Site", "DateTime"))
+  # All columns except DateTime should be numeric
+  numeric_cols <- setdiff(names(result), c("DateTime"))
 
   for (col in numeric_cols) {
     expect_true(
@@ -25,13 +25,6 @@ test_that("formASRcont converts non-numeric columns to numeric", {
       info = paste("Column", col, "should be numeric")
     )
   }
-})
-
-test_that("formASRcont preserves Site column", {
-  result <- formASRcont(tst$contdatchk, tz = 'Etc/GMT+5')
-
-  expect_true("Site" %in% names(result))
-  expect_equal(result$Site, tst$contdatchk$Site)
 })
 
 test_that("formASRcont produces same result as readASRcont", {
@@ -60,7 +53,7 @@ test_that("formASRcont handles combined DateTime input", {
 test_that("formASRcont combined format converts non-numeric columns to numeric", {
   result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
 
-  numeric_cols <- setdiff(names(result), c("Site", "DateTime"))
+  numeric_cols <- setdiff(names(result), c("DateTime"))
   for (col in numeric_cols) {
     expect_true(
       is.numeric(result[[col]]),

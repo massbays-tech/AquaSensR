@@ -7,7 +7,7 @@ test_that("checkASRmeta passes valid data without errors", {
 
 test_that("checkASRmeta errors on invalid column names", {
   bad_data <- tst$metadatchk
-  names(bad_data)[names(bad_data) == "Site"] <- "InvalidColumn"
+  names(bad_data)[names(bad_data) == "GrMinFail"] <- "InvalidColumn"
 
   expect_error(
     checkASRmeta(bad_data),
@@ -17,12 +17,12 @@ test_that("checkASRmeta errors on invalid column names", {
 })
 
 test_that("checkASRmeta errors when required columns are missing", {
-  # Missing Site column
-  bad_data <- tst$metadatchk[, names(tst$metadatchk) != "Site"]
+  # Missing GrMinFail column
+  bad_data <- tst$metadatchk[, names(tst$metadatchk) != "GrMinFail"]
 
   expect_error(
     checkASRmeta(bad_data),
-    "\tChecking all columns present...\n\tMissing the following columns: Site",
+    "\tChecking all columns present...\n\tMissing the following columns: GrMinFail",
     fixed = TRUE
   )
 })
@@ -50,13 +50,13 @@ test_that("checkASRmeta errors on invalid parameter format", {
 
 test_that("checkASRmeta errors on non-numeric values", {
   bad_data <- tst$metadatchk
-  param_name <- 'Depth'
+  param_name <- 'GrMinFail'
   bad_data[[param_name]][3] <- "text"
 
   expected_msg <- paste0(
     "\tChecking columns for non-numeric values...\n\t",
     "The following columns have non-numeric values in the following rows: ",
-    "Depth (3)"
+    "GrMinFail (3)"
   )
 
   expect_error(
@@ -66,14 +66,14 @@ test_that("checkASRmeta errors on non-numeric values", {
   )
 
   bad_data <- tst$metadatchk
-  param_name <- 'Depth'
+  param_name <- 'GrMinFail'
   bad_data[[param_name]][1] <- "text"
   bad_data[[param_name]][3] <- "text"
 
   expected_msg <- paste0(
     "\tChecking columns for non-numeric values...\n\t",
     "The following columns have non-numeric values in the following rows: ",
-    "Depth (1, 3)"
+    "GrMinFail (1, 3)"
   )
 
   expect_error(
@@ -83,7 +83,7 @@ test_that("checkASRmeta errors on non-numeric values", {
   )
 
   bad_data <- tst$metadatchk
-  param_name <- 'Depth'
+  param_name <- 'GrMinFail'
   bad_data[[param_name]][3] <- "text"
   param_name <- 'GrMaxSuspect'
   bad_data[[param_name]][2] <- "text"
@@ -91,7 +91,7 @@ test_that("checkASRmeta errors on non-numeric values", {
   expected_msg <- paste0(
     "\tChecking columns for non-numeric values...\n\t",
     "The following columns have non-numeric values in the following rows: ",
-    "Depth (3); GrMaxSuspect (2)"
+    "GrMinFail (3); GrMaxSuspect (2)"
   )
 
   expect_error(

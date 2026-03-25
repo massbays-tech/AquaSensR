@@ -9,7 +9,10 @@
       "Bash(\"/c/Program Files/R/R-4.4.2/bin/Rscript.exe\" data-raw/make_ExampleCont2.R)",
       "Bash(Rscript -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\")",
       "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\" 2>&1)",
-      "Bash(\"/c/Program Files/R/R-4.3.2/bin/Rscript.exe\" -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\" 2>&1)"
+      "Bash(\"/c/Program Files/R/R-4.3.2/bin/Rscript.exe\" -e \"pkgload::load_all\\(quiet = TRUE\\); sort\\(getNamespaceExports\\('AquaSensR'\\)\\)\" 2>&1)",
+      "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(filter='utilASRflag'\\)\" 2>&1)",
+      "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(\\)\" 2>&1)",
+      "Bash(\"C:/Program Files/R/R-4.4.2/bin/R.exe\" --vanilla -e \"devtools::test\\(\\)\")"
     ]
   }
 }
