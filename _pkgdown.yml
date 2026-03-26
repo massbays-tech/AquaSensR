@@ -36,7 +36,7 @@ reference:
   - starts_with('form')
 - title: Quality control
   desc: >
-    Functions for flagging suspect and failed data based on user-defined metadata.
+    Functions for flagging suspect and failed data based on user-defined data quality objectives.
   contents:
   - anlzASRflag
   - starts_with('utilASRflag')

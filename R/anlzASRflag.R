@@ -25,12 +25,12 @@
 #'
 #' @examples
 #' contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
-#' metapth <- system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR')
+#' dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 #'
 #' contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
-#' metadat <- readASRmeta(metapth, runchk = FALSE)
+#' dqodat <- readASRdqo(dqopth, runchk = FALSE)
 #'
-#' flagdat <- utilASRflag(contdat, metadat, param = 'Water Temp_C')
+#' flagdat <- utilASRflag(contdat, dqodat, param = 'Water Temp_C')
 #' anlzASRflag(flagdat)
 anlzASRflag <- function(flagdat) {
   # parameter is always the second column (DateTime, param, flags...)

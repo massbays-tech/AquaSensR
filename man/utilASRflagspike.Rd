@@ -4,7 +4,7 @@
 \alias{utilASRflagspike}
 \title{Apply spike QC flag}
 \usage{
-utilASRflagspike(flag, vals, meta)
+utilASRflagspike(flag, vals, dqo)
 }
 \arguments{
 \item{flag}{character vector of current flag values (\code{"pass"},
@@ -13,11 +13,12 @@ utilASRflagspike(flag, vals, meta)
 \item{vals}{numeric vector of observed values, the same length as
 \code{flag}.}
 
-\item{meta}{single-row data frame of metadata for the parameter being
-checked.  Optional numeric columns \code{SpikeSuspect} and
-\code{SpikeFail} define the absolute-difference thresholds.  Either or
-both columns may be absent or \code{NA}, in which case that level of
-check is skipped.}
+\item{dqo}{two-row data frame from data quality objectives for the parameter
+being checked, containing one row where \code{Flag == "Fail"} and one
+where \code{Flag == "Suspect"}.  Optional numeric column \code{Spike}
+defines the absolute-difference threshold for each severity level.
+Either row may have \code{NA} for \code{Spike}, in which case that level
+of check is skipped.}
 }
 \value{
 Updated character flag vector.
@@ -28,14 +29,15 @@ Apply spike QC flag
 \details{
 The absolute difference between each observation and the preceding
 one is computed.  If the difference is greater than or equal to
-\code{SpikeSuspect} the observation is flagged \code{"suspect"};
-greater than or equal to \code{SpikeFail} flags \code{"fail"}.
+\code{Spike} in the \code{"Suspect"} row the observation is flagged
+\code{"suspect"}; greater than or equal to \code{Spike} in the
+\code{"Fail"} row flags \code{"fail"}.
 The first observation always receives \code{NA} for the difference and
 is not flagged by this check.
 }
 \examples{
 flag <- rep("pass", 5)
 vals <- c(10, 10.5, 14, 10.2, 10.3)
-meta <- data.frame(SpikeSuspect = 1.5, SpikeFail = 2.0)
-utilASRflagspike(flag, vals, meta)
+dqo <- data.frame(Flag = c("Fail", "Suspect"), Spike = c(2.0, 1.5))
+utilASRflagspike(flag, vals, dqo)
 }

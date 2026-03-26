@@ -4,7 +4,7 @@
 \alias{utilASRflagroc}
 \title{Apply rate-of-change QC flag}
 \usage{
-utilASRflagroc(flag, vals, datetimes, meta)
+utilASRflagroc(flag, vals, datetimes, dqo)
 }
 \arguments{
 \item{flag}{character vector of current flag values (\code{"pass"},
@@ -16,10 +16,13 @@ utilASRflagroc(flag, vals, datetimes, meta)
 \item{datetimes}{POSIXct vector of observation timestamps, the same length
 as \code{flag}.}
 
-\item{meta}{single-row data frame of metadata for the parameter being
-checked.  Optional numeric columns \code{RoCN} (SD multiplier) and
-\code{RoCHours} (trailing window width in hours) control the check.  If
-either column is absent or \code{NA} the check is skipped.}
+\item{dqo}{two-row data frame from data quality objectives for the parameter
+being checked, containing one row where \code{Flag == "Fail"} and one
+where \code{Flag == "Suspect"}.  The \code{"Suspect"} row's numeric
+columns \code{RoCN} (SD multiplier) and \code{RoCHours} (trailing window
+width in hours) control the check.  If either column is \code{NA} in the
+\code{"Suspect"} row the check is skipped.  Rate-of-change thresholds are
+not applied to \code{"Fail"} flags.}
 }
 \value{
 Updated character flag vector.
@@ -41,6 +44,6 @@ not produce \code{"fail"} flags.
 flag <- rep("pass", 6)
 vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
-meta <- data.frame(RoCN = 3, RoCHours = 2)
-utilASRflagroc(flag, vals, datetimes, meta)
+dqo <- data.frame(Flag = c("Fail", "Suspect"), RoCN = c(NA, 3), RoCHours = c(NA, 2))
+utilASRflagroc(flag, vals, datetimes, dqo)
 }

@@ -3,18 +3,27 @@
 # ---------------------------------------------------------------------------
 
 test_that("utilASRflag returns correct structure and all-pass baseline", {
-  cd     <- flag_make_cd(rep(20, flag_n_obs))
-  md     <- flag_make_md()
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
   result <- utilASRflag(cd, md, "Water Temp_C")
 
   expect_s3_class(result, "data.frame")
-  expect_named(result, c("DateTime", "Water Temp_C",
-                          "gross_flag", "spike_flag", "roc_flag", "flat_flag"))
+  expect_named(
+    result,
+    c(
+      "DateTime",
+      "Water Temp_C",
+      "gross_flag",
+      "spike_flag",
+      "roc_flag",
+      "flat_flag"
+    )
+  )
   expect_equal(nrow(result), flag_n_obs)
   expect_true(all(result$gross_flag == "pass"))
   expect_true(all(result$spike_flag == "pass"))
-  expect_true(all(result$roc_flag   == "pass"))
-  expect_true(all(result$flat_flag  == "pass"))
+  expect_true(all(result$roc_flag == "pass"))
+  expect_true(all(result$flat_flag == "pass"))
 })
 
 # ---------------------------------------------------------------------------
@@ -34,21 +43,11 @@ test_that("utilASRflag errors when param column missing from contdat", {
   expect_error(utilASRflag(cd, md, "pH_SU"), "column not found in contdat")
 })
 
-test_that("utilASRflag errors when param not in metadat", {
+test_that("utilASRflag errors when param not in dqodat", {
   cd <- flag_make_cd(rep(20, flag_n_obs))
   cd[["pH_SU"]] <- 7.0
-  md <- flag_make_md()   # metadata only covers Water Temp_C
-  expect_error(utilASRflag(cd, md, "pH_SU"), "not found in metadat")
-})
-
-# ---------------------------------------------------------------------------
-# Metadata edge cases
-# ---------------------------------------------------------------------------
-
-test_that("utilASRflag warns and uses first row on duplicate metadata", {
-  cd <- flag_make_cd(rep(20, flag_n_obs))
-  md <- rbind(flag_make_md(), flag_make_md())
-  expect_warning(utilASRflag(cd, md, "Water Temp_C"), "Multiple metadata rows")
+  md <- flag_make_md() # dqodat only covers Water Temp_C
+  expect_error(utilASRflag(cd, md, "pH_SU"), "not found in dqodat")
 })
 
 # ---------------------------------------------------------------------------
@@ -56,26 +55,32 @@ test_that("utilASRflag warns and uses first row on duplicate metadata", {
 # ---------------------------------------------------------------------------
 
 test_that("utilASRflag gross_flag fires for suspect and fail on both bounds", {
-  vals     <- rep(20, flag_n_obs)
-  vals[3]  <- 1.5    # below GrMinSuspect = 2  -> suspect
-  vals[7]  <- -6.0   # below GrMinFail    = -5 -> fail
-  vals[15] <- 31.0   # above GrMaxSuspect = 30 -> suspect
-  vals[22] <- 36.0   # above GrMaxFail    = 35 -> fail
+  vals <- rep(20, flag_n_obs)
+  vals[3] <- 1.5 # below GrMinSuspect = 2  -> suspect
+  vals[7] <- -6.0 # below GrMinFail    = -5 -> fail
+  vals[15] <- 31.0 # above GrMaxSuspect = 30 -> suspect
+  vals[22] <- 36.0 # above GrMaxFail    = 35 -> fail
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(GrMinFail = -5, GrMaxFail = 35,
-                     GrMinSuspect = 2, GrMaxSuspect = 30)
+  md <- flag_make_md(
+    GrMinFail = -5,
+    GrMaxFail = 35,
+    GrMinSuspect = 2,
+    GrMaxSuspect = 30
+  )
 
   result <- utilASRflag(cd, md, "Water Temp_C")
 
-  expect_equal(result$gross_flag[3],  "suspect")
-  expect_equal(result$gross_flag[7],  "fail")
+  expect_equal(result$gross_flag[3], "suspect")
+  expect_equal(result$gross_flag[7], "fail")
   expect_equal(result$gross_flag[15], "suspect")
   expect_equal(result$gross_flag[22], "fail")
-  expect_true(all(result$gross_flag[c(1:2, 4:6, 8:14, 16:21, 23:flag_n_obs)] == "pass"))
+  expect_true(all(
+    result$gross_flag[c(1:2, 4:6, 8:14, 16:21, 23:flag_n_obs)] == "pass"
+  ))
   expect_true(all(result$spike_flag == "pass"))
-  expect_true(all(result$roc_flag   == "pass"))
-  expect_true(all(result$flat_flag  == "pass"))
+  expect_true(all(result$roc_flag == "pass"))
+  expect_true(all(result$flat_flag == "pass"))
 })
 
 # ---------------------------------------------------------------------------
@@ -83,32 +88,42 @@ test_that("utilASRflag gross_flag fires for suspect and fail on both bounds", {
 # ---------------------------------------------------------------------------
 
 test_that("utilASRflag spike_flag fires for suspect and fail steps", {
-  vals     <- rep(20, flag_n_obs)
-  vals[8]  <- vals[7]  + 5    # step >= SpikeSuspect = 4 -> suspect
-  vals[20] <- vals[19] + 10   # step >= SpikeFail    = 8 -> fail
+  vals <- rep(20, flag_n_obs)
+  vals[8] <- vals[7] + 5 # step >= SpikeSuspect = 4 -> suspect
+  vals[20] <- vals[19] + 10 # step >= SpikeFail    = 8 -> fail
 
   cd <- flag_make_cd(vals)
   md <- flag_make_md(SpikeSuspect = 4, SpikeFail = 8)
 
   result <- utilASRflag(cd, md, "Water Temp_C")
 
-  expect_equal(result$spike_flag[8],  "suspect")
+  expect_equal(result$spike_flag[8], "suspect")
   expect_equal(result$spike_flag[20], "fail")
   expect_true(all(result$gross_flag == "pass"))
-  expect_true(all(result$roc_flag   == "pass"))
-  expect_true(all(result$flat_flag  == "pass"))
+  expect_true(all(result$roc_flag == "pass"))
+  expect_true(all(result$flat_flag == "pass"))
 })
 
 # ---------------------------------------------------------------------------
 # Rate of change
 # ---------------------------------------------------------------------------
 
-test_that("utilASRflag skips roc check when RoCN set but RoCHours is NA", {
-  vals    <- c(rep(20, 19), rep(30, flag_n_obs - 19L))  # large level shift
-  cd      <- flag_make_cd(vals)
-  md      <- flag_make_md(RoCN = 4)  # RoCHours stays NA -> check skipped
+test_that("utilASRflag skips roc check when no Suspect row present", {
+  vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L)) # large level shift
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(RoCN = 4, RoCHours = 25)
+  md <- md[md$Flag == "Fail", ] # drop Suspect row
 
-  result  <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water Temp_C")
+  expect_true(all(result$roc_flag == "pass"))
+})
+
+test_that("utilASRflag skips roc check when RoCN set but RoCHours is NA", {
+  vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L)) # large level shift
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(RoCN = 4) # RoCHours stays NA -> check skipped
+
+  result <- utilASRflag(cd, md, "Water Temp_C")
   expect_true(all(result$roc_flag == "pass"))
 })
 
@@ -128,7 +143,7 @@ test_that("utilASRflag roc_flag fires at level shift in stable series", {
   expect_true(all(result$roc_flag[-20] == "pass"))
   expect_true(all(result$gross_flag == "pass"))
   expect_true(all(result$spike_flag == "pass"))
-  expect_true(all(result$flat_flag  == "pass"))
+  expect_true(all(result$flat_flag == "pass"))
 })
 
 # ---------------------------------------------------------------------------
@@ -151,8 +166,12 @@ test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
   )
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(FlatSuspectN = 5,  FlatSuspectDelta = 0.02,
-                     FlatFailN   = 10,  FlatFailDelta    = 0.02)
+  md <- flag_make_md(
+    FlatSuspectN = 5,
+    FlatSuspectDelta = 0.02,
+    FlatFailN = 10,
+    FlatFailDelta = 0.02
+  )
 
   result <- utilASRflag(cd, md, "Water Temp_C")
 
@@ -161,5 +180,5 @@ test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
   expect_true(all(result$flat_flag[c(1:14, 26:flag_n_obs)] == "pass"))
   expect_true(all(result$gross_flag == "pass"))
   expect_true(all(result$spike_flag == "pass"))
-  expect_true(all(result$roc_flag   == "pass"))
+  expect_true(all(result$roc_flag == "pass"))
 })

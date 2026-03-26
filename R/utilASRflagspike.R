@@ -4,16 +4,18 @@
 #'   \code{"suspect"}, or \code{"fail"}).
 #' @param vals numeric vector of observed values, the same length as
 #'   \code{flag}.
-#' @param meta single-row data frame of metadata for the parameter being
-#'   checked.  Optional numeric columns \code{SpikeSuspect} and
-#'   \code{SpikeFail} define the absolute-difference thresholds.  Either or
-#'   both columns may be absent or \code{NA}, in which case that level of
-#'   check is skipped.
+#' @param dqo two-row data frame from data quality objectives for the parameter
+#'   being checked, containing one row where \code{Flag == "Fail"} and one
+#'   where \code{Flag == "Suspect"}.  Optional numeric column \code{Spike}
+#'   defines the absolute-difference threshold for each severity level.
+#'   Either row may have \code{NA} for \code{Spike}, in which case that level
+#'   of check is skipped.
 #'
 #' @details The absolute difference between each observation and the preceding
 #'   one is computed.  If the difference is greater than or equal to
-#'   \code{SpikeSuspect} the observation is flagged \code{"suspect"};
-#'   greater than or equal to \code{SpikeFail} flags \code{"fail"}.
+#'   \code{Spike} in the \code{"Suspect"} row the observation is flagged
+#'   \code{"suspect"}; greater than or equal to \code{Spike} in the
+#'   \code{"Fail"} row flags \code{"fail"}.
 #'   The first observation always receives \code{NA} for the difference and
 #'   is not flagged by this check.
 #'
@@ -24,19 +26,18 @@
 #' @examples
 #' flag <- rep("pass", 5)
 #' vals <- c(10, 10.5, 14, 10.2, 10.3)
-#' meta <- data.frame(SpikeSuspect = 1.5, SpikeFail = 2.0)
-#' utilASRflagspike(flag, vals, meta)
-utilASRflagspike <- function(flag, vals, meta) {
+#' dqo <- data.frame(Flag = c("Fail", "Suspect"), Spike = c(2.0, 1.5))
+#' utilASRflagspike(flag, vals, dqo)
+utilASRflagspike <- function(flag, vals, dqo) {
   diffs <- c(NA_real_, abs(diff(vals)))
-  if ("SpikeSuspect" %in% names(meta) && !is.na(meta$SpikeSuspect)) {
-    flag <- utilASRflagupdate(
-      flag,
-      "suspect",
-      diffs >= meta$SpikeSuspect
-    )
+  susp <- dqo[dqo$Flag == "Suspect", ]
+  fail <- dqo[dqo$Flag == "Fail", ]
+
+  if (nrow(susp) > 0 && "Spike" %in% names(dqo) && !is.na(susp$Spike)) {
+    flag <- utilASRflagupdate(flag, "suspect", diffs >= susp$Spike)
   }
-  if ("SpikeFail" %in% names(meta) && !is.na(meta$SpikeFail)) {
-    flag <- utilASRflagupdate(flag, "fail", diffs >= meta$SpikeFail)
+  if (nrow(fail) > 0 && "Spike" %in% names(dqo) && !is.na(fail$Spike)) {
+    flag <- utilASRflagupdate(flag, "fail", diffs >= fail$Spike)
   }
   flag
 }

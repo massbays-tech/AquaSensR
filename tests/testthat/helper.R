@@ -14,25 +14,28 @@ flag_make_cd <- function(vals) {
   df
 }
 
-flag_make_md <- function(...) {
-  base <- list(
-    Parameter = "Water Temp_C",
-    GrMinFail = NA_real_,
-    GrMaxFail = NA_real_,
-    GrMinSuspect = NA_real_,
-    GrMaxSuspect = NA_real_,
-    SpikeFail = NA_real_,
-    SpikeSuspect = NA_real_,
-    RoCN = NA_real_,
-    RoCHours = NA_real_,
-    FlatFailN = NA_real_,
-    FlatFailDelta = NA_real_,
-    FlatSuspectN = NA_real_,
-    FlatSuspectDelta = NA_real_
+flag_make_md <- function(GrMinFail = NA_real_, GrMaxFail = NA_real_,
+                         GrMinSuspect = NA_real_, GrMaxSuspect = NA_real_,
+                         SpikeFail = NA_real_, SpikeSuspect = NA_real_,
+                         RoCN = NA_real_, RoCHours = NA_real_,
+                         FlatFailN = NA_real_, FlatFailDelta = NA_real_,
+                         FlatSuspectN = NA_real_, FlatSuspectDelta = NA_real_) {
+  rbind(
+    data.frame(
+      Parameter = "Water Temp_C", Flag = "Fail",
+      GrMin = GrMinFail, GrMax = GrMaxFail, Spike = SpikeFail,
+      FlatN = FlatFailN, FlatDelta = FlatFailDelta,
+      RoCN = NA_real_, RoCHours = NA_real_,
+      stringsAsFactors = FALSE
+    ),
+    data.frame(
+      Parameter = "Water Temp_C", Flag = "Suspect",
+      GrMin = GrMinSuspect, GrMax = GrMaxSuspect, Spike = SpikeSuspect,
+      FlatN = FlatSuspectN, FlatDelta = FlatSuspectDelta,
+      RoCN = RoCN, RoCHours = RoCHours,
+      stringsAsFactors = FALSE
+    )
   )
-  args <- list(...)
-  base[names(args)] <- args
-  as.data.frame(base, stringsAsFactors = FALSE)
 }
 
 # ---------------------------------------------------------------------------
@@ -58,15 +61,15 @@ tst <- list(
     tz = 'Etc/GMT+5',
     runchk = F
   ),
-  # continuous metadata
-  metapth = system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR'),
-  metadatchk = suppressWarnings(readxl::read_excel(
-    system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR'),
+  # data quality objectives
+  dqopth = system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR'),
+  dqodatchk = suppressWarnings(readxl::read_excel(
+    system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR'),
     na = c('NA', 'na', ''),
     guess_max = Inf
   )),
-  metadat = readASRmeta(
-    system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR'),
+  dqodat = readASRdqo(
+    system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR'),
     runchk = F
   )
 )

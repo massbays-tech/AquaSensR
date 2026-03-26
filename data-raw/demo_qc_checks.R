@@ -32,7 +32,7 @@ make_cd <- function(vals) {
   df
 }
 
-# Build a metadat row with all columns; supply only the thresholds you need
+# Build a dqodat row with all columns; supply only the thresholds you need
 make_md <- function(...) {
   base <- list(
     Parameter = "Water Temp_C",

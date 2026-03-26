@@ -4,13 +4,15 @@
 #'   \code{"suspect"}, or \code{"fail"}).
 #' @param vals numeric vector of observed values, the same length as
 #'   \code{flag}.
-#' @param meta single-row data frame of metadata for the parameter being
-#'   checked.  Must contain numeric columns \code{GrMinFail}, \code{GrMaxFail},
-#'   \code{GrMinSuspect}, and \code{GrMaxSuspect}.
+#' @param dqo two-row data frame from data quality objectives for the parameter
+#'   being checked, containing one row where \code{Flag == "Fail"} and one
+#'   where \code{Flag == "Suspect"}.  Must contain numeric columns \code{GrMin}
+#'   and \code{GrMax}.
 #'
-#' @details Observations below \code{GrMinFail} or above \code{GrMaxFail} are flagged
-#'   \code{"fail"}.  Observations below \code{GrMinSuspect} or above \code{GrMaxSuspect}
-#'   (but within the fail bounds) are flagged \code{"suspect"}.
+#' @details Observations below \code{GrMin} or above \code{GrMax} in the
+#'   \code{"Fail"} row are flagged \code{"fail"}.  Observations below
+#'   \code{GrMin} or above \code{GrMax} in the \code{"Suspect"} row (but
+#'   within the fail bounds) are flagged \code{"suspect"}.
 #'   \code{NA} threshold values are silently skipped.
 #'
 #' @return Updated character flag vector.
@@ -20,20 +22,22 @@
 #' @examples
 #' flag <- rep("pass", 5)
 #' vals <- c(-2, 0, 15, 26, 32)
-#' meta <- data.frame(GrMinFail = -1, GrMaxFail = 30, GrMinSuspect = 0, GrMaxSuspect = 25)
-#' utilASRflaggross(flag, vals, meta)
-utilASRflaggross <- function(flag, vals, meta) {
-  if (!is.na(meta$GrMinSuspect)) {
-    flag <- utilASRflagupdate(flag, "suspect", vals < meta$GrMinSuspect)
+#' dqo <- data.frame(
+#'   Flag = c("Fail", "Suspect"),
+#'   GrMin = c(-1, 0), GrMax = c(30, 25)
+#' )
+#' utilASRflaggross(flag, vals, dqo)
+utilASRflaggross <- function(flag, vals, dqo) {
+  susp <- dqo[dqo$Flag == "Suspect", ]
+  fail <- dqo[dqo$Flag == "Fail", ]
+
+  if (nrow(susp) > 0) {
+    if (!is.na(susp$GrMin)) flag <- utilASRflagupdate(flag, "suspect", vals < susp$GrMin)
+    if (!is.na(susp$GrMax)) flag <- utilASRflagupdate(flag, "suspect", vals > susp$GrMax)
   }
-  if (!is.na(meta$GrMaxSuspect)) {
-    flag <- utilASRflagupdate(flag, "suspect", vals > meta$GrMaxSuspect)
-  }
-  if (!is.na(meta$GrMinFail)) {
-    flag <- utilASRflagupdate(flag, "fail", vals < meta$GrMinFail)
-  }
-  if (!is.na(meta$GrMaxFail)) {
-    flag <- utilASRflagupdate(flag, "fail", vals > meta$GrMaxFail)
+  if (nrow(fail) > 0) {
+    if (!is.na(fail$GrMin)) flag <- utilASRflagupdate(flag, "fail", vals < fail$GrMin)
+    if (!is.na(fail$GrMax)) flag <- utilASRflagupdate(flag, "fail", vals > fail$GrMax)
   }
   flag
 }

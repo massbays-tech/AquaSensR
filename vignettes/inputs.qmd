@@ -22,7 +22,7 @@ library(dplyr)
 AquaSensR requires two input files to use the functions in the package:
 
 1. **Continuous monitoring data**: time series of sensor observations at a site, one column per parameter.
-2. **QC threshold metadata**: parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).
+2. **Data Quality Objectives**: parameter-specific data quality objectives used by the four QC checks (gross range, spike, rate of change, and flatline).
 
 Both file types are Excel workbooks (`.xlsx`). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format.  Example files with the correct format are included with the package and are used throughout.
 
@@ -42,14 +42,14 @@ First, specify the location of the two files by saving their paths to R variable
 ```{r}
 #| eval: false
 contpth <- "path/to/your/ContinuousData.xlsx"
-metapth <- "path/to/your/Metadata.xlsx"
+dqopth <- "path/to/your/DQO.xlsx"
 ```
 
 The examples below use the files included with the package:
 
 ```{r}
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
-metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
+dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 ```
 
 ## Continuous monitoring data
@@ -161,12 +161,12 @@ head(contdat)
 head(contdat2)
 ```
 
-## QC threshold metadata
+## Data quality objectives
 
-The metadata file includes various information for the quality control checks applied to each parameter (see the [quality control vignette](qcoverview.html) for details). Use `readASRmeta()` to import the QC threshold metadata. The function reads the workbook, runs checks via `checkASRmeta()`, and returns a formatted data frame.
+The data quality objectives file includes various information for the quality control checks applied to each parameter (see the [quality control vignette](qcoverview.html) for details). Use `readASRdqo()` to import the data quality objectives. The function reads the workbook, runs checks via `checkASRdqo()`, and returns a formatted data frame.
 
 ```{r}
-metadat <- readASRmeta(metapth)
+dqodat <- readASRdqo(dqopth)
 ```
 
 ### Format requirements
@@ -176,28 +176,26 @@ The workbook must contain exactly the following columns (all required; threshold
 | Column | Description |
 |--------|-------------|
 | `Parameter` | Parameter name matching `paramsASR$Parameter` |
-| `GrMinFail` | Gross range, lower fail threshold |
-| `GrMaxFail` | Gross range, upper fail threshold |
-| `GrMinSuspect` | Gross range, lower suspect threshold |
-| `GrMaxSuspect` | Gross range, upper suspect threshold |
-| `SpikeFail` | Spike, absolute step size for a fail flag |
-| `SpikeSuspect` | Spike, absolute step size for a suspect flag |
-| `FlatFailN` | Flatline, consecutive identical observations for a fail flag |
-| `FlatFailDelta` | Flatline, maximum within-run absolute change treated as "identical" for fail |
-| `FlatSuspectN` | Flatline, consecutive identical observations for a suspect flag |
-| `FlatSuspectDelta` | Flatline, maximum within-run absolute change treated as "identical" for suspect |
+| `Flag` | Flag level for the thresholds in the row, either "Fail" or "Suspect" |
+| `GrMin` | Gross range, lower threshold |
+| `GrMax` | Gross range, upper threshold |
+| `Spike` | Spike, absolute step size for a flag |
+| `FlatN` | Flatline, consecutive identical observations for a flag |
+| `FlatDelta` | Flatline, maximum within-run absolute change treated as "identical" for a flag |
 | `RoCN` | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
 | `RoCHours` | Rate of change, look-back window length in hours |
 
 ### Checks performed
 
-The `readASRmeta()` function imports the metadata and runs a series of checks using the `checkASRmeta()` function.  The checks evaluate the following and stops with an informative error if any check fails:
+The `readASRdqo()` function imports the data quality objectives and runs a series of checks using the `checkASRdqo()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
-1. **Column names**: all columns are in the required list above.
-2. **All columns present**: every required column exists.
-3. **At least one parameter**: at least one value in `Parameter` matches `paramsASR$Parameter`.
-4. **Parameter format**: all `Parameter` values match those in `paramsASR$Parameter`.
-5. **Numeric columns**: all columns except `Parameter` contain only numeric or missing values.
+1. **Column names**: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCN, and RoCHours
+2. **All columns present**: All columns from the previous check should be present
+3. **At least one parameter is present**: At least one parameter in the `Parameter` column matches the `Parameter` column in `paramsASR`
+4. **Parameter format**: All parameters listed in the `Parameter` column should match those in the `Parameter` column in `paramsASR`
+5. **Flag column**: The `Flag` column should contain only "Fail" or "Suspect" entries
+6. **Rate of Change**: No entries for Fail Flag rows
+7. **Numeric columns**: All columns except `Parameter` and `Flag` should be numeric values
 
 ### Example: triggering an error
 
@@ -206,22 +204,22 @@ Supplying an unrecognised parameter name fails the parameter format check:
 ```{r}
 #| error: true
 # import the data for the example
-metadat_raw <- suppressWarnings(
-  readxl::read_excel(metapth, na = c("NA", "na", ""), guess_max = Inf)
+dqodat_raw <- suppressWarnings(
+  readxl::read_excel(dqopth, na = c("NA", "na", ""), guess_max = Inf)
 )
 
 # introduce a typo in the Parameter column
-metadat_raw$Parameter[1] <- "WaterTemp"
+dqodat_raw$Parameter[1] <- "WaterTemp"
 
-checkASRmeta(metadat_raw)
+checkASRdqo(dqodat_raw)
 ```
 
 ### Output format
 
-After passing all checks, `readASRmeta()` returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.
+After passing all checks, `readASRdqo()` returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.
 
 ```{r}
-head(metadat)
+head(dqodat)
 ```
 
-The remaining functions in AquaSensR can now be used after the continuous data and metadata files are successfully imported.
+The remaining functions in AquaSensR can now be used after the continuous data and data quality objectives files are successfully imported.

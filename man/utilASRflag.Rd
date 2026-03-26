@@ -4,16 +4,16 @@
 \alias{utilASRflag}
 \title{Flag continuous monitoring data with QC criteria}
 \usage{
-utilASRflag(contdat, metadat, param)
+utilASRflag(contdat, dqodat, param)
 }
 \arguments{
 \item{contdat}{data frame returned by \code{\link{readASRcont}}}
 
-\item{metadat}{data frame returned by \code{\link{readASRmeta}}}
+\item{dqodat}{data frame returned by \code{\link{readASRdqo}}}
 
 \item{param}{character string naming the parameter column to evaluate.
 Must match one of the parameter columns present in \code{contdat} and
-one of the entries in the \code{Parameter} column of \code{metadat}.}
+one of the entries in the \code{Parameter} column of \code{dqodat}.}
 }
 \value{
 A data frame with columns \code{DateTime}, the
@@ -24,20 +24,22 @@ selected parameter, and four flag columns: \code{gross_flag},
 Flag continuous monitoring data with QC criteria
 }
 \details{
-Applies four independent QC checks to the selected parameter in \code{contdat}, matching thresholds from \code{metadat} by \code{Parameter}.  Each check produces its own flag
+Applies four independent QC checks to the selected parameter in \code{contdat}, matching thresholds from \code{dqodat} by \code{Parameter}.  Each check produces its own flag
 (\code{"pass"}, \code{"suspect"}, or \code{"fail"}) so the user can see
-exactly which criteria fired.  If multiple metadata rows match a given
-parameter the first row is used and a warning is issued.
+exactly which criteria fired.  Thresholds are read from the two rows in
+\code{dqodat} that match the parameter — one with \code{Flag == "Fail"} and
+one with \code{Flag == "Suspect"}.
 
-\strong{Gross range} (\code{gross_flag}) — Observations below \code{GrMinFail}
-or above \code{GrMaxFail} are flagged \code{"fail"}.  Observations below
-\code{GrMinSuspect} or above \code{GrMaxSuspect} (but within the fail bounds) are
-flagged \code{"suspect"}.
+\strong{Gross range} (\code{gross_flag}) — Observations below \code{GrMin}
+or above \code{GrMax} in the \code{"Fail"} row are flagged \code{"fail"}.
+Observations below \code{GrMin} or above \code{GrMax} in the
+\code{"Suspect"} row (but within the fail bounds) are flagged
+\code{"suspect"}.
 
 \strong{Spike} (\code{spike_flag}) — The absolute difference between
-consecutive observations is compared to \code{SpikeFail} (fail) and
-\code{SpikeSuspect} (suspect).  The second observation in the jump is
-flagged.
+consecutive observations is compared to \code{Spike} in the \code{"Fail"}
+row (fail) and \code{Spike} in the \code{"Suspect"} row (suspect).  The
+second observation in the jump is flagged.
 
 \strong{Rate of change} (\code{roc_flag}) — For each observation the
 standard deviation of all raw values within a trailing \code{RoCHours}-hour
@@ -45,13 +47,14 @@ window is multiplied by \code{RoCN} to produce a threshold.  The
 observation is flagged \code{"suspect"} if its absolute lag-1 difference
 exceeds that threshold.  Requires at least 2 values in the window;
 otherwise \code{"pass"}.  Note that this check only produces
-\code{"suspect"} flags, not \code{"fail"} flags.
+\code{"suspect"} flags, not \code{"fail"} flags.  \code{RoCN} and
+\code{RoCHours} are read from the \code{"Suspect"} row only.
 
 \strong{Flatline} (\code{flat_flag}) — Counts consecutive observations
 where the absolute step from the previous observation is within
-\code{FlatSuspectDelta} (or \code{FlatFailDelta}) units.  Observations
-whose run length reaches \code{FlatSuspectN} (or \code{FlatFailN}) are
-flagged.
+\code{FlatDelta} units.  Observations whose run length reaches \code{FlatN}
+are flagged, using the \code{"Suspect"} row thresholds for suspect and the
+\code{"Fail"} row thresholds for fail.
 
 Data are sorted by \code{DateTime} before processing.
 
@@ -62,10 +65,10 @@ credit for the approach should go to the
 }
 \examples{
 contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
-metapth <- system.file('extdata/ExampleMeta.xlsx', package = 'AquaSensR')
+dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 
 contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
-metadat <- readASRmeta(metapth, runchk = FALSE)
+dqodat <- readASRdqo(dqopth, runchk = FALSE)
 
-utilASRflag(contdat, metadat, param = 'Water Temp_C')
+utilASRflag(contdat, dqodat, param = 'Water Temp_C')
 }

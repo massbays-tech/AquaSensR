@@ -4,7 +4,7 @@
 \alias{utilASRflagflatline}
 \title{Apply flatline QC flag}
 \usage{
-utilASRflagflatline(flag, vals, meta)
+utilASRflagflatline(flag, vals, dqo)
 }
 \arguments{
 \item{flag}{character vector of current flag values (\code{"pass"},
@@ -13,11 +13,12 @@ utilASRflagflatline(flag, vals, meta)
 \item{vals}{numeric vector of observed values, the same length as
 \code{flag}.}
 
-\item{meta}{single-row data frame of metadata for the parameter being
-checked.  Optional numeric columns \code{FlatSuspectN},
-\code{FlatSuspectDelta}, \code{FlatFailN}, and \code{FlatFailDelta}
-define the run-length and tolerance thresholds.  Either pair may be
-absent or \code{NA}, in which case that level of check is skipped.}
+\item{dqo}{two-row data frame of data quality objectives for the parameter
+being checked, containing one row where \code{Flag == "Fail"} and one
+where \code{Flag == "Suspect"}.  Optional numeric columns \code{FlatN}
+and \code{FlatDelta} define the run-length and tolerance thresholds for
+each severity level.  Either row may have \code{NA} for these columns,
+in which case that level of check is skipped.}
 }
 \value{
 Updated character flag vector.
@@ -28,14 +29,16 @@ Apply flatline QC flag
 \details{
 Uses \code{\link{utilASRflagrleflat}} to compute consecutive run lengths.
 An observation is flagged \code{"suspect"} when its run length (computed
-with \code{FlatSuspectDelta}) reaches \code{FlatSuspectN}, and
-\code{"fail"} when its run length (computed with \code{FlatFailDelta})
-reaches \code{FlatFailN}.
+with \code{FlatDelta} from the \code{"Suspect"} row) reaches \code{FlatN},
+and \code{"fail"} when its run length (computed with \code{FlatDelta} from
+the \code{"Fail"} row) reaches \code{FlatN}.
 }
 \examples{
 flag <- rep("pass", 8)
 vals <- c(10, 10, 10.005, 10.002, 10.001, 10.003, 12, 12)
-meta <- data.frame(FlatSuspectN = 3, FlatSuspectDelta = 0.01,
-                   FlatFailN = 5,    FlatFailDelta = 0.01)
-utilASRflagflatline(flag, vals, meta)
+dqo <- data.frame(
+  Flag = c("Fail", "Suspect"),
+  FlatN = c(5, 3), FlatDelta = c(0.01, 0.01)
+)
+utilASRflagflatline(flag, vals, dqo)
 }

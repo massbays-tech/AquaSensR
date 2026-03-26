@@ -4,7 +4,7 @@
 \alias{utilASRflaggross}
 \title{Apply gross range QC flag}
 \usage{
-utilASRflaggross(flag, vals, meta)
+utilASRflaggross(flag, vals, dqo)
 }
 \arguments{
 \item{flag}{character vector of current flag values (\code{"pass"},
@@ -13,9 +13,10 @@ utilASRflaggross(flag, vals, meta)
 \item{vals}{numeric vector of observed values, the same length as
 \code{flag}.}
 
-\item{meta}{single-row data frame of metadata for the parameter being
-checked.  Must contain numeric columns \code{GrMinFail}, \code{GrMaxFail},
-\code{GrMinSuspect}, and \code{GrMaxSuspect}.}
+\item{dqo}{two-row data frame from data quality objectives for the parameter
+being checked, containing one row where \code{Flag == "Fail"} and one
+where \code{Flag == "Suspect"}.  Must contain numeric columns \code{GrMin}
+and \code{GrMax}.}
 }
 \value{
 Updated character flag vector.
@@ -24,14 +25,18 @@ Updated character flag vector.
 Apply gross range QC flag
 }
 \details{
-Observations below \code{GrMinFail} or above \code{GrMaxFail} are flagged
-\code{"fail"}.  Observations below \code{GrMinSuspect} or above \code{GrMaxSuspect}
-(but within the fail bounds) are flagged \code{"suspect"}.
+Observations below \code{GrMin} or above \code{GrMax} in the
+\code{"Fail"} row are flagged \code{"fail"}.  Observations below
+\code{GrMin} or above \code{GrMax} in the \code{"Suspect"} row (but
+within the fail bounds) are flagged \code{"suspect"}.
 \code{NA} threshold values are silently skipped.
 }
 \examples{
 flag <- rep("pass", 5)
 vals <- c(-2, 0, 15, 26, 32)
-meta <- data.frame(GrMinFail = -1, GrMaxFail = 30, GrMinSuspect = 0, GrMaxSuspect = 25)
-utilASRflaggross(flag, vals, meta)
+dqo <- data.frame(
+  Flag = c("Fail", "Suspect"),
+  GrMin = c(-1, 0), GrMax = c(30, 25)
+)
+utilASRflaggross(flag, vals, dqo)
 }
