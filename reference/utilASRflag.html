@@ -46,7 +46,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">utilASRflag</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">metadat</span>, <span class="va">param</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">utilASRflag</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">dqodat</span>, <span class="va">param</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,14 +57,14 @@
 <dd><p>data frame returned by <code><a href="readASRcont.html">readASRcont</a></code></p></dd>
 
 
-<dt id="arg-metadat">metadat<a class="anchor" aria-label="anchor" href="#arg-metadat"></a></dt>
-<dd><p>data frame returned by <code><a href="readASRmeta.html">readASRmeta</a></code></p></dd>
+<dt id="arg-dqodat">dqodat<a class="anchor" aria-label="anchor" href="#arg-dqodat"></a></dt>
+<dd><p>data frame returned by <code><a href="readASRdqo.html">readASRdqo</a></code></p></dd>
 
 
 <dt id="arg-param">param<a class="anchor" aria-label="anchor" href="#arg-param"></a></dt>
 <dd><p>character string naming the parameter column to evaluate.
 Must match one of the parameter columns present in <code>contdat</code> and
-one of the entries in the <code>Parameter</code> column of <code>metadat</code>.</p></dd>
+one of the entries in the <code>Parameter</code> column of <code>dqodat</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -75,30 +75,33 @@ selected parameter, and four flag columns: <code>gross_flag</code>,
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Applies four independent QC checks to the selected parameter in <code>contdat</code>, matching thresholds from <code>metadat</code> by <code>Parameter</code>.  Each check produces its own flag
+    <p>Applies four independent QC checks to the selected parameter in <code>contdat</code>, matching thresholds from <code>dqodat</code> by <code>Parameter</code>.  Each check produces its own flag
 (<code>"pass"</code>, <code>"suspect"</code>, or <code>"fail"</code>) so the user can see
-exactly which criteria fired.  If multiple metadata rows match a given
-parameter the first row is used and a warning is issued.</p>
-<p><strong>Gross range</strong> (<code>gross_flag</code>) — Observations below <code>GrMinFail</code>
-or above <code>GrMaxFail</code> are flagged <code>"fail"</code>.  Observations below
-<code>GrMinSuspect</code> or above <code>GrMaxSuspect</code> (but within the fail bounds) are
-flagged <code>"suspect"</code>.</p>
+exactly which criteria fired.  Thresholds are read from the two rows in
+<code>dqodat</code> that match the parameter — one with <code>Flag == "Fail"</code> and
+one with <code>Flag == "Suspect"</code>.</p>
+<p><strong>Gross range</strong> (<code>gross_flag</code>) — Observations below <code>GrMin</code>
+or above <code>GrMax</code> in the <code>"Fail"</code> row are flagged <code>"fail"</code>.
+Observations below <code>GrMin</code> or above <code>GrMax</code> in the
+<code>"Suspect"</code> row (but within the fail bounds) are flagged
+<code>"suspect"</code>.</p>
 <p><strong>Spike</strong> (<code>spike_flag</code>) — The absolute difference between
-consecutive observations is compared to <code>SpikeFail</code> (fail) and
-<code>SpikeSuspect</code> (suspect).  The second observation in the jump is
-flagged.</p>
+consecutive observations is compared to <code>Spike</code> in the <code>"Fail"</code>
+row (fail) and <code>Spike</code> in the <code>"Suspect"</code> row (suspect).  The
+second observation in the jump is flagged.</p>
 <p><strong>Rate of change</strong> (<code>roc_flag</code>) — For each observation the
 standard deviation of all raw values within a trailing <code>RoCHours</code>-hour
 window is multiplied by <code>RoCN</code> to produce a threshold.  The
 observation is flagged <code>"suspect"</code> if its absolute lag-1 difference
 exceeds that threshold.  Requires at least 2 values in the window;
 otherwise <code>"pass"</code>.  Note that this check only produces
-<code>"suspect"</code> flags, not <code>"fail"</code> flags.</p>
+<code>"suspect"</code> flags, not <code>"fail"</code> flags.  <code>RoCN</code> and
+<code>RoCHours</code> are read from the <code>"Suspect"</code> row only.</p>
 <p><strong>Flatline</strong> (<code>flat_flag</code>) — Counts consecutive observations
 where the absolute step from the previous observation is within
-<code>FlatSuspectDelta</code> (or <code>FlatFailDelta</code>) units.  Observations
-whose run length reaches <code>FlatSuspectN</code> (or <code>FlatFailN</code>) are
-flagged.</p>
+<code>FlatDelta</code> units.  Observations whose run length reaches <code>FlatN</code>
+are flagged, using the <code>"Suspect"</code> row thresholds for suspect and the
+<code>"Fail"</code> row thresholds for fail.</p>
 <p>Data are sorted by <code>DateTime</code> before processing.</p>
 <p>Underlying concepts and code for this function borrow heavily from those
 in the <a href="https://leppott.github.io/ContDataQC" class="external-link">ContDataQC</a> package.  Any
@@ -109,12 +112,12 @@ credit for the approach should go to the
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont1.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">metapth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleMeta.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dqopth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleDQO.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">'Etc/GMT+5'</span>, runchk <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">metadat</span> <span class="op">&lt;-</span> <span class="fu"><a href="readASRmeta.html">readASRmeta</a></span><span class="op">(</span><span class="va">metapth</span>, runchk <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dqodat</span> <span class="op">&lt;-</span> <span class="fu"><a href="readASRdqo.html">readASRdqo</a></span><span class="op">(</span><span class="va">dqopth</span>, runchk <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">utilASRflag</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">metadat</span>, param <span class="op">=</span> <span class="st">'Water Temp_C'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">utilASRflag</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">dqodat</span>, param <span class="op">=</span> <span class="st">'Water Temp_C'</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    DateTime            `Water Temp_C` gross_flag spike_flag roc_flag flat_flag</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span>

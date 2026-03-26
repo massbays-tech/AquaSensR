@@ -20,7 +20,7 @@ the package. Import both files before proceeding:
 
 ``` r
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
-metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
+dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 #> Running checks on continuous data...
@@ -33,20 +33,22 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 #>  Checking parameter columns for non-numeric values... OK
 #> 
 #> All checks passed!
-metadat <- readASRmeta(metapth)
-#> Running checks on continuous metadata...
+dqodat <- readASRdqo(dqopth)
+#> Running checks on data quality objectives...
 #>  Checking column names... OK
 #>  Checking all columns present... OK
 #>  Checking at least one parameter is present... OK
 #>  Checking parameter format... OK
+#>  Checking Flag column... OK
+#>  Checking Rate of Change flags... OK
 #>  Checking columns for non-numeric values... OK
 #> 
 #> All checks passed!
 ```
 
 `contdat` is a data frame with columns `DateTime`, and one numeric
-column per parameter. `metadat` contains the parameter-specific QC
-thresholds for each check. See the [inputs
+column per parameter. `dqodat` contains the parameter-specific data
+quality objectives (DQOs) for each check. See the [inputs
 vignette](https://massbays-tech.github.io/AquaSensR/articles/inputs.md)
 for more information on the required formats.
 
@@ -60,18 +62,18 @@ chosen parameter in `contdat`.
 
 Three arguments are required for the function:
 
-| Argument  | Description                                                                                                      |
-|-----------|------------------------------------------------------------------------------------------------------------------|
-| `contdat` | Data frame returned by [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)     |
-| `metadat` | Data frame returned by [`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)     |
-| `param`   | Name of the parameter column to evaluate (must match a column in `contdat` and a `Parameter` entry in `metadat`) |
+| Argument  | Description                                                                                                     |
+|-----------|-----------------------------------------------------------------------------------------------------------------|
+| `contdat` | Data frame returned by [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)    |
+| `dqodat`  | Data frame returned by [`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)      |
+| `param`   | Name of the parameter column to evaluate (must match a column in `contdat` and a `Parameter` entry in `dqodat`) |
 
 ### Basic usage
 
 Pass the two data frames and the name of the parameter to evaluate:
 
 ``` r
-flagdat <- utilASRflag(contdat, metadat, param = "Water Temp_C")
+flagdat <- utilASRflag(contdat, dqodat, param = "Water Temp_C")
 head(flagdat)
 #> # A tibble: 6 × 6
 #>   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag flat_flag
@@ -103,25 +105,24 @@ Each flag column contains one of three values: `"pass"`, `"suspect"`, or
 observation can receive any combination of flags across the four
 columns.
 
-If no metadata row matches a parameter the function leaves all flags as
-`"pass"` and continues. If multiple metadata rows match, the first row
-is used and a warning is issued.
+If no row in `dqodat` matches a parameter the function leaves all flags
+as `"pass"` and continues.
 
 ## QC checks explained
 
 AquaSensR implements four QC checks that reflect widely used sensor data
 quality standards. The underlying concepts and code borrow heavily from
 the [ContDataQC](https://leppott.github.io/ContDataQC) package. All
-threshold values are set in the metadata file and can be customised per
-parameter. Manual update of these thresholds is likely necessary to
-avoide false positives and negatives. Importantly, these flags require
-manual verification and should not be used to automatically exclude data
-without review.
+threshold values are set in the data quality objectives file and can be
+customised per parameter. Manual update of these thresholds is likely
+necessary to avoide false positives and negatives. Importantly, these
+flags require manual verification and should not be used to
+automatically exclude data without review.
 
 ### 1. Gross range
 
-**Metadata columns:** `GrMinFail`, `GrMaxFail`, `GrMinSuspect`,
-`GrMaxSuspect`
+**DQO columns:** `GrMin`, `GrMax` (thresholds differ by row:
+`Flag = "Fail"` vs `Flag = "Suspect"`)
 
 **Flag column:** `gross_flag`
 
@@ -130,19 +131,21 @@ absolute physical or sensor limits. It is the broadest of the four
 checks and is intended to catch values that are simply impossible or
 outside the expected operating range of the instrument.
 
-Each observation is compared to four thresholds:
+Each observation is compared to the thresholds in the two data quality
+objectives rows for that parameter:
 
-- Values below `GrMinFail` or above `GrMaxFail` return `"fail"`
-- Values below `GrMinSuspect` or above `GrMaxSuspect` but within the
-  fail bounds return `"suspect"`
+- Values below `GrMin` or above `GrMax` in the `"Fail"` row return
+  `"fail"`
+- Values below `GrMin` or above `GrMax` in the `"Suspect"` row but
+  within the fail bounds return `"suspect"`
 
 The fail thresholds define hard physical limits (e.g., water temperature
 cannot be below −5 °C for a freshwater deployment). The suspect bounds
 are set somewhat more conservatively to flag readings that are unusual
 but not impossible.
 
-Any threshold can be set to `NA` in the metadata to skip that particular
-flag.
+Any threshold can be set to `NA` in the data quality objectives file to
+skip that particular flag.
 
 Quickly view how many flags of each type were generated by the gross
 range check:
@@ -157,17 +160,19 @@ table(flagdat$gross_flag)
 
 ### 2. Spike
 
-**Metadata columns:** `SpikeSuspect`, `SpikeFail`
+**DQO columns:** `Spike` (threshold differs by row: `Flag = "Fail"` vs
+`Flag = "Suspect"`)
 
 **Flag column:** `spike_flag`
 
 The spike check detects sudden, anomalous jumps (either up or down)
 between consecutive observations. It computes the absolute difference
 between each reading and the one immediately before it, then compares
-that difference to fixed thresholds:
+that difference to the thresholds in the two data quality objectives
+rows for that parameter:
 
-- \|diff\| ≥ `SpikeSuspect` return `"suspect"`
-- \|diff\| ≥ `SpikeFail` return `"fail"`
+- \|diff\| ≥ `Spike` in the `"Suspect"` row returns `"suspect"`
+- \|diff\| ≥ `Spike` in the `"Fail"` row returns `"fail"`
 
 The first observation in each series has no predecessor and is always
 left as `"pass"`. Because the spike check flags the observation at the
@@ -192,7 +197,8 @@ table(flagdat$spike_flag)
 
 ### 3. Rate of change
 
-**Metadata columns:** `RoCN`, `RoCHours`
+**DQO columns:** `RoCN`, `RoCHours` (from the `Flag = "Suspect"` row
+only)
 
 **Flag column:** `roc_flag`
 
@@ -232,8 +238,8 @@ table(flagdat$roc_flag)
 
 ### 4. Flatline
 
-**Metadata columns:** `FlatSuspectN`, `FlatSuspectDelta`, `FlatFailN`,
-`FlatFailDelta`
+**DQO columns:** `FlatN`, `FlatDelta` (thresholds differ by row:
+`Flag = "Fail"` vs `Flag = "Suspect"`)
 
 **Flag column:** `flat_flag`
 
@@ -243,21 +249,21 @@ loss of power. The check counts the length of “runs” of near-identical
 consecutive values and flags observations whose run length reaches a
 specified count.
 
-A run is defined by a minimum length or count (`FlatSuspectN` or
-`FlatFailN`) and tolerance (`FlatSuspectDelta` or `FlatFailDelta`). The
-tolerance values are used to identify consecutive observations
+A run is defined by a minimum length or count (`FlatN`) and tolerance
+(`FlatDelta`), each read from the appropriate data quality objectives
+row. The tolerance is used to identify consecutive observations
 considered to be “identical” if the absolute step from the previous
 observation is within that tolerance. This allows for a small amount of
 measurement noise without stopping the run count.
 
-- Run length ≥ `FlatSuspectN` (using `FlatSuspectDelta` tolerance)
-  return `"suspect"`
-- Run length ≥ `FlatFailN` (using `FlatFailDelta` tolerance) return
-  `"fail"`
+- Run length ≥ `FlatN` (using `FlatDelta` tolerance) from the
+  `"Suspect"` row returns `"suspect"`
+- Run length ≥ `FlatN` (using `FlatDelta` tolerance) from the `"Fail"`
+  row returns `"fail"`
 
 The suspect and fail thresholds are evaluated independently using their
 respective delta tolerances, so the two run lengths may differ. Either
-pair can be set to `NA` to skip that level.
+row can have `NA` values to skip that level.
 
 Quickly view how many flags of each type were generated by the flatline
 check:

@@ -56,21 +56,21 @@ Functions for importing, checking, and formatting input data.
 
 - [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
   : Read continuous monitoring data from an external file
-- [`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
-  : Read continuous monitoring metadata from an external file
+- [`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
+  : Read data quality objectives from an external file
 - [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md)
   : Check continuous monitoring data
-- [`checkASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRmeta.md)
-  : Check continuous monitoring metadata
+- [`checkASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRdqo.md)
+  : Check data quality objectives
 - [`formASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/formASRcont.md)
   : Format continuous data
-- [`formASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/formASRmeta.md)
-  : Format continuous metadata
+- [`formASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/formASRdqo.md)
+  : Format data quality objectives
 
 ## Quality control
 
 Functions for flagging suspect and failed data based on user-defined
-metadata.
+data quality objectives.
 
 - [`anlzASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/anlzASRflag.md)
   : Plot QC flag results for a continuous monitoring parameter

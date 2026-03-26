@@ -5,7 +5,7 @@ Apply rate-of-change QC flag
 ## Usage
 
 ``` r
-utilASRflagroc(flag, vals, datetimes, meta)
+utilASRflagroc(flag, vals, datetimes, dqo)
 ```
 
 ## Arguments
@@ -23,12 +23,15 @@ utilASRflagroc(flag, vals, datetimes, meta)
 
   POSIXct vector of observation timestamps, the same length as `flag`.
 
-- meta:
+- dqo:
 
-  single-row data frame of metadata for the parameter being checked.
-  Optional numeric columns `RoCN` (SD multiplier) and `RoCHours`
-  (trailing window width in hours) control the check. If either column
-  is absent or `NA` the check is skipped.
+  two-row data frame from data quality objectives for the parameter
+  being checked, containing one row where `Flag == "Fail"` and one where
+  `Flag == "Suspect"`. The `"Suspect"` row's numeric columns `RoCN` (SD
+  multiplier) and `RoCHours` (trailing window width in hours) control
+  the check. If either column is `NA` in the `"Suspect"` row the check
+  is skipped. Rate-of-change thresholds are not applied to `"Fail"`
+  flags.
 
 ## Value
 
@@ -51,7 +54,7 @@ flags.
 flag <- rep("pass", 6)
 vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
-meta <- data.frame(RoCN = 3, RoCHours = 2)
-utilASRflagroc(flag, vals, datetimes, meta)
+dqo <- data.frame(Flag = c("Fail", "Suspect"), RoCN = c(NA, 3), RoCHours = c(NA, 2))
+utilASRflagroc(flag, vals, datetimes, dqo)
 #> [1] "pass" "pass" "pass" "pass" "pass" "pass"
 ```

@@ -5,7 +5,7 @@ Apply gross range QC flag
 ## Usage
 
 ``` r
-utilASRflaggross(flag, vals, meta)
+utilASRflaggross(flag, vals, dqo)
 ```
 
 ## Arguments
@@ -19,11 +19,11 @@ utilASRflaggross(flag, vals, meta)
 
   numeric vector of observed values, the same length as `flag`.
 
-- meta:
+- dqo:
 
-  single-row data frame of metadata for the parameter being checked.
-  Must contain numeric columns `GrMinFail`, `GrMaxFail`, `GrMinSuspect`,
-  and `GrMaxSuspect`.
+  two-row data frame from data quality objectives for the parameter
+  being checked, containing one row where `Flag == "Fail"` and one where
+  `Flag == "Suspect"`. Must contain numeric columns `GrMin` and `GrMax`.
 
 ## Value
 
@@ -31,17 +31,20 @@ Updated character flag vector.
 
 ## Details
 
-Observations below `GrMinFail` or above `GrMaxFail` are flagged
-`"fail"`. Observations below `GrMinSuspect` or above `GrMaxSuspect` (but
-within the fail bounds) are flagged `"suspect"`. `NA` threshold values
-are silently skipped.
+Observations below `GrMin` or above `GrMax` in the `"Fail"` row are
+flagged `"fail"`. Observations below `GrMin` or above `GrMax` in the
+`"Suspect"` row (but within the fail bounds) are flagged `"suspect"`.
+`NA` threshold values are silently skipped.
 
 ## Examples
 
 ``` r
 flag <- rep("pass", 5)
 vals <- c(-2, 0, 15, 26, 32)
-meta <- data.frame(GrMinFail = -1, GrMaxFail = 30, GrMinSuspect = 0, GrMaxSuspect = 25)
-utilASRflaggross(flag, vals, meta)
+dqo <- data.frame(
+  Flag = c("Fail", "Suspect"),
+  GrMin = c(-1, 0), GrMax = c(30, 25)
+)
+utilASRflaggross(flag, vals, dqo)
 #> [1] "fail"    "pass"    "pass"    "suspect" "fail"   
 ```

@@ -4,8 +4,9 @@ AquaSensR requires two input files to use the functions in the package:
 
 1.  **Continuous monitoring data**: time series of sensor observations
     at a site, one column per parameter.
-2.  **QC threshold metadata**: parameter-specific thresholds used by the
-    four QC checks (gross range, spike, rate of change, and flatline).
+2.  **Data Quality Objectives**: parameter-specific data quality
+    objectives used by the four QC checks (gross range, spike, rate of
+    change, and flatline).
 
 Both file types are Excel workbooks (`.xlsx`). This vignette describes
 how to import and check each input dataset. It is critical that the
@@ -28,14 +29,14 @@ example:
 
 ``` r
 contpth <- "path/to/your/ContinuousData.xlsx"
-metapth <- "path/to/your/Metadata.xlsx"
+dqopth <- "path/to/your/DQO.xlsx"
 ```
 
 The examples below use the files included with the package:
 
 ``` r
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
-metapth <- system.file("extdata/ExampleMeta.xlsx", package = "AquaSensR")
+dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 ```
 
 ## Continuous monitoring data
@@ -271,25 +272,28 @@ head(contdat2)
 #> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
 ```
 
-## QC threshold metadata
+## Data quality objectives
 
-The metadata file includes various information for the quality control
-checks applied to each parameter (see the [quality control
+The data quality objectives file includes various information for the
+quality control checks applied to each parameter (see the [quality
+control
 vignette](https://massbays-tech.github.io/AquaSensR/articles/qcoverview.md)
 for details). Use
-[`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
-to import the QC threshold metadata. The function reads the workbook,
+[`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
+to import the data quality objectives. The function reads the workbook,
 runs checks via
-[`checkASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRmeta.md),
+[`checkASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRdqo.md),
 and returns a formatted data frame.
 
 ``` r
-metadat <- readASRmeta(metapth)
-#> Running checks on continuous metadata...
+dqodat <- readASRdqo(dqopth)
+#> Running checks on data quality objectives...
 #>  Checking column names... OK
 #>  Checking all columns present... OK
 #>  Checking at least one parameter is present... OK
 #>  Checking parameter format... OK
+#>  Checking Flag column... OK
+#>  Checking Rate of Change flags... OK
 #>  Checking columns for non-numeric values... OK
 #> 
 #> All checks passed!
@@ -300,39 +304,41 @@ metadat <- readASRmeta(metapth)
 The workbook must contain exactly the following columns (all required;
 thresholds you do not want to apply should be left blank / `NA`):
 
-| Column             | Description                                                                           |
-|--------------------|---------------------------------------------------------------------------------------|
-| `Parameter`        | Parameter name matching `paramsASR$Parameter`                                         |
-| `GrMinFail`        | Gross range, lower fail threshold                                                     |
-| `GrMaxFail`        | Gross range, upper fail threshold                                                     |
-| `GrMinSuspect`     | Gross range, lower suspect threshold                                                  |
-| `GrMaxSuspect`     | Gross range, upper suspect threshold                                                  |
-| `SpikeFail`        | Spike, absolute step size for a fail flag                                             |
-| `SpikeSuspect`     | Spike, absolute step size for a suspect flag                                          |
-| `FlatFailN`        | Flatline, consecutive identical observations for a fail flag                          |
-| `FlatFailDelta`    | Flatline, maximum within-run absolute change treated as “identical” for fail          |
-| `FlatSuspectN`     | Flatline, consecutive identical observations for a suspect flag                       |
-| `FlatSuspectDelta` | Flatline, maximum within-run absolute change treated as “identical” for suspect       |
-| `RoCN`             | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
-| `RoCHours`         | Rate of change, look-back window length in hours                                      |
+| Column      | Description                                                                           |
+|-------------|---------------------------------------------------------------------------------------|
+| `Parameter` | Parameter name matching `paramsASR$Parameter`                                         |
+| `Flag`      | Flag level for the thresholds in the row, either “Fail” or “Suspect”                  |
+| `GrMin`     | Gross range, lower threshold                                                          |
+| `GrMax`     | Gross range, upper threshold                                                          |
+| `Spike`     | Spike, absolute step size for a flag                                                  |
+| `FlatN`     | Flatline, consecutive identical observations for a flag                               |
+| `FlatDelta` | Flatline, maximum within-run absolute change treated as “identical” for a flag        |
+| `RoCN`      | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
+| `RoCHours`  | Rate of change, look-back window length in hours                                      |
 
 ### Checks performed
 
 The
-[`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
-function imports the metadata and runs a series of checks using the
-[`checkASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRmeta.md)
+[`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
+function imports the data quality objectives and runs a series of checks
+using the
+[`checkASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRdqo.md)
 function. The checks evaluate the following and stops with an
 informative error if any check fails:
 
-1.  **Column names**: all columns are in the required list above.
-2.  **All columns present**: every required column exists.
-3.  **At least one parameter**: at least one value in `Parameter`
-    matches `paramsASR$Parameter`.
-4.  **Parameter format**: all `Parameter` values match those in
-    `paramsASR$Parameter`.
-5.  **Numeric columns**: all columns except `Parameter` contain only
-    numeric or missing values.
+1.  **Column names**: Should include only Parameter, Flag, GrMin, GrMax,
+    Spike, FlatN, FlatDelta, RoCN, and RoCHours
+2.  **All columns present**: All columns from the previous check should
+    be present
+3.  **At least one parameter is present**: At least one parameter in the
+    `Parameter` column matches the `Parameter` column in `paramsASR`
+4.  **Parameter format**: All parameters listed in the `Parameter`
+    column should match those in the `Parameter` column in `paramsASR`
+5.  **Flag column**: The `Flag` column should contain only “Fail” or
+    “Suspect” entries
+6.  **Rate of Change**: No entries for Fail Flag rows
+7.  **Numeric columns**: All columns except `Parameter` and `Flag`
+    should be numeric values
 
 ### Example: triggering an error
 
@@ -341,15 +347,15 @@ check:
 
 ``` r
 # import the data for the example
-metadat_raw <- suppressWarnings(
-  readxl::read_excel(metapth, na = c("NA", "na", ""), guess_max = Inf)
+dqodat_raw <- suppressWarnings(
+  readxl::read_excel(dqopth, na = c("NA", "na", ""), guess_max = Inf)
 )
 
 # introduce a typo in the Parameter column
-metadat_raw$Parameter[1] <- "WaterTemp"
+dqodat_raw$Parameter[1] <- "WaterTemp"
 
-checkASRmeta(metadat_raw)
-#> Running checks on continuous metadata...
+checkASRdqo(dqodat_raw)
+#> Running checks on data quality objectives...
 #>  Checking column names... OK
 #>  Checking all columns present... OK
 #>  Checking at least one parameter is present... OK
@@ -361,24 +367,23 @@ checkASRmeta(metadat_raw)
 ### Output format
 
 After passing all checks,
-[`readASRmeta()`](https://massbays-tech.github.io/AquaSensR/reference/readASRmeta.md)
+[`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
 returns a data frame with the columns listed in the format requirements
 table above, with all threshold columns coerced to numeric.
 
 ``` r
-head(metadat)
-#> # A tibble: 6 × 13
-#>   Parameter GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail SpikeSuspect
-#>   <chr>         <dbl>     <dbl>        <dbl>        <dbl>     <dbl>        <dbl>
-#> 1 Water Te…        -1        30         -0.5           28         2          1.5
-#> 2 DO_pctsat        -1       120          0            100        25         10  
-#> 3 DO_mg_l           1        18          2             16         4          2  
-#> 4 Conducti…        10      1500         20           1200        10          5  
-#> 5 TDS_mg_l         10      1500         20           1200       100         50  
-#> 6 Salinity…         2        41          3             37         5          3  
-#> # ℹ 6 more variables: FlatFailN <dbl>, FlatFailDelta <dbl>, FlatSuspectN <dbl>,
-#> #   FlatSuspectDelta <dbl>, RoCN <dbl>, RoCHours <dbl>
+head(dqodat)
+#> # A tibble: 6 × 9
+#>   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta  RoCN RoCHours
+#>   <chr>        <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl> <dbl>    <dbl>
+#> 1 Water Temp_C Suspect  -0.5    28   1.5    60      0.01     6       25
+#> 2 Water Temp_C Fail     -1      30   2     100      0.01    NA       NA
+#> 3 DO_pctsat    Suspect   0     100  10      30      0.01     6       25
+#> 4 DO_pctsat    Fail     -1     120  25      60      0.01    NA       NA
+#> 5 DO_mg_l      Suspect   2      16   2      30      0.01     6       25
+#> 6 DO_mg_l      Fail      1      18   4      60      0.01    NA       NA
 ```
 
 The remaining functions in AquaSensR can now be used after the
-continuous data and metadata files are successfully imported.
+continuous data and data quality objectives files are successfully
+imported.

@@ -46,7 +46,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">utilASRflagflatline</span><span class="op">(</span><span class="va">flag</span>, <span class="va">vals</span>, <span class="va">meta</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">utilASRflagflatline</span><span class="op">(</span><span class="va">flag</span>, <span class="va">vals</span>, <span class="va">dqo</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -63,12 +63,13 @@
 <code>flag</code>.</p></dd>
 
 
-<dt id="arg-meta">meta<a class="anchor" aria-label="anchor" href="#arg-meta"></a></dt>
-<dd><p>single-row data frame of metadata for the parameter being
-checked.  Optional numeric columns <code>FlatSuspectN</code>,
-<code>FlatSuspectDelta</code>, <code>FlatFailN</code>, and <code>FlatFailDelta</code>
-define the run-length and tolerance thresholds.  Either pair may be
-absent or <code>NA</code>, in which case that level of check is skipped.</p></dd>
+<dt id="arg-dqo">dqo<a class="anchor" aria-label="anchor" href="#arg-dqo"></a></dt>
+<dd><p>two-row data frame of data quality objectives for the parameter
+being checked, containing one row where <code>Flag == "Fail"</code> and one
+where <code>Flag == "Suspect"</code>.  Optional numeric columns <code>FlatN</code>
+and <code>FlatDelta</code> define the run-length and tolerance thresholds for
+each severity level.  Either row may have <code>NA</code> for these columns,
+in which case that level of check is skipped.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -79,18 +80,20 @@ absent or <code>NA</code>, in which case that level of check is skipped.</p></dd
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Uses <code><a href="utilASRflagrleflat.html">utilASRflagrleflat</a></code> to compute consecutive run lengths.
 An observation is flagged <code>"suspect"</code> when its run length (computed
-with <code>FlatSuspectDelta</code>) reaches <code>FlatSuspectN</code>, and
-<code>"fail"</code> when its run length (computed with <code>FlatFailDelta</code>)
-reaches <code>FlatFailN</code>.</p>
+with <code>FlatDelta</code> from the <code>"Suspect"</code> row) reaches <code>FlatN</code>,
+and <code>"fail"</code> when its run length (computed with <code>FlatDelta</code> from
+the <code>"Fail"</code> row) reaches <code>FlatN</code>.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">flag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"pass"</span>, <span class="fl">8</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10</span>, <span class="fl">10.005</span>, <span class="fl">10.002</span>, <span class="fl">10.001</span>, <span class="fl">10.003</span>, <span class="fl">12</span>, <span class="fl">12</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>FlatSuspectN <span class="op">=</span> <span class="fl">3</span>, FlatSuspectDelta <span class="op">=</span> <span class="fl">0.01</span>,</span></span>
-<span class="r-in"><span>                   FlatFailN <span class="op">=</span> <span class="fl">5</span>,    FlatFailDelta <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">utilASRflagflatline</span><span class="op">(</span><span class="va">flag</span>, <span class="va">vals</span>, <span class="va">meta</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dqo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  Flag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Fail"</span>, <span class="st">"Suspect"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  FlatN <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">3</span><span class="op">)</span>, FlatDelta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.01</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">utilASRflagflatline</span><span class="op">(</span><span class="va">flag</span>, <span class="va">vals</span>, <span class="va">dqo</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "pass"    "pass"    "suspect" "suspect" "fail"    "fail"    "pass"   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [8] "pass"   </span>
 </code></pre></div>

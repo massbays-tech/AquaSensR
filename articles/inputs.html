@@ -76,7 +76,7 @@
 <li>
 <strong>Continuous monitoring data</strong>: time series of sensor observations at a site, one column per parameter.</li>
 <li>
-<strong>QC threshold metadata</strong>: parameter-specific thresholds used by the four QC checks (gross range, spike, rate of change, and flatline).</li>
+<strong>Data Quality Objectives</strong>: parameter-specific data quality objectives used by the four QC checks (gross range, spike, rate of change, and flatline).</li>
 </ol>
 <p>Both file types are Excel workbooks (<code>.xlsx</code>). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format. Example files with the correct format are included with the package and are used throughout.</p>
 <section class="level2"><h2 id="load-the-package">Load the package<a class="anchor" aria-label="anchor" href="#load-the-package"></a>
@@ -92,13 +92,13 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="st">"path/to/your/ContinuousData.xlsx"</span></span>
-<span><span class="va">metapth</span> <span class="op">&lt;-</span> <span class="st">"path/to/your/Metadata.xlsx"</span></span></code></pre></div>
+<span><span class="va">dqopth</span> <span class="op">&lt;-</span> <span class="st">"path/to/your/DQO.xlsx"</span></span></code></pre></div>
 </div>
 <p>The examples below use the files included with the package:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleCont1.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
-<span><span class="va">metapth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleMeta.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">dqopth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleDQO.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="continuous-monitoring-data">Continuous monitoring data<a class="anchor" aria-label="anchor" href="#continuous-monitoring-data"></a>
 </h2>
@@ -477,17 +477,19 @@
 <span><span class="co">#&gt; 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.</span></span>
 <span><span class="co">#&gt; # ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span></code></pre></div>
 </div>
-</section></section><section class="level2"><h2 id="qc-threshold-metadata">QC threshold metadata<a class="anchor" aria-label="anchor" href="#qc-threshold-metadata"></a>
+</section></section><section class="level2"><h2 id="data-quality-objectives">Data quality objectives<a class="anchor" aria-label="anchor" href="#data-quality-objectives"></a>
 </h2>
-<p>The metadata file includes various information for the quality control checks applied to each parameter (see the <a href="qcoverview.html">quality control vignette</a> for details). Use <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> to import the QC threshold metadata. The function reads the workbook, runs checks via <code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code>, and returns a formatted data frame.</p>
+<p>The data quality objectives file includes various information for the quality control checks applied to each parameter (see the <a href="qcoverview.html">quality control vignette</a> for details). Use <code><a href="../reference/readASRdqo.html">readASRdqo()</a></code> to import the data quality objectives. The function reads the workbook, runs checks via <code><a href="../reference/checkASRdqo.html">checkASRdqo()</a></code>, and returns a formatted data frame.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">metadat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRmeta.html">readASRmeta</a></span><span class="op">(</span><span class="va">metapth</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Running checks on continuous metadata...</span></span>
+<code class="sourceCode R"><span><span class="va">dqodat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRdqo.html">readASRdqo</a></span><span class="op">(</span><span class="va">dqopth</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Running checks on data quality objectives...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
 <span><span class="co">#&gt;  Checking all columns present... OK</span></span>
 <span><span class="co">#&gt;  Checking at least one parameter is present... OK</span></span>
 <span><span class="co">#&gt;  Checking parameter format... OK</span></span>
+<span><span class="co">#&gt;  Checking Flag column... OK</span></span>
+<span><span class="co">#&gt;  Checking Rate of Change flags... OK</span></span>
 <span><span class="co">#&gt;  Checking columns for non-numeric values... OK</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; All checks passed!</span></span></code></pre></div>
@@ -511,44 +513,28 @@
 </td>
 </tr>
 <tr class="even">
-<td><code>GrMinFail</code></td>
-<td>Gross range, lower fail threshold</td>
+<td><code>Flag</code></td>
+<td>Flag level for the thresholds in the row, either “Fail” or “Suspect”</td>
 </tr>
 <tr class="odd">
-<td><code>GrMaxFail</code></td>
-<td>Gross range, upper fail threshold</td>
+<td><code>GrMin</code></td>
+<td>Gross range, lower threshold</td>
 </tr>
 <tr class="even">
-<td><code>GrMinSuspect</code></td>
-<td>Gross range, lower suspect threshold</td>
+<td><code>GrMax</code></td>
+<td>Gross range, upper threshold</td>
 </tr>
 <tr class="odd">
-<td><code>GrMaxSuspect</code></td>
-<td>Gross range, upper suspect threshold</td>
+<td><code>Spike</code></td>
+<td>Spike, absolute step size for a flag</td>
 </tr>
 <tr class="even">
-<td><code>SpikeFail</code></td>
-<td>Spike, absolute step size for a fail flag</td>
+<td><code>FlatN</code></td>
+<td>Flatline, consecutive identical observations for a flag</td>
 </tr>
 <tr class="odd">
-<td><code>SpikeSuspect</code></td>
-<td>Spike, absolute step size for a suspect flag</td>
-</tr>
-<tr class="even">
-<td><code>FlatFailN</code></td>
-<td>Flatline, consecutive identical observations for a fail flag</td>
-</tr>
-<tr class="odd">
-<td><code>FlatFailDelta</code></td>
-<td>Flatline, maximum within-run absolute change treated as “identical” for fail</td>
-</tr>
-<tr class="even">
-<td><code>FlatSuspectN</code></td>
-<td>Flatline, consecutive identical observations for a suspect flag</td>
-</tr>
-<tr class="odd">
-<td><code>FlatSuspectDelta</code></td>
-<td>Flatline, maximum within-run absolute change treated as “identical” for suspect</td>
+<td><code>FlatDelta</code></td>
+<td>Flatline, maximum within-run absolute change treated as “identical” for a flag</td>
 </tr>
 <tr class="even">
 <td><code>RoCN</code></td>
@@ -561,33 +547,39 @@
 </tbody>
 </table></section><section class="level3"><h3 id="checks-performed-1">Checks performed<a class="anchor" aria-label="anchor" href="#checks-performed-1"></a>
 </h3>
-<p>The <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> function imports the metadata and runs a series of checks using the <code><a href="../reference/checkASRmeta.html">checkASRmeta()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
+<p>The <code><a href="../reference/readASRdqo.html">readASRdqo()</a></code> function imports the data quality objectives and runs a series of checks using the <code><a href="../reference/checkASRdqo.html">checkASRdqo()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
 <ol type="1">
 <li>
-<strong>Column names</strong>: all columns are in the required list above.</li>
+<strong>Column names</strong>: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCN, and RoCHours</li>
 <li>
-<strong>All columns present</strong>: every required column exists.</li>
+<strong>All columns present</strong>: All columns from the previous check should be present</li>
 <li>
-<strong>At least one parameter</strong>: at least one value in <code>Parameter</code> matches <code>paramsASR$Parameter</code>.</li>
+<strong>At least one parameter is present</strong>: At least one parameter in the <code>Parameter</code> column matches the <code>Parameter</code> column in <code>paramsASR</code>
+</li>
 <li>
-<strong>Parameter format</strong>: all <code>Parameter</code> values match those in <code>paramsASR$Parameter</code>.</li>
+<strong>Parameter format</strong>: All parameters listed in the <code>Parameter</code> column should match those in the <code>Parameter</code> column in <code>paramsASR</code>
+</li>
 <li>
-<strong>Numeric columns</strong>: all columns except <code>Parameter</code> contain only numeric or missing values.</li>
+<strong>Flag column</strong>: The <code>Flag</code> column should contain only “Fail” or “Suspect” entries</li>
+<li>
+<strong>Rate of Change</strong>: No entries for Fail Flag rows</li>
+<li>
+<strong>Numeric columns</strong>: All columns except <code>Parameter</code> and <code>Flag</code> should be numeric values</li>
 </ol></section><section class="level3"><h3 id="example-triggering-an-error-1">Example: triggering an error<a class="anchor" aria-label="anchor" href="#example-triggering-an-error-1"></a>
 </h3>
 <p>Supplying an unrecognised parameter name fails the parameter format check:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># import the data for the example</span></span>
-<span><span class="va">metadat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
-<span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">metapth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span><span class="va">dqodat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<span>  <span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_excel</a></span><span class="op">(</span><span class="va">dqopth</span>, na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"na"</span>, <span class="st">""</span><span class="op">)</span>, guess_max <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># introduce a typo in the Parameter column</span></span>
-<span><span class="va">metadat_raw</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"WaterTemp"</span></span>
+<span><span class="va">dqodat_raw</span><span class="op">$</span><span class="va">Parameter</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"WaterTemp"</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/checkASRmeta.html">checkASRmeta</a></span><span class="op">(</span><span class="va">metadat_raw</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Running checks on continuous metadata...</span></span>
+<span><span class="fu"><a href="../reference/checkASRdqo.html">checkASRdqo</a></span><span class="op">(</span><span class="va">dqodat_raw</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Running checks on data quality objectives...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
 <span><span class="co">#&gt;  Checking all columns present... OK</span></span>
 <span><span class="co">#&gt;  Checking at least one parameter is present... OK</span></span>
@@ -597,23 +589,21 @@
 </div>
 </section><section class="level3"><h3 id="output-format-1">Output format<a class="anchor" aria-label="anchor" href="#output-format-1"></a>
 </h3>
-<p>After passing all checks, <code><a href="../reference/readASRmeta.html">readASRmeta()</a></code> returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.</p>
+<p>After passing all checks, <code><a href="../reference/readASRdqo.html">readASRdqo()</a></code> returns a data frame with the columns listed in the format requirements table above, with all threshold columns coerced to numeric.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadat</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 13</span></span>
-<span><span class="co">#&gt;   Parameter GrMinFail GrMaxFail GrMinSuspect GrMaxSuspect SpikeFail SpikeSuspect</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 Water Te…        -1        30         -0.5           28         2          1.5</span></span>
-<span><span class="co">#&gt; 2 DO_pctsat        -1       120          0            100        25         10  </span></span>
-<span><span class="co">#&gt; 3 DO_mg_l           1        18          2             16         4          2  </span></span>
-<span><span class="co">#&gt; 4 Conducti…        10      1500         20           1200        10          5  </span></span>
-<span><span class="co">#&gt; 5 TDS_mg_l         10      1500         20           1200       100         50  </span></span>
-<span><span class="co">#&gt; 6 Salinity…         2        41          3             37         5          3  </span></span>
-<span><span class="co">#&gt; # ℹ 6 more variables: FlatFailN &lt;dbl&gt;, FlatFailDelta &lt;dbl&gt;, FlatSuspectN &lt;dbl&gt;,</span></span>
-<span><span class="co">#&gt; #   FlatSuspectDelta &lt;dbl&gt;, RoCN &lt;dbl&gt;, RoCHours &lt;dbl&gt;</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dqodat</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
+<span><span class="co">#&gt;   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta  RoCN RoCHours</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 Water Temp_C Suspect  -0.5    28   1.5    60      0.01     6       25</span></span>
+<span><span class="co">#&gt; 2 Water Temp_C Fail     -1      30   2     100      0.01    NA       NA</span></span>
+<span><span class="co">#&gt; 3 DO_pctsat    Suspect   0     100  10      30      0.01     6       25</span></span>
+<span><span class="co">#&gt; 4 DO_pctsat    Fail     -1     120  25      60      0.01    NA       NA</span></span>
+<span><span class="co">#&gt; 5 DO_mg_l      Suspect   2      16   2      30      0.01     6       25</span></span>
+<span><span class="co">#&gt; 6 DO_mg_l      Fail      1      18   4      60      0.01    NA       NA</span></span></code></pre></div>
 </div>
-<p>The remaining functions in AquaSensR can now be used after the continuous data and metadata files are successfully imported.</p>
+<p>The remaining functions in AquaSensR can now be used after the continuous data and data quality objectives files are successfully imported.</p>
 </section></section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
