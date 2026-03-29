@@ -39,6 +39,7 @@ reference:
     Functions for flagging suspect and failed data based on user-defined data quality objectives.
   contents:
   - anlzASRflag
+  - editASRflag
   - starts_with('utilASRflag')
 - title: Utility functions
   desc: >
