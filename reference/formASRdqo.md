@@ -26,7 +26,7 @@ to format the input data for downstream analysis. The formatting
 includes:
 
 - Convert non-numeric columns to numeric: Converts all columns except
-  Parameter to numeric if they are not already.
+  `Parameter` and `Flag` to numeric if they are not already.
 
 ## Examples
 

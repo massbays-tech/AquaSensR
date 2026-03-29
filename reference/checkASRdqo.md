@@ -12,7 +12,7 @@ checkASRdqo(dqodat)
 
 - dqodat:
 
-  input data frame fordata quality objectives
+  input data frame of data quality objectives
 
 ## Value
 
