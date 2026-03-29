@@ -48,9 +48,11 @@ Depends:
   R (>= 4.1.0)
 Imports:
   dplyr,
+  DT,
   lubridate,
   plotly,
   readxl,
+  shiny,
   tidyr
 License: CC0
 Encoding: UTF-8

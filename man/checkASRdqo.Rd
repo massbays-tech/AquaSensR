@@ -7,7 +7,7 @@
 checkASRdqo(dqodat)
 }
 \arguments{
-\item{dqodat}{input data frame fordata quality objectives}
+\item{dqodat}{input data frame of data quality objectives}
 }
 \value{
 \code{dqodat} is returned as is if no errors are found, otherwise an informative error message is returned prompting the user to make the required correction to the raw data before proceeding.

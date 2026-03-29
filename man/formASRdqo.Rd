@@ -19,7 +19,7 @@ Format data quality objectives
 This function is used internally within \code{\link{readASRdqo}} to format the input data for downstream analysis.  The formatting includes:
 
 \itemize{
-\item Convert non-numeric columns to numeric: Converts all columns except Parameter to numeric if they are not already.
+\item Convert non-numeric columns to numeric: Converts all columns except \code{Parameter} and \code{Flag} to numeric if they are not already.
 }
 }
 \examples{

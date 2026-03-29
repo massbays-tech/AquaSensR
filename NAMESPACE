@@ -3,6 +3,7 @@
 export(anlzASRflag)
 export(checkASRcont)
 export(checkASRdqo)
+export(editASRflag)
 export(formASRcont)
 export(formASRdqo)
 export(readASRcont)

@@ -43,3 +43,7 @@ dqodat <- readASRdqo(dqopth, runchk = FALSE)
 flagdat <- utilASRflag(contdat, dqodat, param = 'Water Temp_C')
 anlzASRflag(flagdat)
 }
+\seealso{
+\code{\link{editASRflag}}, which uses this function internally to
+render the plot inside a Shiny app.
+}
