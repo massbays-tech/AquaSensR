@@ -134,7 +134,7 @@ anlzASRflag <- function(flagdat) {
     }
   }
 
-  plotly::layout(
+  p <- plotly::layout(
     p,
     xaxis = list(title = ""),
     yaxis = list(title = ylab),
@@ -144,5 +144,15 @@ anlzASRflag <- function(flagdat) {
     ),
     dragmode = "zoom",
     hovermode = "closest"
+  )
+
+  plotly::config(
+    p,
+    displaylogo = FALSE,
+    modeBarButtonsToRemove = c(
+      "zoomIn2d", "zoomOut2d", "autoScale2d",
+      "hoverClosestCartesian", "hoverCompareCartesian",
+      "toggleSpikelines", "toImage"
+    )
   )
 }

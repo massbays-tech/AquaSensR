@@ -53,6 +53,7 @@
 #' @export
 editASRflag <- function(flagdat) {
   param <- names(flagdat)[2L]
+  prmlb <- paramsASR[paramsASR$Parameter == param, "Label"] |> as.character()
 
   # anlzASRflag() adds .rowid to flagdat internally; replicate that here so
   # the proxy loop and row-matching logic have a consistent stable identifier.
@@ -63,48 +64,44 @@ editASRflag <- function(flagdat) {
   # -------------------------------------------------------------------------
   # UI
   # -------------------------------------------------------------------------
-  ui <- shiny::fluidPage(
-    shiny::titlePanel(paste("Edit Flags:", param)),
-    shiny::sidebarLayout(
-      shiny::sidebarPanel(
-        width = 3,
-        shiny::h4("Controls"),
-        shiny::actionButton(
-          "undo",
-          "Undo Last Removal",
-          class = "btn-warning",
-          style = "width: 100%;"
-        ),
-        shiny::br(),
-        shiny::br(),
-        shiny::actionButton(
-          "reset",
-          "Start Over",
-          class = "btn-danger",
-          style = "width: 100%;"
-        ),
-        shiny::br(),
-        shiny::br(),
-        shiny::actionButton(
-          "done",
-          "Done / Close",
-          class = "btn-success",
-          style = "width: 100%;"
-        ),
-        shiny::hr(),
-        shiny::h4("Removed Points"),
-        DT::DTOutput("removed_table")
+  ui <- bslib::page_sidebar(
+    title = paste("Edit:", prmlb),
+    sidebar = bslib::sidebar(
+      width = 300,
+      open = "open",
+      shiny::h4("Controls"),
+      shiny::actionButton(
+        "undo",
+        "Undo Last Removal",
+        class = "btn-warning",
+        style = "width: 100%; margin-bottom: 3px;"
       ),
-      shiny::mainPanel(
-        width = 9,
-        shiny::p(
-          "Zoom and pan normally with the plot toolbar.",
-          "To remove points: click individual points directly, or use the",
-          "\u2018Box Select\u2019 or \u2018Lasso Select\u2019 toolbar buttons to remove a region."
-        ),
-        plotly::plotlyOutput("flagPlot", height = "550px")
+      shiny::actionButton(
+        "reset",
+        "Start Over",
+        class = "btn-danger",
+        style = "width: 100%; margin-bottom: 3px;"
+      ),
+      shiny::actionButton(
+        "done",
+        "Done / Close",
+        class = "btn-success",
+        style = "width: 100%;"
+      ),
+      shiny::hr(),
+      shiny::h4(shiny::textOutput("removed_count", inline = TRUE)),
+      shiny::div(
+        style = "font-size: 12px;",
+        DT::DTOutput("removed_table")
       )
-    )
+    ),
+    shiny::p(
+      "Zoom and pan normally with the plot toolbar visible on the top right when the pointer is over the plot.",
+      "To remove points: click individual points directly, or use the",
+      "\u2018Box Select\u2019 or \u2018Lasso Select\u2019 toolbar buttons to remove a region.",
+      "Double-click the plot background to clear selection and start a new one."
+    ),
+    plotly::plotlyOutput("flagPlot", height = "550px")
   )
 
   # -------------------------------------------------------------------------
@@ -138,29 +135,34 @@ editASRflag <- function(flagdat) {
     # ---- Update traces in-place via proxy when remaining() changes ----------
     # A single restyle call updates all 9 traces simultaneously without
     # touching layout, so zoom/pan is preserved.
-    shiny::observeEvent(remaining(), {
-      dat   <- remaining()
-      proxy <- plotly::plotlyProxy("flagPlot", session)
+    shiny::observeEvent(
+      remaining(),
+      {
+        dat <- remaining()
+        proxy <- plotly::plotlyProxy("flagPlot", session)
 
-      xs  <- list(dat$DateTime)
-      ys  <- list(dat[[param]])
-      cds <- list(dat$.rowid)
+        xs <- list(dat$DateTime)
+        ys <- list(dat[[param]])
+        cds <- list(dat$.rowid)
 
-      for (fc in flag_cols) {
-        for (sev in c("suspect", "fail")) {
-          sub <- dat[!is.na(dat[[fc]]) & dat[[fc]] == sev, , drop = FALSE]
-          xs  <- c(xs,  list(sub$DateTime))
-          ys  <- c(ys,  list(sub[[param]]))
-          cds <- c(cds, list(sub$.rowid))
+        for (fc in flag_cols) {
+          for (sev in c("suspect", "fail")) {
+            sub <- dat[!is.na(dat[[fc]]) & dat[[fc]] == sev, , drop = FALSE]
+            xs <- c(xs, list(sub$DateTime))
+            ys <- c(ys, list(sub[[param]]))
+            cds <- c(cds, list(sub$.rowid))
+          }
         }
-      }
 
-      plotly::plotlyProxyInvoke(
-        proxy, "restyle",
-        list(x = xs, y = ys, customdata = cds),
-        as.list(0:8)
-      )
-    }, ignoreInit = TRUE)
+        plotly::plotlyProxyInvoke(
+          proxy,
+          "restyle",
+          list(x = xs, y = ys, customdata = cds),
+          as.list(0:8)
+        )
+      },
+      ignoreInit = TRUE
+    )
 
     # ---- Handle box / lasso selection ---------------------------------------
     # customdata carries .rowid; unique() deduplicates points that appear in
@@ -194,13 +196,17 @@ editASRflag <- function(flagdat) {
       plotly::event_data("plotly_click", session = session),
       {
         click <- plotly::event_data("plotly_click", session = session)
-        if (is.null(click)) return()
+        if (is.null(click)) {
+          return()
+        }
 
         rowid <- click$customdata
-        dat   <- remaining()
-        mask  <- dat$.rowid %in% rowid
+        dat <- remaining()
+        mask <- dat$.rowid %in% rowid
 
-        if (!any(mask)) return()
+        if (!any(mask)) {
+          return()
+        }
 
         to_remove <- dat[mask, , drop = FALSE]
         remaining(dat[!mask, , drop = FALSE])
@@ -237,13 +243,20 @@ editASRflag <- function(flagdat) {
       shiny::stopApp(returnValue = result)
     })
 
-    # ---- Removed points table -----------------------------------------------
+    # ---- Removed points count and table -------------------------------------
+    output$removed_count <- shiny::renderText({
+      paste("Removed Points:", nrow(removed_points()))
+    })
     output$removed_table <- DT::renderDT({
       rp <- removed_points()
       if (nrow(rp) > 0L) {
         rp$DateTime <- format(rp$DateTime)
       }
-      DT::datatable(rp, options = list(pageLength = 10, scrollX = TRUE), rownames = FALSE)
+      DT::datatable(
+        rp,
+        options = list(dom = "t", paging = FALSE, scrollX = TRUE),
+        rownames = FALSE
+      )
     })
   }
 
