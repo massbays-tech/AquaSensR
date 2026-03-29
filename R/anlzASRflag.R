@@ -41,8 +41,11 @@ anlzASRflag <- function(flagdat) {
 
   # .rowid provides a stable point identifier passed as customdata to every
   # trace, used by editASRflag() to match plotly selections back to rows.
-  # Harmless in standalone use.
-  flagdat$.rowid <- seq_len(nrow(flagdat))
+  # Only added if not already present so that editASRflag()'s original row
+  # identifiers are preserved when remaining() is passed in after removals.
+  if (!".rowid" %in% names(flagdat)) {
+    flagdat$.rowid <- seq_len(nrow(flagdat))
+  }
 
   flag_cols <- c("gross_flag", "spike_flag", "roc_flag", "flat_flag")
   check_labels <- c(

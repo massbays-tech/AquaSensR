@@ -125,44 +125,32 @@ editASRflag <- function(flagdat) {
       do.call(rbind, lapply(hist, function(x) x[, cols, drop = FALSE]))
     })
 
-    # ---- Plot (rendered once from original flagdat) -------------------------
-    # Does not depend on remaining(), so zoom/pan state is never reset by
-    # a re-render. All data updates go through plotlyProxy below.
-    output$flagPlot <- plotly::renderPlotly({
-      anlzASRflag(flagdat)
-    })
+    # Track zoom/pan range so re-renders can restore the current view.
+    x_range <- shiny::reactiveVal(NULL)
 
-    # ---- Update traces in-place via proxy when remaining() changes ----------
-    # A single restyle call updates all 9 traces simultaneously without
-    # touching layout, so zoom/pan is preserved.
     shiny::observeEvent(
-      remaining(),
+      plotly::event_data("plotly_relayout", session = session),
       {
-        dat <- remaining()
-        proxy <- plotly::plotlyProxy("flagPlot", session)
-
-        xs <- list(dat$DateTime)
-        ys <- list(dat[[param]])
-        cds <- list(dat$.rowid)
-
-        for (fc in flag_cols) {
-          for (sev in c("suspect", "fail")) {
-            sub <- dat[!is.na(dat[[fc]]) & dat[[fc]] == sev, , drop = FALSE]
-            xs <- c(xs, list(sub$DateTime))
-            ys <- c(ys, list(sub[[param]]))
-            cds <- c(cds, list(sub$.rowid))
-          }
+        rl <- plotly::event_data("plotly_relayout", session = session)
+        if (!is.null(rl[["xaxis.range[0]"]]) && !is.null(rl[["xaxis.range[1]"]])) {
+          x_range(c(rl[["xaxis.range[0]"]], rl[["xaxis.range[1]"]]))
+        } else if (!is.null(rl[["xaxis.autorange"]])) {
+          x_range(NULL)
         }
-
-        plotly::plotlyProxyInvoke(
-          proxy,
-          "restyle",
-          list(x = xs, y = ys, customdata = cds),
-          as.list(0:8)
-        )
-      },
-      ignoreInit = TRUE
+      }
     )
+
+    # ---- Plot: re-renders from remaining() with zoom baked in ---------------
+    # event_register is required — plotly_relayout is disabled by default.
+    output$flagPlot <- plotly::renderPlotly({
+      rng <- shiny::isolate(x_range())
+      p   <- anlzASRflag(remaining())
+      p   <- plotly::event_register(p, "plotly_relayout")
+      if (!is.null(rng)) {
+        p <- plotly::layout(p, xaxis = list(autorange = FALSE, range = as.list(rng)))
+      }
+      p
+    })
 
     # ---- Handle box / lasso selection ---------------------------------------
     # customdata carries .rowid; unique() deduplicates points that appear in
