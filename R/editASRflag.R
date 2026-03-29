@@ -1,9 +1,9 @@
-#' Interactive flag editor for continuous monitoring data
+#' Interactive editor for continuous monitoring data
 #'
 #' Opens a Shiny application displaying the QC flag plot from
 #' \code{\link{anlzASRflag}} and allows the user to interactively select and
-#' remove data points. Points are removed by drawing a selection rectangle on
-#' the plot. A running table of removed points (including their flag
+#' remove data points. Points are removed by clicking or drawing a selection
+#' using the box or lasso tool on the plot. A running table of removed points (including their flag
 #' assignments) is shown in the sidebar. Individual removal batches can be
 #' undone, or the session can be fully reset. Clicking \strong{Done / Close}
 #' stops the app and returns the filtered dataset to the R session.
@@ -17,28 +17,34 @@
 #'
 #' @details
 #' \subsection{How to select points}{
-#'   Draw a rectangle on the plot by clicking and dragging. All points within
-#'   the rectangle are removed immediately and added to the removal table. You
-#'   can also use the plotly lasso tool from the mode-bar.
+#'   Zooming and panning with the plot toolbar is recommended to more easily
+#'   identify points for removal.  These options are available in the menu on
+#'   the top right when hovering over the plot.
+#'
+#'   Points can be selected for removal three ways.  First, individual points can be removed
+#'   by clicking.  Second and third, use the box or lasso selection tool by
+#'   hovering over the plot and selecting the desired tool from the menu
+#'   on the top right.  Click and drag over the desired area for the box selection or
+#'   click and encircle the points with the lasso tool to add the points
+#'   to the removal table.  Double-click the plot background to remove the selected
+#'   area if present after removal.
 #' }
 #'
 #' \subsection{Controls}{
 #'   \itemize{
-#'     \item \strong{Undo Last Removal} — restores the most recently removed
-#'       batch of points (one drag-selection at a time).
-#'     \item \strong{Start Over} — restores all removed points and resets to
+#'     \item \strong{Undo Last Removal}: restores the most recently removed
+#'       point or batch of points (one drag-selection at a time).
+#'     \item \strong{Start Over}: restores all removed points and resets to
 #'       the original dataset.
-#'     \item \strong{Done / Close} — stops the app and returns the current
+#'     \item \strong{Done / Close}: stops the app and returns the current
 #'       filtered dataset to the R session.
 #'   }
 #' }
 #'
-#' \subsection{Shiny in a package}{
-#'   The app is constructed inline so that \code{flagdat} is available directly
-#'   to the server without file I/O. \code{shiny::runApp()} blocks until
-#'   \code{shiny::stopApp()} is called by the Done button; its return value
-#'   becomes the function return value.
-#' }
+#' The app is constructed inline so that \code{flagdat} is available directly
+#' to the server without file I/O. \code{shiny::runApp()} blocks until
+#' \code{shiny::stopApp()} is called by the Done button; its return value
+#' becomes the function return value.
 #'
 #' @examples
 #' \dontrun{
@@ -132,7 +138,9 @@ editASRflag <- function(flagdat) {
       plotly::event_data("plotly_relayout", session = session),
       {
         rl <- plotly::event_data("plotly_relayout", session = session)
-        if (!is.null(rl[["xaxis.range[0]"]]) && !is.null(rl[["xaxis.range[1]"]])) {
+        if (
+          !is.null(rl[["xaxis.range[0]"]]) && !is.null(rl[["xaxis.range[1]"]])
+        ) {
           x_range(c(rl[["xaxis.range[0]"]], rl[["xaxis.range[1]"]]))
         } else if (!is.null(rl[["xaxis.autorange"]])) {
           x_range(NULL)
@@ -144,10 +152,13 @@ editASRflag <- function(flagdat) {
     # event_register is required — plotly_relayout is disabled by default.
     output$flagPlot <- plotly::renderPlotly({
       rng <- shiny::isolate(x_range())
-      p   <- anlzASRflag(remaining())
-      p   <- plotly::event_register(p, "plotly_relayout")
+      p <- anlzASRflag(remaining())
+      p <- plotly::event_register(p, "plotly_relayout")
       if (!is.null(rng)) {
-        p <- plotly::layout(p, xaxis = list(autorange = FALSE, range = as.list(rng)))
+        p <- plotly::layout(
+          p,
+          xaxis = list(autorange = FALSE, range = as.list(rng))
+        )
       }
       p
     })

@@ -28,6 +28,7 @@ head(dqodat)
 # ------------------------------------------------------------------------------
 # Change `param` to any parameter column present in contdat / dqodat
 flagdat <- utilASRflag(contdat, dqodat, param = "Water Temp_C")
+flagdat <- utilASRflag(contdat, dqodat, param = "DO_mg_l")
 
 # Summary of flag results
 head(flagdat)
@@ -40,3 +41,10 @@ table(flagdat$flat_flag)
 # 4. Visualize flagged data
 # ------------------------------------------------------------------------------
 anlzASRflag(flagdat)
+
+# ------------------------------------------------------------------------------
+# 5. Edit flags in interactive Shiny app
+#' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
+cleaned <- editASRflag(flagdat)
+
+anlzASRflag(cleaned)
