@@ -78,6 +78,8 @@ data quality objectives.
   : Interactive editor for continuous monitoring data
 - [`utilASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflag.md)
   : Flag continuous monitoring data with QC criteria
+- [`utilASRflagall()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflagall.md)
+  : Apply QC flags to all parameters in continuous monitoring data
 - [`utilASRflagflatline()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflagflatline.md)
   : Apply flatline QC flag
 - [`utilASRflaggross()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflaggross.md)
