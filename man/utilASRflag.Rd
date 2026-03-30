@@ -12,8 +12,9 @@ utilASRflag(contdat, dqodat, param)
 \item{dqodat}{data frame returned by \code{\link{readASRdqo}}}
 
 \item{param}{character string naming the parameter column to evaluate.
-Must match one of the parameter columns present in \code{contdat} and
-one of the entries in the \code{Parameter} column of \code{dqodat}.}
+Must match one of the parameter columns present in \code{contdat}.
+If \code{param} has no matching entry in \code{dqodat$Parameter} all
+flags are returned as \code{"pass"}.}
 }
 \value{
 A data frame with columns \code{DateTime}, the

@@ -4,54 +4,71 @@
 \alias{editASRflag}
 \title{Interactive editor for continuous monitoring data}
 \usage{
-editASRflag(flagdat)
+editASRflag(contdat, dqodat)
 }
 \arguments{
-\item{flagdat}{data frame returned by \code{\link{utilASRflag}}, with
-columns \code{DateTime}, the parameter column, and
-\code{gross_flag}, \code{spike_flag}, \code{roc_flag}, \code{flat_flag}.}
+\item{contdat}{data frame returned by \code{\link{readASRcont}}}
+
+\item{dqodat}{data frame returned by \code{\link{readASRdqo}}}
 }
 \value{
-A data frame with the same structure as \code{flagdat} but with
-user-selected points removed, invisibly returned after the app closes.
+A list with two elements, invisibly returned after the app closes:
+\describe{
+\item{\code{contdat}}{A data frame with the same structure as the input
+\code{contdat} (sorted by \code{DateTime}), where values removed by
+the user are replaced with \code{NA}.  Rows in which every parameter
+was removed are retained with only \code{DateTime} populated.}
+\item{\code{removed}}{A data frame of all removed observations across
+all parameters, with columns \code{Parameter}, \code{DateTime},
+\code{gross_flag}, \code{spike_flag}, \code{roc_flag}, and
+\code{flat_flag}.}
+}
 }
 \description{
 Opens a Shiny application displaying the QC flag plot from
-\code{\link{anlzASRflag}} and allows the user to interactively select and
-remove data points. Points are removed by clicking or drawing a selection
-using the box or lasso tool on the plot. A running table of removed points (including their flag
-assignments) is shown in the sidebar. Individual removal batches can be
-undone, or the session can be fully reset. Clicking \strong{Done / Close}
-stops the app and returns the filtered dataset to the R session.
+\code{\link{anlzASRflag}} for each parameter in \code{contdat} and allows
+the user to interactively select and remove data points. Points are removed
+by clicking or drawing a selection using the box or lasso tool on the plot.
+A running table of removed points (including their flag assignments) is shown
+in the sidebar and is specific to the currently displayed parameter.
+Individual removal batches can be undone, or the current parameter's session
+can be fully reset. Clicking \strong{Done / Close} stops the app and returns
+the filtered datasets for all parameters to the R session.
 }
 \details{
+QC flags are computed internally via \code{\link{utilASRflagall}}.
+
 \subsection{How to select points}{
 Zooming and panning with the plot toolbar is recommended to more easily
 identify points for removal.  These options are available in the menu on
 the top right when hovering over the plot.
 
-Points can be selected for removal three ways.  First, individual points can be removed
-by clicking.  Second and third, use the box or lasso selection tool by
-hovering over the plot and selecting the desired tool from the menu
-on the top right.  Click and drag over the desired area for the box selection or
-click and encircle the points with the lasso tool to add the points
-to the removal table.  Double-click the plot background to remove the selected
-area if present after removal.
+Points can be selected for removal three ways.  First, individual points
+can be removed by clicking.  Second and third, use the box or lasso
+selection tool by hovering over the plot and selecting the desired tool
+from the menu on the top right.  Click and drag over the desired area for
+the box selection or click and encircle the points with the lasso tool to
+add the points to the removal table.  Double-click the plot background to
+remove the selected area if present after removal.
 }
 
 \subsection{Controls}{
 \itemize{
+\item \strong{Parameter}: drop-down selector to switch between
+parameters.  Edits to each parameter are preserved independently when
+switching.
 \item \strong{Undo Last Removal}: restores the most recently removed
-point or batch of points (one drag-selection at a time).
-\item \strong{Start Over}: restores all removed points and resets to
-the original dataset.
-\item \strong{Done / Close}: stops the app and returns the current
-filtered dataset to the R session.
+point or batch of points for the current parameter (one drag-selection
+at a time).
+\item \strong{Start Over}: restores all removed points for the current
+parameter and resets to the original flagged dataset.
+\item \strong{Done / Close}: stops the app and returns the filtered
+datasets for all parameters to the R session.
 }
 }
 
-The app is constructed inline so that \code{flagdat} is available directly
-to the server without file I/O. \code{shiny::runApp()} blocks until
+The app is constructed inline so that flag data are available directly to
+the server without file I/O. \code{shiny::runApp()} blocks until
 \code{shiny::stopApp()} is called by the Done button; its return value
 becomes the function return value.
 }
@@ -61,8 +78,7 @@ contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth  <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 dqodat  <- readASRdqo(dqopth)
-flagdat <- utilASRflag(contdat, dqodat, "Water Temp_C")
-cleaned <- editASRflag(flagdat)
+cleaned <- editASRflag(contdat, dqodat)
 }
 
 }
