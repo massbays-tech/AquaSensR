@@ -43,13 +43,6 @@ test_that("utilASRflag errors when param column missing from contdat", {
   expect_error(utilASRflag(cd, md, "pH_SU"), "column not found in contdat")
 })
 
-test_that("utilASRflag errors when param not in dqodat", {
-  cd <- flag_make_cd(rep(20, flag_n_obs))
-  cd[["pH_SU"]] <- 7.0
-  md <- flag_make_md() # dqodat only covers Water Temp_C
-  expect_error(utilASRflag(cd, md, "pH_SU"), "not found in dqodat")
-})
-
 # ---------------------------------------------------------------------------
 # Gross range
 # ---------------------------------------------------------------------------

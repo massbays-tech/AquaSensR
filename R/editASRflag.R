@@ -73,6 +73,13 @@
 #'
 #' @export
 editASRflag <- function(contdat, dqodat) {
+  shiny::runApp(editASRflag_app(contdat, dqodat))
+}
+
+# Builds the shinyApp object without running it.  Separated from editASRflag()
+# so that tests can call shiny::testServer() on the server function directly.
+# Not exported.
+editASRflag_app <- function(contdat, dqodat) {
   # Compute flags for all parameters up front
   flagdat_list <- utilASRflagall(contdat, dqodat)
   params <- names(flagdat_list)
@@ -287,53 +294,9 @@ editASRflag <- function(contdat, dqodat) {
 
     # ---- Done: return results to the R session ------------------------------
     shiny::observeEvent(input$done, {
-      rl <- remaining_list()
-
-      # Element 1: contdat sorted by DateTime with removed values set to NA.
-      # flagdat .rowid == row index of the DateTime-sorted contdat, so we can
-      # use it directly to place NAs without DateTime matching.
-      out_cont <- contdat[order(contdat$DateTime), ]
-      for (p in params) {
-        removed_rowids <- setdiff(flagdat_list[[p]]$.rowid, rl[[p]]$.rowid)
-        if (length(removed_rowids) > 0L) {
-          out_cont[removed_rowids, p] <- NA
-        }
-      }
-
-      # Element 2: all removed observations stacked into one data frame.
-      flag_cols <- c("gross_flag", "spike_flag", "roc_flag", "flat_flag")
-      removed_per_param <- lapply(params, function(p) {
-        removed_rowids <- setdiff(flagdat_list[[p]]$.rowid, rl[[p]]$.rowid)
-        if (length(removed_rowids) == 0L) return(NULL)
-        fd <- flagdat_list[[p]]
-        rows <- fd[fd$.rowid %in% removed_rowids, , drop = FALSE]
-        data.frame(
-          Parameter  = p,
-          DateTime   = rows$DateTime,
-          gross_flag = rows$gross_flag,
-          spike_flag = rows$spike_flag,
-          roc_flag   = rows$roc_flag,
-          flat_flag  = rows$flat_flag,
-          stringsAsFactors = FALSE
-        )
-      })
-      removed_per_param <- Filter(Negate(is.null), removed_per_param)
-      if (length(removed_per_param) == 0L) {
-        out_removed <- data.frame(
-          Parameter  = character(0),
-          DateTime   = as.POSIXct(character(0)),
-          gross_flag = character(0),
-          spike_flag = character(0),
-          roc_flag   = character(0),
-          flat_flag  = character(0),
-          stringsAsFactors = FALSE
-        )
-      } else {
-        out_removed <- do.call(rbind, removed_per_param)
-        out_removed <- out_removed[order(out_removed$Parameter, out_removed$DateTime), ]
-      }
-
-      shiny::stopApp(returnValue = list(contdat = out_cont, removed = out_removed))
+      shiny::stopApp(
+        returnValue = editASRflag_result(contdat, flagdat_list, remaining_list())
+      )
     })
 
     # ---- Removed points count and table (current parameter) ----------------
@@ -359,5 +322,56 @@ editASRflag <- function(contdat, dqodat) {
     })
   }
 
-  shiny::runApp(shiny::shinyApp(ui, server))
+  shiny::shinyApp(ui, server)
+}
+
+# Computes the editASRflag return value from the final reactive state.
+# Separated so tests can verify the output logic without triggering stopApp.
+# Not exported.
+editASRflag_result <- function(contdat, flagdat_list, remaining_list) {
+  params <- names(flagdat_list)
+
+  # contdat sorted by DateTime, with removed values replaced by NA.
+  # flagdat .rowid == row index of the DateTime-sorted contdat.
+  out_cont <- contdat[order(contdat$DateTime), ]
+  for (p in params) {
+    removed_rowids <- setdiff(flagdat_list[[p]]$.rowid, remaining_list[[p]]$.rowid)
+    if (length(removed_rowids) > 0L) {
+      out_cont[removed_rowids, p] <- NA
+    }
+  }
+
+  # All removed observations stacked into one data frame.
+  removed_per_param <- lapply(params, function(p) {
+    removed_rowids <- setdiff(flagdat_list[[p]]$.rowid, remaining_list[[p]]$.rowid)
+    if (length(removed_rowids) == 0L) return(NULL)
+    fd   <- flagdat_list[[p]]
+    rows <- fd[fd$.rowid %in% removed_rowids, , drop = FALSE]
+    data.frame(
+      Parameter  = p,
+      DateTime   = rows$DateTime,
+      gross_flag = rows$gross_flag,
+      spike_flag = rows$spike_flag,
+      roc_flag   = rows$roc_flag,
+      flat_flag  = rows$flat_flag,
+      stringsAsFactors = FALSE
+    )
+  })
+  removed_per_param <- Filter(Negate(is.null), removed_per_param)
+  if (length(removed_per_param) == 0L) {
+    out_removed <- data.frame(
+      Parameter  = character(0),
+      DateTime   = as.POSIXct(character(0)),
+      gross_flag = character(0),
+      spike_flag = character(0),
+      roc_flag   = character(0),
+      flat_flag  = character(0),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    out_removed <- do.call(rbind, removed_per_param)
+    out_removed <- out_removed[order(out_removed$Parameter, out_removed$DateTime), ]
+  }
+
+  list(contdat = out_cont, removed = out_removed)
 }
