@@ -45,6 +45,6 @@ anlzASRflag(flagdat)
 # ------------------------------------------------------------------------------
 # 5. Edit flags in interactive Shiny app
 #' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
-cleaned <- editASRflag(flagdat)
+cleaned <- editASRflag(contdat, dqodat)
 
 anlzASRflag(cleaned)
