@@ -19,7 +19,9 @@
       "Bash(/c/Program Files/R/R-4.3.2/bin/Rscript.exe:*)",
       "Bash(grep -l \"testServer\\\\|stopApp\" \"/c/Users/mbeck/R/win-library/shiny/R/\"*.rdb)",
       "Bash(\"/c/Program Files/R/R-4.3.2/bin/Rscript.exe\" -e \"library\\(shiny\\); writeLines\\(paste\\(deparse\\(body\\(shiny::testServer\\)\\), collapse='\\\\n'\\)\\)\")",
-      "Bash(\"/c/Program Files/R/R-4.3.2/bin/Rscript.exe\" -e \"library\\(plotly\\); writeLines\\(paste\\(deparse\\(body\\(plotly::event_data\\)\\), collapse='\\\\n'\\)\\)\")"
+      "Bash(\"/c/Program Files/R/R-4.3.2/bin/Rscript.exe\" -e \"library\\(plotly\\); writeLines\\(paste\\(deparse\\(body\\(plotly::event_data\\)\\), collapse='\\\\n'\\)\\)\")",
+      "Bash('/c/Program Files/R/R-4.3.2/bin/Rscript.exe' -e ':*)",
+      "Bash('/c/Program Files/R/R-4.3.2/bin/Rscript.exe' -e 'devtools::load_all\\('\\\\''C:/proj/AquaSensR'\\\\'', quiet=TRUE\\); print\\(paramsASR[, c\\('\\\\''Parameter'\\\\'','\\\\''Label'\\\\''\\)]\\); cat\\(any\\(is.na\\(paramsASR$Label\\)\\)\\)')"
     ]
   }
 }

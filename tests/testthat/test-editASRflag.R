@@ -27,13 +27,16 @@
 #     plot). Wrap testServer calls in suppressWarnings().
 
 # First two parameters for fixture setup
-edit_first_param  <- setdiff(names(tst$contdat), "DateTime")[1L]
+edit_first_param <- setdiff(names(tst$contdat), "DateTime")[1L]
 edit_second_param <- setdiff(names(tst$contdat), "DateTime")[2L]
 
 # Build the flagdat_list the same way editASRflag_app() does internally.
 edit_flagdat_list <- local({
   fl <- AquaSensR:::utilASRflagall(tst$contdat, tst$dqodat)
-  lapply(fl, function(fd) { fd$.rowid <- seq_len(nrow(fd)); fd })
+  lapply(fl, function(fd) {
+    fd$.rowid <- seq_len(nrow(fd))
+    fd
+  })
 })
 
 # ---------------------------------------------------------------------------
@@ -198,7 +201,7 @@ test_that("editASRflag_result with no removals returns sorted contdat and empty 
   result <- AquaSensR:::editASRflag_result(
     tst$contdat,
     edit_flagdat_list,
-    edit_flagdat_list  # remaining == full → nothing removed
+    edit_flagdat_list # remaining == full → nothing removed
   )
 
   expect_named(result, c("contdat", "removed"))
@@ -210,16 +213,29 @@ test_that("editASRflag_result with no removals returns sorted contdat and empty 
   expect_equal(nrow(result$removed), 0L)
   expect_named(
     result$removed,
-    c("Parameter", "DateTime", "gross_flag", "spike_flag", "roc_flag", "flat_flag")
+    c(
+      "Parameter",
+      "DateTime",
+      "gross_flag",
+      "spike_flag",
+      "roc_flag",
+      "flat_flag"
+    )
   )
 })
 
 test_that("editASRflag_result with one removal sets NA and records removed row", {
   # Remove the first DateTime-sorted row from the first parameter
   remaining_list <- edit_flagdat_list
-  remaining_list[[edit_first_param]] <- edit_flagdat_list[[edit_first_param]][-1L, ]
+  remaining_list[[edit_first_param]] <- edit_flagdat_list[[edit_first_param]][
+    -1L,
+  ]
 
-  result <- AquaSensR:::editASRflag_result(tst$contdat, edit_flagdat_list, remaining_list)
+  result <- AquaSensR:::editASRflag_result(
+    tst$contdat,
+    edit_flagdat_list,
+    remaining_list
+  )
 
   expect_named(result, c("contdat", "removed"))
   expect_equal(nrow(result$removed), 1L)
@@ -234,12 +250,178 @@ test_that("editASRflag_result with one removal sets NA and records removed row",
 
 test_that("editASRflag_result with removals across multiple parameters records all", {
   remaining_list <- edit_flagdat_list
-  remaining_list[[edit_first_param]]  <- edit_flagdat_list[[edit_first_param]][-1L, ]
-  remaining_list[[edit_second_param]] <- edit_flagdat_list[[edit_second_param]][-2L, ]
+  remaining_list[[edit_first_param]] <- edit_flagdat_list[[edit_first_param]][
+    -1L,
+  ]
+  remaining_list[[edit_second_param]] <- edit_flagdat_list[[edit_second_param]][
+    -2L,
+  ]
 
-  result <- AquaSensR:::editASRflag_result(tst$contdat, edit_flagdat_list, remaining_list)
+  result <- AquaSensR:::editASRflag_result(
+    tst$contdat,
+    edit_flagdat_list,
+    remaining_list
+  )
 
   expect_equal(nrow(result$removed), 2L)
   expect_true(is.na(result$contdat[1L, edit_first_param]))
   expect_true(is.na(result$contdat[2L, edit_second_param]))
+})
+
+# # ---------------------------------------------------------------------------
+# # Label fallback (line 96): param name used when paramsASR has no Label
+# # ---------------------------------------------------------------------------
+
+# test_that("editASRflag_app uses param name as label when Label is NA", {
+#   ns   <- asNamespace("AquaSensR")
+#   orig <- get("paramsASR", envir = ns)
+
+#   modified        <- orig
+#   modified$Label  <- NA_character_
+
+#   is_locked <- bindingIsLocked("paramsASR", ns)
+#   if (is_locked) unlockBinding("paramsASR", ns)
+#   assign("paramsASR", modified, envir = ns)
+#   on.exit({
+#     if (is_locked) unlockBinding("paramsASR", ns)
+#     assign("paramsASR", orig, envir = ns)
+#     if (is_locked) lockBinding("paramsASR", ns)
+#   }, add = TRUE)
+
+#   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+#   expect_s3_class(app, "shiny.appobj")
+# })
+
+# ---------------------------------------------------------------------------
+# Parameter navigation — covering observer bodies (lines 186, 191-193)
+# updateSelectInput is called but doesn't round-trip in testServer; we just
+# verify the observers fire without error.
+# ---------------------------------------------------------------------------
+
+test_that("param_prev from non-first parameter fires without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_second_param)
+      expect_no_error(session$setInputs(param_prev = 1L))
+    })
+  )
+})
+
+test_that("param_next from non-last parameter fires without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(param_next = 1L))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Relayout event handling (lines 200, 202-206)
+# plotly_relayout JSON must be a string; jsonlite::parse_json() is called
+# on the raw input value internally.
+# ---------------------------------------------------------------------------
+
+test_that("plotly_relayout with x range fires without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(
+        session$setInputs(
+          `plotly_relayout-A` = '{"xaxis.range[0]":0,"xaxis.range[1]":1}'
+        )
+      )
+    })
+  )
+})
+
+test_that("plotly_relayout with autorange fires without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # First set a range so x_range is non-NULL, then reset via autorange
+      session$setInputs(
+        `plotly_relayout-A` = '{"xaxis.range[0]":0,"xaxis.range[1]":1}'
+      )
+      expect_no_error(
+        session$setInputs(`plotly_relayout-A` = '{"xaxis.autorange":true}')
+      )
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# flagPlot layout with non-NULL x_range (lines 233-236)
+# x_range is read via isolate() in renderPlotly, so it only takes effect when
+# the plot re-renders due to a different reactive dependency (cur_remaining).
+# Sequence: set x range → switch params (invalidates cur_remaining) → re-render.
+# ---------------------------------------------------------------------------
+
+test_that("flagPlot applies xaxis range layout when x_range is non-NULL", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(
+        `plotly_relayout-A` = '{"xaxis.range[0]":0,"xaxis.range[1]":1}'
+      )
+      # Switching params invalidates cur_remaining → flagPlot re-renders with
+      # x_range non-NULL, executing the layout block (lines 233-236).
+      expect_no_error(session$setInputs(param_select = edit_second_param))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# plotly_selected early-return paths
+# ---------------------------------------------------------------------------
+
+test_that("plotly_selected returns early when event data is not a data frame", {
+  # A JSON object (not array) parses to a list, which is !is.data.frame → early
+  # return on line 246 before any removal occurs.
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(`plotly_selected-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("plotly_selected returns early when no remaining row matches selected rowids", {
+  # Rowid 99999 does not exist in any real dataset → mask is all FALSE → line 251.
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(`plotly_selected-A` = '[{"customdata":99999}]')
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# plotly_click early-return path (line 269)
+# Remove row 1 via selection, then try clicking the same rowid.  It no longer
+# exists in cur_remaining(), so the mask is all FALSE → early return.
+# ---------------------------------------------------------------------------
+
+test_that("plotly_click returns early when clicked rowid is no longer in remaining", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Remove row 1 via box-selection
+      session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
+      expect_equal(output$removed_count, "Removed Points: 1")
+      # Click on the now-missing rowid → no mask match → early return, count unchanged
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
 })
