@@ -76,7 +76,7 @@ becomes the function return value.
 \dontrun{
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth  <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
-contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
+contdat <- readASRcont(contpth)
 dqodat  <- readASRdqo(dqopth)
 cleaned <- editASRflag(contdat, dqodat)
 }

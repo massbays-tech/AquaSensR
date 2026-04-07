@@ -66,7 +66,7 @@
 #' \dontrun{
 #' contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 #' dqopth  <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
-#' contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
+#' contdat <- readASRcont(contpth)
 #' dqodat  <- readASRdqo(dqopth)
 #' cleaned <- editASRflag(contdat, dqodat)
 #' }
@@ -91,10 +91,14 @@ editASRflag_app <- function(contdat, dqodat) {
   })
 
   # Build display labels for the parameter selector
-  param_labels <- vapply(params, function(p) {
-    lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
-    if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
-  }, character(1L))
+  param_labels <- vapply(
+    params,
+    function(p) {
+      lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
+      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
+    },
+    character(1L)
+  )
   param_choices <- stats::setNames(params, param_labels)
 
   # -------------------------------------------------------------------------
@@ -183,14 +187,22 @@ editASRflag_app <- function(contdat, dqodat) {
     shiny::observeEvent(input$param_prev, {
       idx <- match(input$param_select, params)
       if (idx > 1L) {
-        shiny::updateSelectInput(session, "param_select", selected = params[idx - 1L])
+        shiny::updateSelectInput(
+          session,
+          "param_select",
+          selected = params[idx - 1L]
+        )
       }
     })
 
     shiny::observeEvent(input$param_next, {
       idx <- match(input$param_select, params)
       if (idx < length(params)) {
-        shiny::updateSelectInput(session, "param_select", selected = params[idx + 1L])
+        shiny::updateSelectInput(
+          session,
+          "param_select",
+          selected = params[idx + 1L]
+        )
       }
     })
 
@@ -210,7 +222,7 @@ editASRflag_app <- function(contdat, dqodat) {
 
     # Convenience accessors for the current parameter's state.
     cur_remaining <- shiny::reactive(remaining_list()[[input$param_select]])
-    cur_history   <- shiny::reactive(removed_history_list()[[input$param_select]])
+    cur_history <- shiny::reactive(removed_history_list()[[input$param_select]])
 
     # Helpers to write back into the named lists.
     update_remaining <- function(new_data) {
@@ -243,12 +255,16 @@ editASRflag_app <- function(contdat, dqodat) {
       plotly::event_data("plotly_selected", session = session),
       {
         sel <- plotly::event_data("plotly_selected", session = session)
-        if (!is.data.frame(sel) || nrow(sel) == 0L) return()
+        if (!is.data.frame(sel) || nrow(sel) == 0L) {
+          return()
+        }
 
         rowids <- unique(sel$customdata)
-        dat    <- cur_remaining()
-        mask   <- dat$.rowid %in% rowids
-        if (!any(mask)) return()
+        dat <- cur_remaining()
+        mask <- dat$.rowid %in% rowids
+        if (!any(mask)) {
+          return()
+        }
 
         to_remove <- dat[mask, , drop = FALSE]
         update_remaining(dat[!mask, , drop = FALSE])
@@ -261,12 +277,16 @@ editASRflag_app <- function(contdat, dqodat) {
       plotly::event_data("plotly_click", session = session),
       {
         click <- plotly::event_data("plotly_click", session = session)
-        if (is.null(click)) return()
+        if (is.null(click)) {
+          return()
+        }
 
         rowid <- click$customdata
-        dat   <- cur_remaining()
-        mask  <- dat$.rowid %in% rowid
-        if (!any(mask)) return()
+        dat <- cur_remaining()
+        mask <- dat$.rowid %in% rowid
+        if (!any(mask)) {
+          return()
+        }
 
         to_remove <- dat[mask, , drop = FALSE]
         update_remaining(dat[!mask, , drop = FALSE])
@@ -277,7 +297,9 @@ editASRflag_app <- function(contdat, dqodat) {
     # ---- Undo last removal batch (current parameter only) -------------------
     shiny::observeEvent(input$undo, {
       hist <- cur_history()
-      if (length(hist) == 0L) return()
+      if (length(hist) == 0L) {
+        return()
+      }
 
       last_batch <- hist[[length(hist)]]
       update_history(hist[-length(hist)])
@@ -295,16 +317,22 @@ editASRflag_app <- function(contdat, dqodat) {
     # ---- Done: return results to the R session ------------------------------
     shiny::observeEvent(input$done, {
       shiny::stopApp(
-        returnValue = editASRflag_result(contdat, flagdat_list, remaining_list())
+        returnValue = editASRflag_result(
+          contdat,
+          flagdat_list,
+          remaining_list()
+        )
       )
     })
 
     # ---- Removed points count and table (current parameter) ----------------
     removed_points <- shiny::reactive({
       hist <- cur_history()
-      fd   <- flagdat_list[[input$param_select]]
+      fd <- flagdat_list[[input$param_select]]
       cols <- setdiff(names(fd), ".rowid")
-      if (length(hist) == 0L) return(fd[0L, cols, drop = FALSE])
+      if (length(hist) == 0L) {
+        return(fd[0L, cols, drop = FALSE])
+      }
       do.call(rbind, lapply(hist, function(x) x[, cols, drop = FALSE]))
     })
 
@@ -313,7 +341,9 @@ editASRflag_app <- function(contdat, dqodat) {
     })
     output$removed_table <- DT::renderDT({
       rp <- removed_points()
-      if (nrow(rp) > 0L) rp$DateTime <- format(rp$DateTime)
+      if (nrow(rp) > 0L) {
+        rp$DateTime <- format(rp$DateTime)
+      }
       DT::datatable(
         rp,
         options = list(dom = "t", paging = FALSE, scrollX = TRUE),
@@ -335,7 +365,10 @@ editASRflag_result <- function(contdat, flagdat_list, remaining_list) {
   # flagdat .rowid == row index of the DateTime-sorted contdat.
   out_cont <- contdat[order(contdat$DateTime), ]
   for (p in params) {
-    removed_rowids <- setdiff(flagdat_list[[p]]$.rowid, remaining_list[[p]]$.rowid)
+    removed_rowids <- setdiff(
+      flagdat_list[[p]]$.rowid,
+      remaining_list[[p]]$.rowid
+    )
     if (length(removed_rowids) > 0L) {
       out_cont[removed_rowids, p] <- NA
     }
@@ -343,34 +376,41 @@ editASRflag_result <- function(contdat, flagdat_list, remaining_list) {
 
   # All removed observations stacked into one data frame.
   removed_per_param <- lapply(params, function(p) {
-    removed_rowids <- setdiff(flagdat_list[[p]]$.rowid, remaining_list[[p]]$.rowid)
-    if (length(removed_rowids) == 0L) return(NULL)
-    fd   <- flagdat_list[[p]]
+    removed_rowids <- setdiff(
+      flagdat_list[[p]]$.rowid,
+      remaining_list[[p]]$.rowid
+    )
+    if (length(removed_rowids) == 0L) {
+      return(NULL)
+    }
+    fd <- flagdat_list[[p]]
     rows <- fd[fd$.rowid %in% removed_rowids, , drop = FALSE]
     data.frame(
-      Parameter  = p,
-      DateTime   = rows$DateTime,
+      Parameter = p,
+      DateTime = rows$DateTime,
       gross_flag = rows$gross_flag,
       spike_flag = rows$spike_flag,
-      roc_flag   = rows$roc_flag,
-      flat_flag  = rows$flat_flag,
+      roc_flag = rows$roc_flag,
+      flat_flag = rows$flat_flag,
       stringsAsFactors = FALSE
     )
   })
   removed_per_param <- Filter(Negate(is.null), removed_per_param)
   if (length(removed_per_param) == 0L) {
     out_removed <- data.frame(
-      Parameter  = character(0),
-      DateTime   = as.POSIXct(character(0)),
+      Parameter = character(0),
+      DateTime = as.POSIXct(character(0)),
       gross_flag = character(0),
       spike_flag = character(0),
-      roc_flag   = character(0),
-      flat_flag  = character(0),
+      roc_flag = character(0),
+      flat_flag = character(0),
       stringsAsFactors = FALSE
     )
   } else {
     out_removed <- do.call(rbind, removed_per_param)
-    out_removed <- out_removed[order(out_removed$Parameter, out_removed$DateTime), ]
+    out_removed <- out_removed[
+      order(out_removed$Parameter, out_removed$DateTime),
+    ]
   }
 
   list(contdat = out_cont, removed = out_removed)

@@ -1,7 +1,7 @@
 #' Format continuous data
 #'
 #' @param contdat input data frame
-#' @param tz character string of time zone for the date and time columns  See `OlsonNames()` for acceptable time zones.
+#' @param tz character string of time zone for the date and time columns, defaults to Etc/GMT+5 (Eastern time zone, no daylight savings).  See `OlsonNames()` for acceptable time zones.
 #'
 #' @details This function is used internally within \code{\link{readASRcont}} to format the input data for downstream analysis.  The formatting includes:
 #'
@@ -20,8 +20,8 @@
 #'
 #' contdat <- utilASRimportcont(contpth)
 #'
-#' formASRcont(contdat, tz = 'Etc/GMT+5')
-formASRcont <- function(contdat, tz) {
+#' formASRcont(contdat)
+formASRcont <- function(contdat, tz = 'Etc/GMT+5') {
   # combine date and time into a single DateTime column, or convert existing
   if ('DateTime' %in% names(contdat)) {
     out <- contdat |>

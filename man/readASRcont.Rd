@@ -4,12 +4,12 @@
 \alias{readASRcont}
 \title{Read continuous monitoring data from an external file}
 \usage{
-readASRcont(contpth, tz, runchk = TRUE)
+readASRcont(contpth, tz = "Etc/GMT+5", runchk = TRUE)
 }
 \arguments{
 \item{contpth}{character string of path to the continuous data file}
 
-\item{tz}{character string of time zone for the date and time columns.  See \code{OlsonNames()} for acceptable time zones.}
+\item{tz}{character string of time zone for the date and time columns, defaults to Etc/GMT+5 (Eastern time zone, no daylight savings).  See \code{OlsonNames()} for acceptable time zones.}
 
 \item{runchk}{logical to run data checks with \code{\link{checkASRcont}}}
 }
@@ -24,10 +24,12 @@ The file is imported via \code{\link{utilASRimportcont}}, which forces
 \code{Date}, \code{Time}, and \code{DateTime} columns to character and
 converts Excel numeric serial representations to human-readable strings
 before checks are run.
+
+Always verify the correct time zone for your data.  If your data are in a different time zone than Etc/GMT+5 (default), specify the correct time zone in the \code{tz} argument.
 }
 \examples{
 
 contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
 
-readASRcont(contpth, tz = 'Etc/GMT+5')
+readASRcont(contpth)
 }

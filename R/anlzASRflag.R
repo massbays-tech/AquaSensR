@@ -30,7 +30,7 @@
 #' contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 #' dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 #'
-#' contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
+#' contdat <- readASRcont(contpth, runchk = FALSE)
 #' dqodat <- readASRdqo(dqopth, runchk = FALSE)
 #'
 #' flagdat <- utilASRflag(contdat, dqodat, param = 'Water Temp_C')
@@ -153,9 +153,13 @@ anlzASRflag <- function(flagdat) {
     p,
     displaylogo = FALSE,
     modeBarButtonsToRemove = c(
-      "zoomIn2d", "zoomOut2d", "autoScale2d",
-      "hoverClosestCartesian", "hoverCompareCartesian",
-      "toggleSpikelines", "toImage"
+      "zoomIn2d",
+      "zoomOut2d",
+      "autoScale2d",
+      "hoverClosestCartesian",
+      "hoverCompareCartesian",
+      "toggleSpikelines",
+      "toImage"
     )
   )
 }

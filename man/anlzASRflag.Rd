@@ -37,7 +37,7 @@ check that fired, allowing all sources of concern to be visible.
 contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 
-contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
+contdat <- readASRcont(contpth, runchk = FALSE)
 dqodat <- readASRdqo(dqopth, runchk = FALSE)
 
 flagdat <- utilASRflag(contdat, dqodat, param = 'Water Temp_C')

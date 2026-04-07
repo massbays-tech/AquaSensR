@@ -4,12 +4,12 @@
 \alias{formASRcont}
 \title{Format continuous data}
 \usage{
-formASRcont(contdat, tz)
+formASRcont(contdat, tz = "Etc/GMT+5")
 }
 \arguments{
 \item{contdat}{input data frame}
 
-\item{tz}{character string of time zone for the date and time columns  See \code{OlsonNames()} for acceptable time zones.}
+\item{tz}{character string of time zone for the date and time columns, defaults to Etc/GMT+5 (Eastern time zone, no daylight savings).  See \code{OlsonNames()} for acceptable time zones.}
 }
 \value{
 A formatted data frame of the continuous data
@@ -31,5 +31,5 @@ contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
 contdat <- utilASRimportcont(contpth)
 
-formASRcont(contdat, tz = 'Etc/GMT+5')
+formASRcont(contdat)
 }

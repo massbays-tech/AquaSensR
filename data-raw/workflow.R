@@ -16,7 +16,7 @@ dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 # ------------------------------------------------------------------------------
 # 2. Import data
 # ------------------------------------------------------------------------------
-contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
+contdat <- readASRcont(contpth)
 dqodat <- readASRdqo(dqopth)
 
 # Quick look at inputs

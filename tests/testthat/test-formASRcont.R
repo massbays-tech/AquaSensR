@@ -1,5 +1,5 @@
 test_that("formASRcont combines Date and Time columns into DateTime", {
-  result <- formASRcont(tst$contdatchk, tz = 'Etc/GMT+5')
+  result <- formASRcont(tst$contdatchk)
 
   # Check that DateTime column exists
   expect_true("DateTime" %in% names(result))
@@ -14,7 +14,7 @@ test_that("formASRcont combines Date and Time columns into DateTime", {
 })
 
 test_that("formASRcont converts non-numeric columns to numeric", {
-  result <- formASRcont(tst$contdatchk, tz = 'Etc/GMT+5')
+  result <- formASRcont(tst$contdatchk)
 
   # All columns except DateTime should be numeric
   numeric_cols <- setdiff(names(result), c("DateTime"))
@@ -28,7 +28,7 @@ test_that("formASRcont converts non-numeric columns to numeric", {
 })
 
 test_that("formASRcont produces same result as readASRcont", {
-  result <- formASRcont(tst$contdatchk, tz = 'Etc/GMT+5')
+  result <- formASRcont(tst$contdatchk)
 
   # Should have same dimensions
   expect_equal(dim(result), dim(tst$contdat))
@@ -38,7 +38,7 @@ test_that("formASRcont produces same result as readASRcont", {
 })
 
 test_that("formASRcont handles combined DateTime input", {
-  result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
+  result <- formASRcont(tst$contdatchk2)
 
   # DateTime column should exist and be POSIXct with correct timezone
   expect_true("DateTime" %in% names(result))
@@ -51,7 +51,7 @@ test_that("formASRcont handles combined DateTime input", {
 })
 
 test_that("formASRcont combined format converts non-numeric columns to numeric", {
-  result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
+  result <- formASRcont(tst$contdatchk2)
 
   numeric_cols <- setdiff(names(result), c("DateTime"))
   for (col in numeric_cols) {
@@ -63,7 +63,7 @@ test_that("formASRcont combined format converts non-numeric columns to numeric",
 })
 
 test_that("formASRcont combined format produces same result as readASRcont", {
-  result <- formASRcont(tst$contdatchk2, tz = 'Etc/GMT+5')
+  result <- formASRcont(tst$contdatchk2)
 
   expect_equal(dim(result), dim(tst$contdat2))
   expect_equal(names(result), names(tst$contdat2))

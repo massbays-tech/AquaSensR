@@ -14,25 +14,43 @@ flag_make_cd <- function(vals) {
   df
 }
 
-flag_make_md <- function(GrMinFail = NA_real_, GrMaxFail = NA_real_,
-                         GrMinSuspect = NA_real_, GrMaxSuspect = NA_real_,
-                         SpikeFail = NA_real_, SpikeSuspect = NA_real_,
-                         RoCN = NA_real_, RoCHours = NA_real_,
-                         FlatFailN = NA_real_, FlatFailDelta = NA_real_,
-                         FlatSuspectN = NA_real_, FlatSuspectDelta = NA_real_) {
+flag_make_md <- function(
+  GrMinFail = NA_real_,
+  GrMaxFail = NA_real_,
+  GrMinSuspect = NA_real_,
+  GrMaxSuspect = NA_real_,
+  SpikeFail = NA_real_,
+  SpikeSuspect = NA_real_,
+  RoCN = NA_real_,
+  RoCHours = NA_real_,
+  FlatFailN = NA_real_,
+  FlatFailDelta = NA_real_,
+  FlatSuspectN = NA_real_,
+  FlatSuspectDelta = NA_real_
+) {
   rbind(
     data.frame(
-      Parameter = "Water Temp_C", Flag = "Fail",
-      GrMin = GrMinFail, GrMax = GrMaxFail, Spike = SpikeFail,
-      FlatN = FlatFailN, FlatDelta = FlatFailDelta,
-      RoCN = NA_real_, RoCHours = NA_real_,
+      Parameter = "Water Temp_C",
+      Flag = "Fail",
+      GrMin = GrMinFail,
+      GrMax = GrMaxFail,
+      Spike = SpikeFail,
+      FlatN = FlatFailN,
+      FlatDelta = FlatFailDelta,
+      RoCN = NA_real_,
+      RoCHours = NA_real_,
       stringsAsFactors = FALSE
     ),
     data.frame(
-      Parameter = "Water Temp_C", Flag = "Suspect",
-      GrMin = GrMinSuspect, GrMax = GrMaxSuspect, Spike = SpikeSuspect,
-      FlatN = FlatSuspectN, FlatDelta = FlatSuspectDelta,
-      RoCN = RoCN, RoCHours = RoCHours,
+      Parameter = "Water Temp_C",
+      Flag = "Suspect",
+      GrMin = GrMinSuspect,
+      GrMax = GrMaxSuspect,
+      Spike = SpikeSuspect,
+      FlatN = FlatSuspectN,
+      FlatDelta = FlatSuspectDelta,
+      RoCN = RoCN,
+      RoCHours = RoCHours,
       stringsAsFactors = FALSE
     )
   )
@@ -48,7 +66,6 @@ tst <- list(
   ),
   contdat = readASRcont(
     system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR'),
-    tz = 'Etc/GMT+5',
     runchk = F
   ),
   # continuous data - combined DateTime format (ExampleCont2)
@@ -58,7 +75,6 @@ tst <- list(
   ),
   contdat2 = readASRcont(
     system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR'),
-    tz = 'Etc/GMT+5',
     runchk = F
   ),
   # data quality objectives
