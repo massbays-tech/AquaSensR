@@ -45,7 +45,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span>, <span class="va">tz</span>, runchk <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span>, runchk <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,7 +57,7 @@
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
-<dd><p>character string of time zone for the date and time columns.  See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for acceptable time zones.</p></dd>
+<dd><p>character string of time zone for the date and time columns, defaults to Etc/GMT+5 (Eastern time zone, no daylight savings).  See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for acceptable time zones.</p></dd>
 
 
 <dt id="arg-runchk">runchk<a class="anchor" aria-label="anchor" href="#arg-runchk"></a></dt>
@@ -74,6 +74,7 @@
 <code>Date</code>, <code>Time</code>, and <code>DateTime</code> columns to character and
 converts Excel numeric serial representations to human-readable strings
 before checks are run.</p>
+<p>Always verify the correct time zone for your data.  If your data are in a different time zone than Etc/GMT+5 (default), specify the correct time zone in the <code>tz</code> argument.</p>
     </div>
 
     <div class="section level2">
@@ -81,7 +82,7 @@ before checks are run.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont2.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">'Etc/GMT+5'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running checks on continuous data...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking column names... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking DateTime is present... OK</span>

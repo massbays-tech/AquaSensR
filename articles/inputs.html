@@ -102,12 +102,12 @@
 </div>
 </section><section class="level2"><h2 id="continuous-monitoring-data">Continuous monitoring data<a class="anchor" aria-label="anchor" href="#continuous-monitoring-data"></a>
 </h2>
-<p>Use <code><a href="../reference/readASRcont.html">readASRcont()</a></code> to import continuous monitoring data. The function reads the Excel file, automatically runs a series of checks via <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code>, and then formats the result for downstream use. The <code>tz</code> argument sets the time zone for the output <code>DateTime</code> column (see <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values). Be careful to specify the correct time zone, particularly one using a fixed offset (e.g., <code>Etc/GMT+5</code> for Eastern time) to avoid issues with daylight saving time transitions. If your data are in local time and the time zone observes DST, consider using a time zone like <code>America/New_York</code> that will automatically adjust for daylight savings.</p>
+<p>Use <code><a href="../reference/readASRcont.html">readASRcont()</a></code> to import continuous monitoring data. The function reads the Excel file, automatically runs a series of checks via <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code>, and then formats the result for downstream use. The <code>tz</code> argument sets the time zone for the output <code>DateTime</code> column (see <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for valid values). The default value is Eastern without daylight savings (<code>Etc/GMT+5</code>) and does not need to be set explicitly, unless you need a different time zone. For example, if your data are in local time and the time zone observes DST, consider using a time zone like <code>America/New_York</code> that will automatically adjust for daylight savings.</p>
 <p>AquaSensR accepts two input formats for the date and time information. The examples below demonstrate both.</p>
 <p><strong>Format 1</strong> — separate <code>Date</code> and <code>Time</code> columns (<code>ExampleCont1.xlsx</code>):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running checks on continuous data...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
 <span><span class="co">#&gt;  Checking Date, Time are present... OK</span></span>
@@ -123,7 +123,7 @@
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">contpth2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleCont2.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
-<span><span class="va">contdat2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth2</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span>
+<span><span class="va">contdat2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running checks on continuous data...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
 <span><span class="co">#&gt;  Checking DateTime is present... OK</span></span>

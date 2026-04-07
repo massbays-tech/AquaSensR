@@ -78,7 +78,7 @@ authors](https://leppott.github.io/ContDataQC/authors.html#citation).
 contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 
-contdat <- readASRcont(contpth, tz = 'Etc/GMT+5', runchk = FALSE)
+contdat <- readASRcont(contpth, runchk = FALSE)
 dqodat <- readASRdqo(dqopth, runchk = FALSE)
 
 utilASRflag(contdat, dqodat, param = 'Water Temp_C')

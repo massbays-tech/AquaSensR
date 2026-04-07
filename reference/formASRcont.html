@@ -45,7 +45,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">formASRcont</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">tz</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">formASRcont</span><span class="op">(</span><span class="va">contdat</span>, tz <span class="op">=</span> <span class="st">"Etc/GMT+5"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,7 +57,7 @@
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
-<dd><p>character string of time zone for the date and time columns  See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for acceptable time zones.</p></dd>
+<dd><p>character string of time zone for the date and time columns, defaults to Etc/GMT+5 (Eastern time zone, no daylight savings).  See <code><a href="https://rdrr.io/r/base/timezones.html" class="external-link">OlsonNames()</a></code> for acceptable time zones.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -78,7 +78,7 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="utilASRimportcont.html">utilASRimportcont</a></span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">formASRcont</span><span class="op">(</span><span class="va">contdat</span>, tz <span class="op">=</span> <span class="st">'Etc/GMT+5'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">formASRcont</span><span class="op">(</span><span class="va">contdat</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

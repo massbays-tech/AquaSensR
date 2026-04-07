@@ -5,7 +5,7 @@ Read continuous monitoring data from an external file
 ## Usage
 
 ``` r
-readASRcont(contpth, tz, runchk = TRUE)
+readASRcont(contpth, tz = "Etc/GMT+5", runchk = TRUE)
 ```
 
 ## Arguments
@@ -16,7 +16,8 @@ readASRcont(contpth, tz, runchk = TRUE)
 
 - tz:
 
-  character string of time zone for the date and time columns. See
+  character string of time zone for the date and time columns, defaults
+  to Etc/GMT+5 (Eastern time zone, no daylight savings). See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for acceptable
   time zones.
 
@@ -38,12 +39,16 @@ which forces `Date`, `Time`, and `DateTime` columns to character and
 converts Excel numeric serial representations to human-readable strings
 before checks are run.
 
+Always verify the correct time zone for your data. If your data are in a
+different time zone than Etc/GMT+5 (default), specify the correct time
+zone in the `tz` argument.
+
 ## Examples
 
 ``` r
 contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
 
-readASRcont(contpth, tz = 'Etc/GMT+5')
+readASRcont(contpth)
 #> Running checks on continuous data...
 #>  Checking column names... OK
 #>  Checking DateTime is present... OK

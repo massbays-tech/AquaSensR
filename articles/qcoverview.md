@@ -22,7 +22,7 @@ the package. Import both files before proceeding:
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 
-contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
+contdat <- readASRcont(contpth)
 #> Running checks on continuous data...
 #>  Checking column names... OK
 #>  Checking Date, Time are present... OK

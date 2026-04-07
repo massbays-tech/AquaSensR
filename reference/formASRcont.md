@@ -5,7 +5,7 @@ Format continuous data
 ## Usage
 
 ``` r
-formASRcont(contdat, tz)
+formASRcont(contdat, tz = "Etc/GMT+5")
 ```
 
 ## Arguments
@@ -16,7 +16,8 @@ formASRcont(contdat, tz)
 
 - tz:
 
-  character string of time zone for the date and time columns See
+  character string of time zone for the date and time columns, defaults
+  to Etc/GMT+5 (Eastern time zone, no daylight savings). See
   [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for acceptable
   time zones.
 
@@ -55,7 +56,7 @@ contpth <- system.file('extdata/ExampleCont1.xlsx', package = 'AquaSensR')
 
 contdat <- utilASRimportcont(contpth)
 
-formASRcont(contdat, tz = 'Etc/GMT+5')
+formASRcont(contdat)
 #> # A tibble: 927 × 8
 #>    DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
 #>    <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>

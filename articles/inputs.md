@@ -49,10 +49,10 @@ automatically runs a series of checks via
 and then formats the result for downstream use. The `tz` argument sets
 the time zone for the output `DateTime` column (see
 [`OlsonNames()`](https://rdrr.io/r/base/timezones.html) for valid
-values). Be careful to specify the correct time zone, particularly one
-using a fixed offset (e.g., `Etc/GMT+5` for Eastern time) to avoid
-issues with daylight saving time transitions. If your data are in local
-time and the time zone observes DST, consider using a time zone like
+values). The default value is Eastern without daylight savings
+(`Etc/GMT+5`) and does not need to be set explicitly, unless you need a
+different time zone. For example, if your data are in local time and the
+time zone observes DST, consider using a time zone like
 `America/New_York` that will automatically adjust for daylight savings.
 
 AquaSensR accepts two input formats for the date and time information.
@@ -61,7 +61,7 @@ The examples below demonstrate both.
 **Format 1** — separate `Date` and `Time` columns (`ExampleCont1.xlsx`):
 
 ``` r
-contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
+contdat <- readASRcont(contpth)
 #> Running checks on continuous data...
 #>  Checking column names... OK
 #>  Checking Date, Time are present... OK
@@ -78,7 +78,7 @@ contdat <- readASRcont(contpth, tz = "Etc/GMT+5")
 
 ``` r
 contpth2 <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
-contdat2 <- readASRcont(contpth2, tz = "Etc/GMT+5")
+contdat2 <- readASRcont(contpth2)
 #> Running checks on continuous data...
 #>  Checking column names... OK
 #>  Checking DateTime is present... OK
