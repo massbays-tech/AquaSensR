@@ -47,7 +47,10 @@ utilASRimportcont <- function(contpth) {
       dplyr::any_of("Date"),
       ~ dplyr::if_else(
         grepl('^\\d+$', .x),
-        as.character(as.Date(suppressWarnings(as.integer(.x)), origin = '1899-12-30')),
+        as.character(as.Date(
+          suppressWarnings(as.integer(.x)),
+          origin = '1899-12-30'
+        )),
         .x
       )
     )) |>
@@ -55,10 +58,18 @@ utilASRimportcont <- function(contpth) {
     dplyr::mutate(dplyr::across(
       dplyr::any_of("Time"),
       ~ dplyr::if_else(
-        grepl('^0?\\.\\d+$', .x),
+        {
+          num_val <- suppressWarnings(as.numeric(.x))
+          !is.na(num_val) & num_val >= 0 & num_val < 1
+        },
         {
           secs <- round(suppressWarnings(as.numeric(.x)) * 86400)
-          sprintf('%02d:%02d:%02d', secs %/% 3600L, (secs %% 3600L) %/% 60L, secs %% 60L)
+          sprintf(
+            '%02d:%02d:%02d',
+            secs %/% 3600L,
+            (secs %% 3600L) %/% 60L,
+            secs %% 60L
+          )
         },
         .x
       )
@@ -69,7 +80,11 @@ utilASRimportcont <- function(contpth) {
       ~ dplyr::if_else(
         grepl('^\\d+\\.?\\d*$', .x),
         format(
-          as.POSIXct(suppressWarnings(as.numeric(.x)) * 86400, origin = '1899-12-30', tz = 'UTC'),
+          as.POSIXct(
+            suppressWarnings(as.numeric(.x)) * 86400,
+            origin = '1899-12-30',
+            tz = 'UTC'
+          ),
           '%Y-%m-%d %H:%M:%S'
         ),
         .x
