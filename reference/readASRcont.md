@@ -43,6 +43,10 @@ Always verify the correct time zone for your data. If your data are in a
 different time zone than Etc/GMT+5 (default), specify the correct time
 zone in the `tz` argument.
 
+The file must not be open in another program (e.g. Excel, LibreOffice)
+when this function is run, otherwise an error will indicate to close the
+file before proceeding.
+
 ## Examples
 
 ``` r

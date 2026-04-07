@@ -24,6 +24,12 @@ readASRdqo(dqopth, runchk = TRUE)
 A formatted data quality objectives data frame that can be used for
 downstream analysis
 
+## Details
+
+The file must not be open in another program (e.g. Excel, LibreOffice)
+when this function is run, otherwise an error will indicate to close the
+file before proceeding.
+
 ## Examples
 
 ``` r
