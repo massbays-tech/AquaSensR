@@ -17,6 +17,9 @@ A formatted data quality objectives data frame that can be used for downstream a
 \description{
 Read data quality objectives from an external file
 }
+\details{
+The file must not be open in another program (e.g. Excel, LibreOffice) when this function is run, otherwise an error will indicate to close the file before proceeding.
+}
 \examples{
 
 dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')

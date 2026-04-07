@@ -33,6 +33,21 @@
 #'
 #' utilASRimportcont(contpth)
 utilASRimportcont <- function(contpth) {
+  lock_files <- file.path(
+    dirname(contpth),
+    c(
+      paste0('~$', basename(contpth)),           # Excel (Windows and Mac)
+      paste0('.~lock.', basename(contpth), '#')  # LibreOffice (any platform)
+    )
+  )
+  if (any(file.exists(lock_files))) {
+    stop(
+      'The file ', basename(contpth), ' appears to be open in another program. ',
+      'Please close the file and try again.',
+      call. = FALSE
+    )
+  }
+
   nms <- names(readxl::read_excel(contpth, n_max = 0))
   col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 
