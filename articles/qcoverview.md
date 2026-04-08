@@ -197,7 +197,7 @@ table(flagdat$spike_flag)
 
 ### 3. Rate of change
 
-**DQO columns:** `RoCN`, `RoCHours` (from the `Flag = "Suspect"` row
+**DQO columns:** `RoCStDv`, `RoCHours` (from the `Flag = "Suspect"` row
 only)
 
 **Flag column:** `roc_flag`
@@ -212,7 +212,7 @@ For each observation the function:
 1.  Collects all values within a trailing `RoCHours`-hour window ending
     at that timestamp.
 2.  Computes the standard deviation (SD) of those values.
-3.  Multiplies the SD by `RoCN` to produce a contextual threshold.
+3.  Multiplies the SD by `RoCStDv` to produce a contextual threshold.
 4.  Flags the observation `"suspect"` if the absolute lag-1 difference
     exceeds that threshold.
 

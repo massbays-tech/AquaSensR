@@ -53,11 +53,11 @@ jump is flagged.
 
 **Rate of change** (`roc_flag`) — For each observation the standard
 deviation of all raw values within a trailing `RoCHours`-hour window is
-multiplied by `RoCN` to produce a threshold. The observation is flagged
-`"suspect"` if its absolute lag-1 difference exceeds that threshold.
-Requires at least 2 values in the window; otherwise `"pass"`. Note that
-this check only produces `"suspect"` flags, not `"fail"` flags. `RoCN`
-and `RoCHours` are read from the `"Suspect"` row only.
+multiplied by `RoCStDv` to produce a threshold. The observation is
+flagged `"suspect"` if its absolute lag-1 difference exceeds that
+threshold. Requires at least 2 values in the window; otherwise `"pass"`.
+Note that this check only produces `"suspect"` flags, not `"fail"`
+flags. `RoCStDv` and `RoCHours` are read from the `"Suspect"` row only.
 
 **Flatline** (`flat_flag`) — Counts consecutive observations where the
 absolute step from the previous observation is within `FlatDelta` units.

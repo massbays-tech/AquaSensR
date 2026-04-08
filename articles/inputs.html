@@ -537,8 +537,8 @@
 <td>Flatline, maximum within-run absolute change treated as “identical” for a flag</td>
 </tr>
 <tr class="even">
-<td><code>RoCN</code></td>
-<td>Rate of change, multiplier applied to the rolling SD (flag if <code>\|diff\| &gt; SD × RoCN</code>)</td>
+<td><code>RoCStDv</code></td>
+<td>Rate of change, multiplier applied to the rolling SD (flag if <code>\|diff\| &gt; SD × RoCStDv</code>)</td>
 </tr>
 <tr class="odd">
 <td><code>RoCHours</code></td>
@@ -550,7 +550,7 @@
 <p>The <code><a href="../reference/readASRdqo.html">readASRdqo()</a></code> function imports the data quality objectives and runs a series of checks using the <code><a href="../reference/checkASRdqo.html">checkASRdqo()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
 <ol type="1">
 <li>
-<strong>Column names</strong>: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCN, and RoCHours</li>
+<strong>Column names</strong>: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCStDv, and RoCHours</li>
 <li>
 <strong>All columns present</strong>: All columns from the previous check should be present</li>
 <li>
@@ -594,14 +594,14 @@
 <div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dqodat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 9</span></span>
-<span><span class="co">#&gt;   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta  RoCN RoCHours</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01     6       25</span></span>
-<span><span class="co">#&gt; 2 Water_Temp_C Fail     -1      30   2     100      0.01    NA       NA</span></span>
-<span><span class="co">#&gt; 3 DO_pctsat    Suspect   0     100  10      30      0.01     6       25</span></span>
-<span><span class="co">#&gt; 4 DO_pctsat    Fail     -1     120  25      60      0.01    NA       NA</span></span>
-<span><span class="co">#&gt; 5 DO_mg_l      Suspect   2      16   2      30      0.01     6       25</span></span>
-<span><span class="co">#&gt; 6 DO_mg_l      Fail      1      18   4      60      0.01    NA       NA</span></span></code></pre></div>
+<span><span class="co">#&gt;   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01       6       25</span></span>
+<span><span class="co">#&gt; 2 Water_Temp_C Fail     -1      30   2     100      0.01      NA       NA</span></span>
+<span><span class="co">#&gt; 3 DO_pctsat    Suspect   0     100  10      30      0.01       6       25</span></span>
+<span><span class="co">#&gt; 4 DO_pctsat    Fail     -1     120  25      60      0.01      NA       NA</span></span>
+<span><span class="co">#&gt; 5 DO_mg_l      Suspect   2      16   2      30      0.01       6       25</span></span>
+<span><span class="co">#&gt; 6 DO_mg_l      Fail      1      18   4      60      0.01      NA       NA</span></span></code></pre></div>
 </div>
 <p>The remaining functions in AquaSensR can now be used after the continuous data and data quality objectives files are successfully imported.</p>
 </section></section><script id="quarto-html-after-body" type="application/javascript">

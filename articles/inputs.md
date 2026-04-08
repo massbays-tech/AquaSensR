@@ -304,17 +304,17 @@ dqodat <- readASRdqo(dqopth)
 The workbook must contain exactly the following columns (all required;
 thresholds you do not want to apply should be left blank / `NA`):
 
-| Column      | Description                                                                           |
-|-------------|---------------------------------------------------------------------------------------|
-| `Parameter` | Parameter name matching `paramsASR$Parameter`                                         |
-| `Flag`      | Flag level for the thresholds in the row, either “Fail” or “Suspect”                  |
-| `GrMin`     | Gross range, lower threshold                                                          |
-| `GrMax`     | Gross range, upper threshold                                                          |
-| `Spike`     | Spike, absolute step size for a flag                                                  |
-| `FlatN`     | Flatline, consecutive identical observations for a flag                               |
-| `FlatDelta` | Flatline, maximum within-run absolute change treated as “identical” for a flag        |
-| `RoCN`      | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
-| `RoCHours`  | Rate of change, look-back window length in hours                                      |
+| Column      | Description                                                                              |
+|-------------|------------------------------------------------------------------------------------------|
+| `Parameter` | Parameter name matching `paramsASR$Parameter`                                            |
+| `Flag`      | Flag level for the thresholds in the row, either “Fail” or “Suspect”                     |
+| `GrMin`     | Gross range, lower threshold                                                             |
+| `GrMax`     | Gross range, upper threshold                                                             |
+| `Spike`     | Spike, absolute step size for a flag                                                     |
+| `FlatN`     | Flatline, consecutive identical observations for a flag                                  |
+| `FlatDelta` | Flatline, maximum within-run absolute change treated as “identical” for a flag           |
+| `RoCStDv`   | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCStDv`) |
+| `RoCHours`  | Rate of change, look-back window length in hours                                         |
 
 ### Checks performed
 
@@ -327,7 +327,7 @@ function. The checks evaluate the following and stops with an
 informative error if any check fails:
 
 1.  **Column names**: Should include only Parameter, Flag, GrMin, GrMax,
-    Spike, FlatN, FlatDelta, RoCN, and RoCHours
+    Spike, FlatN, FlatDelta, RoCStDv, and RoCHours
 2.  **All columns present**: All columns from the previous check should
     be present
 3.  **At least one parameter is present**: At least one parameter in the
@@ -374,14 +374,14 @@ table above, with all threshold columns coerced to numeric.
 ``` r
 head(dqodat)
 #> # A tibble: 6 × 9
-#>   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta  RoCN RoCHours
-#>   <chr>        <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl> <dbl>    <dbl>
-#> 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01     6       25
-#> 2 Water_Temp_C Fail     -1      30   2     100      0.01    NA       NA
-#> 3 DO_pctsat    Suspect   0     100  10      30      0.01     6       25
-#> 4 DO_pctsat    Fail     -1     120  25      60      0.01    NA       NA
-#> 5 DO_mg_l      Suspect   2      16   2      30      0.01     6       25
-#> 6 DO_mg_l      Fail      1      18   4      60      0.01    NA       NA
+#>   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours
+#>   <chr>        <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl>   <dbl>    <dbl>
+#> 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01       6       25
+#> 2 Water_Temp_C Fail     -1      30   2     100      0.01      NA       NA
+#> 3 DO_pctsat    Suspect   0     100  10      30      0.01       6       25
+#> 4 DO_pctsat    Fail     -1     120  25      60      0.01      NA       NA
+#> 5 DO_mg_l      Suspect   2      16   2      30      0.01       6       25
+#> 6 DO_mg_l      Fail      1      18   4      60      0.01      NA       NA
 ```
 
 The remaining functions in AquaSensR can now be used after the
