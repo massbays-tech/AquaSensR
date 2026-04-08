@@ -104,17 +104,17 @@ test_that("utilASRflag spike_flag fires for suspect and fail steps", {
 test_that("utilASRflag skips roc check when no Suspect row present", {
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L)) # large level shift
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCN = 4, RoCHours = 25)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 25)
   md <- md[md$Flag == "Fail", ] # drop Suspect row
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
   expect_true(all(result$roc_flag == "pass"))
 })
 
-test_that("utilASRflag skips roc check when RoCN set but RoCHours is NA", {
+test_that("utilASRflag skips roc check when RoCStDv set but RoCHours is NA", {
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L)) # large level shift
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCN = 4) # RoCHours stays NA -> check skipped
+  md <- flag_make_md(RoCStDv = 4) # RoCHours stays NA -> check skipped
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
   expect_true(all(result$roc_flag == "pass"))
@@ -128,7 +128,7 @@ test_that("utilASRflag roc_flag fires at level shift in stable series", {
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCN = 4, RoCHours = 25)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 25)
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
 

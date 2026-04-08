@@ -8,7 +8,7 @@
 # One example per check:
 #   1. Gross range  -- values outside absolute sensor limits
 #   2. Spike        -- sudden large step between consecutive observations
-#   3. Rate of change (RoC) -- step that exceeds rolling-SD * RoCN
+#   3. Rate of change (RoC) -- step that exceeds rolling-SD * RoCStDv
 #   4. Flatline     -- sensor stuck at a constant value
 # ===========================================================================
 
@@ -42,7 +42,7 @@ make_md <- function(...) {
     GrMaxSuspect = NA_real_,
     SpikeFail = NA_real_,
     SpikeSuspect = NA_real_,
-    RoCN = NA_real_,
+    RoCStDv = NA_real_,
     RoCHours = NA_real_,
     FlatFailN = NA_real_,
     FlatFailDelta = NA_real_,
@@ -118,7 +118,7 @@ fd2 <- utilASRflag(cd2, md2, "Water_Temp_C")
 #   obs 120-359: shifted to 22.5 °C  (+2.5 °C level shift at obs 120)
 #   obs 360-480: back to 20.0 °C     (-2.5 °C level shift at obs 360)
 #
-# RoCN = 8, RoCHours = 25 (trailing window = 100 obs at 15-min intervals).
+# RoCStDv = 8, RoCHours = 25 (trailing window = 100 obs at 15-min intervals).
 #
 # At each shift, the window SD is dominated by the 99 pre-shift values
 # (~0.01 °C) plus the one outlier, giving window_SD ≈ 0.25 °C.
@@ -137,7 +137,7 @@ fd2 <- utilASRflag(cd2, md2, "Water_Temp_C")
 #           Every step >= 2.0 °C is flagged, no matter how stable or noisy
 #           the surrounding data is.
 #
-#   RoC   : adaptive threshold = SD_of_values_in_window * RoCN.
+#   RoC   : adaptive threshold = SD_of_values_in_window * RoCStDv.
 #           The threshold scales with local variability:
 #             - Calm sensor (SD = 0.01 °C): threshold ≈ 0.08 °C in mid-run
 #             - Sensor with diurnal cycle (SD = 0.5 °C): threshold ≈ 4.0 °C
@@ -158,7 +158,7 @@ v3 <- c(
 )
 
 cd3 <- make_cd(v3)
-md3 <- make_md(RoCN = 8, RoCHours = 25)
+md3 <- make_md(RoCStDv = 8, RoCHours = 25)
 
 fd3 <- utilASRflag(cd3, md3, "Water_Temp_C")
 

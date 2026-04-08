@@ -21,7 +21,7 @@ flag_make_md <- function(
   GrMaxSuspect = NA_real_,
   SpikeFail = NA_real_,
   SpikeSuspect = NA_real_,
-  RoCN = NA_real_,
+  RoCStDv = NA_real_,
   RoCHours = NA_real_,
   FlatFailN = NA_real_,
   FlatFailDelta = NA_real_,
@@ -37,7 +37,7 @@ flag_make_md <- function(
       Spike = SpikeFail,
       FlatN = FlatFailN,
       FlatDelta = FlatFailDelta,
-      RoCN = NA_real_,
+      RoCStDv = NA_real_,
       RoCHours = NA_real_,
       stringsAsFactors = FALSE
     ),
@@ -49,7 +49,7 @@ flag_make_md <- function(
       Spike = SpikeSuspect,
       FlatN = FlatSuspectN,
       FlatDelta = FlatSuspectDelta,
-      RoCN = RoCN,
+      RoCStDv = RoCStDv,
       RoCHours = RoCHours,
       stringsAsFactors = FALSE
     )

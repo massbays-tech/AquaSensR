@@ -61,7 +61,7 @@ test_that("checkASRdqo errors on invalid Flag values", {
 test_that("checkASRdqo errors when RoC values present in Fail rows", {
   bad_data <- tst$dqodatchk
   fail_idx1 <- which(bad_data$Flag == "Fail")[1]
-  bad_data$RoCN[fail_idx1] <- 6
+  bad_data$RoCStDv[fail_idx1] <- 6
   bad_data$RoCHours[fail_idx1] <- 24
 
   fail_idx2 <- which(bad_data$Flag == "Fail")[2]

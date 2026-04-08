@@ -182,14 +182,14 @@ The workbook must contain exactly the following columns (all required; threshold
 | `Spike` | Spike, absolute step size for a flag |
 | `FlatN` | Flatline, consecutive identical observations for a flag |
 | `FlatDelta` | Flatline, maximum within-run absolute change treated as "identical" for a flag |
-| `RoCN` | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCN`) |
+| `RoCStDv` | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCStDv`) |
 | `RoCHours` | Rate of change, look-back window length in hours |
 
 ### Checks performed
 
 The `readASRdqo()` function imports the data quality objectives and runs a series of checks using the `checkASRdqo()` function.  The checks evaluate the following and stops with an informative error if any check fails:
 
-1. **Column names**: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCN, and RoCHours
+1. **Column names**: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCStDv, and RoCHours
 2. **All columns present**: All columns from the previous check should be present
 3. **At least one parameter is present**: At least one parameter in the `Parameter` column matches the `Parameter` column in `paramsASR`
 4. **Parameter format**: All parameters listed in the `Parameter` column should match those in the `Parameter` column in `paramsASR`

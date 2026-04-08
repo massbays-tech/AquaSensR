@@ -20,7 +20,7 @@ This function is used internally within \code{\link{readASRdqo}} to run several 
 
 The following checks are made:
 \itemize{
-\item Column names: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCN, and RoCHours
+\item Column names: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCStDv, and RoCHours
 \item All columns present: All columns from the previous check should be present
 \item At least one parameter is present: At least one parameter in the \code{Parameter} column matches the \code{Parameter} column in \code{\link{paramsASR}}
 \item Parameter format: All parameters listed in the \code{Parameter} column should match those in the \code{Parameter} column in \code{\link{paramsASR}}

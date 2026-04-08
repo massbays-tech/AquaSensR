@@ -6,7 +6,7 @@
 #'
 #' The following checks are made:
 #' \itemize{
-#'  \item Column names: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCN, and RoCHours
+#'  \item Column names: Should include only Parameter, Flag, GrMin, GrMax, Spike, FlatN, FlatDelta, RoCStDv, and RoCHours
 #'  \item All columns present: All columns from the previous check should be present
 #'  \item At least one parameter is present: At least one parameter in the \code{Parameter} column matches the \code{Parameter} column in \code{\link{paramsASR}}
 #'  \item Parameter format: All parameters listed in the \code{Parameter} column should match those in the \code{Parameter} column in \code{\link{paramsASR}}
@@ -40,7 +40,7 @@ checkASRdqo <- function(dqodat) {
     "Spike",
     "FlatN",
     "FlatDelta",
-    "RoCN",
+    "RoCStDv",
     "RoCHours"
   )
   parms <- paramsASR$Parameter
@@ -118,10 +118,10 @@ checkASRdqo <- function(dqodat) {
   }
   message(paste(msg, 'OK'))
 
-  # check rate of change, do for both RoCN and RoCHours
+  # check rate of change, do for both RoCStDv and RoCHours
   msg <- '\tChecking Rate of Change flags...'
   fail_rows <- which(dqodat$Flag == "Fail")
-  chk <- dqodat[fail_rows, c("RoCN", "RoCHours")]
+  chk <- dqodat[fail_rows, c("RoCStDv", "RoCHours")]
   chk <- apply(chk, 1, function(x) any(!is.na(x) & x != ""))
   if (any(chk)) {
     tochk <- fail_rows[chk]
