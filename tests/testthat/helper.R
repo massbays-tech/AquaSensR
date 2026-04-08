@@ -10,7 +10,7 @@ flag_times <- as.POSIXct("2024-01-01 00:00:00", tz = "Etc/GMT+5") +
 
 flag_make_cd <- function(vals) {
   df <- data.frame(DateTime = flag_times, stringsAsFactors = FALSE)
-  df[["Water Temp_C"]] <- vals
+  df[["Water_Temp_C"]] <- vals
   df
 }
 
@@ -30,7 +30,7 @@ flag_make_md <- function(
 ) {
   rbind(
     data.frame(
-      Parameter = "Water Temp_C",
+      Parameter = "Water_Temp_C",
       Flag = "Fail",
       GrMin = GrMinFail,
       GrMax = GrMaxFail,
@@ -42,7 +42,7 @@ flag_make_md <- function(
       stringsAsFactors = FALSE
     ),
     data.frame(
-      Parameter = "Water Temp_C",
+      Parameter = "Water_Temp_C",
       Flag = "Suspect",
       GrMin = GrMinSuspect,
       GrMax = GrMaxSuspect,

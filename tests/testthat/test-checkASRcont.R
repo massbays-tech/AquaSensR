@@ -22,7 +22,10 @@ test_that("checkASRcont accepts time as plain HH:MM:SS strings", {
 test_that("checkASRcont accepts 12-hour AM/PM time format", {
   ampm_time_data <- tst$contdatchk
   ampm_time_data$Time <- format(
-    lubridate::parse_date_time(ampm_time_data$Time, orders = c('HMS', 'ymd HMS')),
+    lubridate::parse_date_time(
+      ampm_time_data$Time,
+      orders = c('HMS', 'ymd HMS')
+    ),
     "%I:%M:%S %p"
   )
 
@@ -40,7 +43,10 @@ test_that("checkASRcont accepts mixed time formats (datetime and plain HH:MM:SS)
   mixed_time_data <- tst$contdatchk
   # Set odd rows to Excel-prefixed "1899-12-31 HH:MM:SS", leave even rows as plain "HH:MM:SS"
   odd_rows <- seq(1, nrow(mixed_time_data), by = 2)
-  mixed_time_data$Time[odd_rows] <- paste0("1899-12-31 ", mixed_time_data$Time[odd_rows])
+  mixed_time_data$Time[odd_rows] <- paste0(
+    "1899-12-31 ",
+    mixed_time_data$Time[odd_rows]
+  )
 
   expect_no_error(checkASRcont(mixed_time_data))
 
@@ -108,13 +114,13 @@ test_that("checkASRcont errors on invalid time format", {
 
 test_that("checkASRcont errors on missing values", {
   bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
+  param_name <- 'Water_Temp_C'
   bad_data[[param_name]][3] <- NA
 
   expected_msg <- paste0(
     "\tChecking for missing values...\n\t",
     "The following columns have missing values in the following rows: ",
-    "Water Temp_C (3)"
+    "Water_Temp_C (3)"
   )
 
   expect_error(
@@ -124,14 +130,14 @@ test_that("checkASRcont errors on missing values", {
   )
 
   bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
+  param_name <- 'Water_Temp_C'
   bad_data[[param_name]][1] <- NA
   bad_data[[param_name]][3] <- NA
 
   expected_msg <- paste0(
     "\tChecking for missing values...\n\t",
     "The following columns have missing values in the following rows: ",
-    "Water Temp_C (1, 3)"
+    "Water_Temp_C (1, 3)"
   )
 
   expect_error(
@@ -183,13 +189,13 @@ test_that("checkASRcont errors when no parameter columns present (combined forma
 
 test_that("checkASRcont errors on non-numeric parameter values", {
   bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
+  param_name <- 'Water_Temp_C'
   bad_data[[param_name]][3] <- "text"
 
   expected_msg <- paste0(
     "\tChecking parameter columns for non-numeric values...\n\t",
     "The following parameter columns have non-numeric values in the following rows: ",
-    "Water Temp_C (3)"
+    "Water_Temp_C (3)"
   )
 
   expect_error(
@@ -199,14 +205,14 @@ test_that("checkASRcont errors on non-numeric parameter values", {
   )
 
   bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
+  param_name <- 'Water_Temp_C'
   bad_data[[param_name]][1] <- "text"
   bad_data[[param_name]][3] <- "text"
 
   expected_msg <- paste0(
     "\tChecking parameter columns for non-numeric values...\n\t",
     "The following parameter columns have non-numeric values in the following rows: ",
-    "Water Temp_C (1, 3)"
+    "Water_Temp_C (1, 3)"
   )
 
   expect_error(
@@ -216,7 +222,7 @@ test_that("checkASRcont errors on non-numeric parameter values", {
   )
 
   bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
+  param_name <- 'Water_Temp_C'
   bad_data[[param_name]][3] <- "text"
   param_name <- 'pH_SU'
   bad_data[[param_name]][2] <- "text"
@@ -224,7 +230,7 @@ test_that("checkASRcont errors on non-numeric parameter values", {
   expected_msg <- paste0(
     "\tChecking parameter columns for non-numeric values...\n\t",
     "The following parameter columns have non-numeric values in the following rows: ",
-    "Water Temp_C (3); pH_SU (2)"
+    "Water_Temp_C (3); pH_SU (2)"
   )
 
   expect_error(
@@ -234,7 +240,7 @@ test_that("checkASRcont errors on non-numeric parameter values", {
   )
 
   bad_data <- tst$contdatchk
-  param_name <- 'Water Temp_C'
+  param_name <- 'Water_Temp_C'
   bad_data[[param_name]][1] <- "text"
   bad_data[[param_name]][3] <- "text"
   param_name <- 'pH_SU'
@@ -243,7 +249,7 @@ test_that("checkASRcont errors on non-numeric parameter values", {
   expected_msg <- paste0(
     "\tChecking parameter columns for non-numeric values...\n\t",
     "The following parameter columns have non-numeric values in the following rows: ",
-    "Water Temp_C (1, 3); pH_SU (2)"
+    "Water_Temp_C (1, 3); pH_SU (2)"
   )
 
   expect_error(

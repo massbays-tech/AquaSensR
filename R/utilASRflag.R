@@ -59,7 +59,7 @@
 #' contdat <- readASRcont(contpth, runchk = FALSE)
 #' dqodat <- readASRdqo(dqopth, runchk = FALSE)
 #'
-#' utilASRflag(contdat, dqodat, param = 'Water Temp_C')
+#' utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
 utilASRflag <- function(contdat, dqodat, param) {
   # validate param
   parms <- paramsASR$Parameter

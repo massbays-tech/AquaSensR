@@ -83,14 +83,14 @@ The continuous monitoring data workbook must follow one of two accepted schemas.
 |--------|-------------|
 | `Date` | Observation date, parseable by `lubridate::ymd()` (e.g., `2024-06-01`) |
 | `Time` | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`) |
 
 **Format 2: combined DateTime column**
 
 | Column | Description |
 |--------|-------------|
 | `DateTime` | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`) |
 
 Currently, AquaSensR allows the following parameters.  Note the inclusion of the units in the parameter name.  Make sure the parameter name matches the units used in your data.
 

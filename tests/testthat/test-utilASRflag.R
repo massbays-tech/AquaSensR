@@ -5,14 +5,14 @@
 test_that("utilASRflag returns correct structure and all-pass baseline", {
   cd <- flag_make_cd(rep(20, flag_n_obs))
   md <- flag_make_md()
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
 
   expect_s3_class(result, "data.frame")
   expect_named(
     result,
     c(
       "DateTime",
-      "Water Temp_C",
+      "Water_Temp_C",
       "gross_flag",
       "spike_flag",
       "roc_flag",
@@ -62,7 +62,7 @@ test_that("utilASRflag gross_flag fires for suspect and fail on both bounds", {
     GrMaxSuspect = 30
   )
 
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
 
   expect_equal(result$gross_flag[3], "suspect")
   expect_equal(result$gross_flag[7], "fail")
@@ -88,7 +88,7 @@ test_that("utilASRflag spike_flag fires for suspect and fail steps", {
   cd <- flag_make_cd(vals)
   md <- flag_make_md(SpikeSuspect = 4, SpikeFail = 8)
 
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
 
   expect_equal(result$spike_flag[8], "suspect")
   expect_equal(result$spike_flag[20], "fail")
@@ -107,7 +107,7 @@ test_that("utilASRflag skips roc check when no Suspect row present", {
   md <- flag_make_md(RoCN = 4, RoCHours = 25)
   md <- md[md$Flag == "Fail", ] # drop Suspect row
 
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
   expect_true(all(result$roc_flag == "pass"))
 })
 
@@ -116,7 +116,7 @@ test_that("utilASRflag skips roc check when RoCN set but RoCHours is NA", {
   cd <- flag_make_cd(vals)
   md <- flag_make_md(RoCN = 4) # RoCHours stays NA -> check skipped
 
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
   expect_true(all(result$roc_flag == "pass"))
 })
 
@@ -130,7 +130,7 @@ test_that("utilASRflag roc_flag fires at level shift in stable series", {
   cd <- flag_make_cd(vals)
   md <- flag_make_md(RoCN = 4, RoCHours = 25)
 
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
 
   expect_equal(result$roc_flag[20], "suspect")
   expect_true(all(result$roc_flag[-20] == "pass"))
@@ -166,7 +166,7 @@ test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
     FlatFailDelta = 0.02
   )
 
-  result <- utilASRflag(cd, md, "Water Temp_C")
+  result <- utilASRflag(cd, md, "Water_Temp_C")
 
   expect_true(all(result$flat_flag[15:19] == "suspect"))
   expect_true(all(result$flat_flag[20:25] == "fail"))

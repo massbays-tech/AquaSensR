@@ -28,7 +28,7 @@ head(dqodat)
 # 3. Apply QC flags
 # ------------------------------------------------------------------------------
 # Change `param` to any parameter column present in contdat / dqodat
-flagdat <- utilASRflag(contdat, dqodat, param = "Water Temp_C")
+flagdat <- utilASRflag(contdat, dqodat, param = "Water_Temp_C")
 flagdat <- utilASRflag(contdat, dqodat, param = "DO_mg_l")
 
 # Summary of flag results

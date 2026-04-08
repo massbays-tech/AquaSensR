@@ -2,7 +2,7 @@
 # demo_qc_checks.R
 #
 # Demonstrates each of the four QC checks implemented in AquaSensR using
-# synthetic "Water Temp_C" time series.  Run interactively after
+# synthetic "Water_Temp_C" time series.  Run interactively after
 # devtools::load_all().
 #
 # One example per check:
@@ -28,14 +28,14 @@ times <- base_time + seq(0L, by = 15L * 60L, length.out = n)
 # Build a minimal contdat frame
 make_cd <- function(vals) {
   df <- data.frame(DateTime = times, stringsAsFactors = FALSE)
-  df[["Water Temp_C"]] <- vals
+  df[["Water_Temp_C"]] <- vals
   df
 }
 
 # Build a dqodat row with all columns; supply only the thresholds you need
 make_md <- function(...) {
   base <- list(
-    Parameter = "Water Temp_C",
+    Parameter = "Water_Temp_C",
     GrMinFail = NA_real_,
     GrMaxFail = NA_real_,
     GrMinSuspect = NA_real_,
@@ -81,7 +81,7 @@ md1 <- make_md(
   GrMaxSuspect = 30
 )
 
-fd1 <- utilASRflag(cd1, md1, "Water Temp_C")
+fd1 <- utilASRflag(cd1, md1, "Water_Temp_C")
 
 # ===========================================================================
 # 2.  SPIKE
@@ -108,7 +108,7 @@ v2[400] <- v2[399] - 9.5 # fail downward
 cd2 <- make_cd(v2)
 md2 <- make_md(SpikeSuspect = 4, SpikeFail = 8)
 
-fd2 <- utilASRflag(cd2, md2, "Water Temp_C")
+fd2 <- utilASRflag(cd2, md2, "Water_Temp_C")
 
 # ===========================================================================
 # 3.  RATE OF CHANGE
@@ -160,7 +160,7 @@ v3 <- c(
 cd3 <- make_cd(v3)
 md3 <- make_md(RoCN = 8, RoCHours = 25)
 
-fd3 <- utilASRflag(cd3, md3, "Water Temp_C")
+fd3 <- utilASRflag(cd3, md3, "Water_Temp_C")
 
 # ===========================================================================
 # 4.  FLATLINE
@@ -197,7 +197,7 @@ md4 <- make_md(
   FlatFailDelta = 0.02
 )
 
-fd4 <- utilASRflag(cd4, md4, "Water Temp_C")
+fd4 <- utilASRflag(cd4, md4, "Water_Temp_C")
 
 # ===========================================================================
 # Plots

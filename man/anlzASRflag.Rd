@@ -40,7 +40,7 @@ dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 contdat <- readASRcont(contpth, runchk = FALSE)
 dqodat <- readASRdqo(dqopth, runchk = FALSE)
 
-flagdat <- utilASRflag(contdat, dqodat, param = 'Water Temp_C')
+flagdat <- utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
 anlzASRflag(flagdat)
 }
 \seealso{
