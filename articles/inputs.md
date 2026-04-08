@@ -104,14 +104,14 @@ schemas. Additional unrecognised columns will trigger an error.
 |-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)             |
 | `Time`                        | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                                         |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`)                                                         |
 
 **Format 2: combined DateTime column**
 
 | Column                        | Description                                                                                                             |
 |-------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `DateTime`                    | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water Temp_C`)                                        |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`)                                        |
 
 Currently, AquaSensR allows the following parameters. Note the inclusion
 of the units in the parameter name. Make sure the parameter name matches
@@ -119,10 +119,10 @@ the units used in your data.
 
 | Description                  | Required file name   | Units     |
 |:-----------------------------|:---------------------|:----------|
-| Air Temp (C)                 | Air Temp_C           | deg C     |
-| Air Temp (F)                 | Air Temp_F           | deg F     |
-| Air BP (psi)                 | Air BP_psi           | psi       |
-| Air BP (mmHg)                | Air BP_mmHg          | mmHg      |
+| Air Temp (C)                 | Air_Temp_C           | deg C     |
+| Air Temp (F)                 | Air_Temp_F           | deg F     |
+| Air BP (psi)                 | Air_BP_psi           | psi       |
+| Air BP (mmHg)                | Air_BP_mmHg          | mmHg      |
 | Chlorophyll-a (μg/l)         | Chlorophylla_ug_l    | ug/l      |
 | Chlorophyll-a (RFU)          | Chlorophylla_RFU     | RFU       |
 | Pheophytin (μg/l)            | Pheophytin_ug_l      | ug/l      |
@@ -130,7 +130,7 @@ the units used in your data.
 | pCO2 (ppm)                   | pCO2_ppm             | ppm       |
 | Conductivity (μS/cm)         | Conductivity_uS_cm   | uS/cm     |
 | Salinity (ppt)               | Salinity_ppt         | ppt       |
-| Specific Conductance (μS/cm) | Sp Conductance_uS_cm | uS/cm     |
+| Specific Conductance (μS/cm) | Sp_Conductance_uS_cm | uS/cm     |
 | Cyanobacteria (μg/l)         | Cyanobacteria_ug_l   | ug/l      |
 | Phycocyanin (μg/l)           | Phycocyanin_ug_l     | ug/l      |
 | Phycoerythrin (μg/l)         | Phycoerythrin_ug_l   | ug/l      |
@@ -139,8 +139,8 @@ the units used in your data.
 | DO (% Sat)                   | DO_pctsat            | %         |
 | CDOM (mg/l)                  | CDOM_mg_l            | mg/l      |
 | FDOM (mg/l)                  | FDOM_mg_l            | mg/l      |
-| E. coli (#/100ml)            | E. coli\_#\_100ml    | \#/100ml  |
-| E. coli (CFU/100ml)          | E. coli_CFU_100ml    | CFU/100ml |
+| E. coli (#/100ml)            | E_coli\_#\_100ml     | \#/100ml  |
+| E. coli (CFU/100ml)          | E_coli_CFU_100ml     | CFU/100ml |
 | Discharge (cfs)              | Discharge_cfs        | cfs       |
 | Nitrate (μg/l)               | Nitrate_ug_l         | ug/l      |
 | PAR (μmol/m2/s)              | PAR_umol_m2_s        | umol/m2/s |
@@ -149,12 +149,12 @@ the units used in your data.
 | TSS (mg/l)                   | TSS_mg_l             | mg/l      |
 | Turbidity (NTU)              | Turbidity_NTU        | NTU       |
 | Turbidity (FNU)              | Turbidity_FNU        | FNU       |
-| Gage Height (ft)             | Gage Height_ft       | ft        |
-| Sensor Depth (ft)            | Sensor Depth_ft      | ft        |
-| Water Pressure (psi)         | Water Pressure_psi   | psi       |
-| Water Pressure (mmHg)        | Water Pressure_mmHg  | mmHg      |
-| Water Temp (C)               | Water Temp_C         | deg C     |
-| Water Temp (F)               | Water Temp_F         | deg F     |
+| Gage Height (ft)             | Gage_Height_ft       | ft        |
+| Sensor Depth (ft)            | Sensor_Depth_ft      | ft        |
+| Water Pressure (psi)         | Water_Pressure_psi   | psi       |
+| Water Pressure (mmHg)        | Water_Pressure_mmHg  | mmHg      |
+| Water Temp (C)               | Water_Temp_C         | deg C     |
+| Water Temp (F)               | Water_Temp_F         | deg F     |
 
 The list above can also be viewed in R with the `paramsASR` dataset,
 which is included in the package and used for the checks.
@@ -164,10 +164,10 @@ paramsASR
 #> # A tibble: 36 × 6
 #>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
 #>    <chr>             <chr>     <chr> <chr> <chr>           <chr>                
-#>  1 Air Temp          Air Temp… deg C Air … Temperature, a… deg C                
-#>  2 Air Temp          Air Temp… deg F Air … Temperature, a… deg F                
-#>  3 Barometric Press… Air BP_p… psi   Air … Barometric pre… psi                  
-#>  4 Barometric Press… Air BP_m… mmHg  Air … Barometric pre… mmHg                 
+#>  1 Air Temp          Air_Temp… deg C Air … Temperature, a… deg C                
+#>  2 Air Temp          Air_Temp… deg F Air … Temperature, a… deg F                
+#>  3 Barometric Press… Air_BP_p… psi   Air … Barometric pre… psi                  
+#>  4 Barometric Press… Air_BP_m… mmHg  Air … Barometric pre… mmHg                 
 #>  5 Chlorophyll       Chloroph… ug/l  Chlo… Chlorophyll a … ug/l                 
 #>  6 Chlorophyll       Chloroph… RFU   Chlo… Chlorophyll a … RFU                  
 #>  7 Chlorophyll       Pheophyt… ug/l  Pheo… Pheophytin a    ug/l                 
@@ -247,29 +247,29 @@ returns a data frame with the same structure regardless of input format:
 ``` r
 head(contdat)
 #> # A tibble: 6 × 8
-#>   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
-#>   <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
-#> 1 2024-08-14 13:56:33           24.2      76.9    6.44               410.
-#> 2 2024-08-14 13:56:43           24.2      76.7    6.43               410.
-#> 3 2024-08-14 13:56:53           24.2      76.6    6.42               410.
-#> 4 2024-08-14 13:57:03           24.2      76.5    6.41               410.
-#> 5 2024-08-14 13:57:13           24.2      76.3    6.4                409 
-#> 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.
-#> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
+#>   DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm TDS_mg_l
+#>   <dttm>                     <dbl>     <dbl>   <dbl>              <dbl>    <dbl>
+#> 1 2024-08-14 13:56:33         24.2      76.9    6.44               410.      266
+#> 2 2024-08-14 13:56:43         24.2      76.7    6.43               410.      266
+#> 3 2024-08-14 13:56:53         24.2      76.6    6.42               410.      266
+#> 4 2024-08-14 13:57:03         24.2      76.5    6.41               410.      266
+#> 5 2024-08-14 13:57:13         24.2      76.3    6.4                409       266
+#> 6 2024-08-14 13:57:23         24.2      76.3    6.39               409.      266
+#> # ℹ 2 more variables: Salinity_ppt <dbl>, pH_SU <dbl>
 ```
 
 ``` r
 head(contdat2)
 #> # A tibble: 6 × 8
-#>   DateTime            `Water Temp_C` DO_pctsat DO_mg_l Conductivity_uS_cm
-#>   <dttm>                       <dbl>     <dbl>   <dbl>              <dbl>
-#> 1 2024-08-14 13:56:33           24.2      76.9    6.44               410.
-#> 2 2024-08-14 13:56:43           24.2      76.7    6.43               410.
-#> 3 2024-08-14 13:56:53           24.2      76.6    6.42               410.
-#> 4 2024-08-14 13:57:03           24.2      76.5    6.41               410.
-#> 5 2024-08-14 13:57:13           24.2      76.3    6.4                409 
-#> 6 2024-08-14 13:57:23           24.2      76.3    6.39               409.
-#> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
+#>   DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm TDS_mg_l
+#>   <dttm>                     <dbl>     <dbl>   <dbl>              <dbl>    <dbl>
+#> 1 2024-08-14 13:56:33         24.2      76.9    6.44               410.      266
+#> 2 2024-08-14 13:56:43         24.2      76.7    6.43               410.      266
+#> 3 2024-08-14 13:56:53         24.2      76.6    6.42               410.      266
+#> 4 2024-08-14 13:57:03         24.2      76.5    6.41               410.      266
+#> 5 2024-08-14 13:57:13         24.2      76.3    6.4                409       266
+#> 6 2024-08-14 13:57:23         24.2      76.3    6.39               409.      266
+#> # ℹ 2 more variables: Salinity_ppt <dbl>, pH_SU <dbl>
 ```
 
 ## Data quality objectives
@@ -376,8 +376,8 @@ head(dqodat)
 #> # A tibble: 6 × 9
 #>   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta  RoCN RoCHours
 #>   <chr>        <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl> <dbl>    <dbl>
-#> 1 Water Temp_C Suspect  -0.5    28   1.5    60      0.01     6       25
-#> 2 Water Temp_C Fail     -1      30   2     100      0.01    NA       NA
+#> 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01     6       25
+#> 2 Water_Temp_C Fail     -1      30   2     100      0.01    NA       NA
 #> 3 DO_pctsat    Suspect   0     100  10      30      0.01     6       25
 #> 4 DO_pctsat    Fail     -1     120  25      60      0.01    NA       NA
 #> 5 DO_mg_l      Suspect   2      16   2      30      0.01     6       25

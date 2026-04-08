@@ -83,8 +83,8 @@ checkASRdqo(dqodat)
 #> # A tibble: 14 × 9
 #>    Parameter          Flag    GrMin GrMax Spike FlatN FlatDelta  RoCN RoCHours
 #>    <chr>              <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl> <dbl>    <dbl>
-#>  1 Water Temp_C       Suspect  -0.5    28   1.5    60      0.01     6       25
-#>  2 Water Temp_C       Fail     -1      30   2     100      0.01    NA       NA
+#>  1 Water_Temp_C       Suspect  -0.5    28   1.5    60      0.01     6       25
+#>  2 Water_Temp_C       Fail     -1      30   2     100      0.01    NA       NA
 #>  3 DO_pctsat          Suspect   0     100  10      30      0.01     6       25
 #>  4 DO_pctsat          Fail     -1     120  25      60      0.01    NA       NA
 #>  5 DO_mg_l            Suspect   2      16   2      30      0.01     6       25

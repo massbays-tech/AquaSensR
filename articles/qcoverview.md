@@ -73,17 +73,17 @@ Three arguments are required for the function:
 Pass the two data frames and the name of the parameter to evaluate:
 
 ``` r
-flagdat <- utilASRflag(contdat, dqodat, param = "Water Temp_C")
+flagdat <- utilASRflag(contdat, dqodat, param = "Water_Temp_C")
 head(flagdat)
 #> # A tibble: 6 × 6
-#>   DateTime            `Water Temp_C` gross_flag spike_flag roc_flag flat_flag
-#>   <dttm>                       <dbl> <chr>      <chr>      <chr>    <chr>    
-#> 1 2024-08-14 13:56:33           24.2 pass       pass       pass     pass     
-#> 2 2024-08-14 13:56:43           24.2 pass       pass       pass     pass     
-#> 3 2024-08-14 13:56:53           24.2 pass       pass       pass     pass     
-#> 4 2024-08-14 13:57:03           24.2 pass       pass       pass     pass     
-#> 5 2024-08-14 13:57:13           24.2 pass       pass       pass     pass     
-#> 6 2024-08-14 13:57:23           24.2 pass       pass       pass     pass
+#>   DateTime            Water_Temp_C gross_flag spike_flag roc_flag flat_flag
+#>   <dttm>                     <dbl> <chr>      <chr>      <chr>    <chr>    
+#> 1 2024-08-14 13:56:33         24.2 pass       pass       pass     pass     
+#> 2 2024-08-14 13:56:43         24.2 pass       pass       pass     pass     
+#> 3 2024-08-14 13:56:53         24.2 pass       pass       pass     pass     
+#> 4 2024-08-14 13:57:03         24.2 pass       pass       pass     pass     
+#> 5 2024-08-14 13:57:13         24.2 pass       pass       pass     pass     
+#> 6 2024-08-14 13:57:23         24.2 pass       pass       pass     pass
 ```
 
 ### Output

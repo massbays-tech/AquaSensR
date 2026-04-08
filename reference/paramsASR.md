@@ -25,10 +25,10 @@ paramsASR
 #> # A tibble: 36 × 6
 #>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
 #>    <chr>             <chr>     <chr> <chr> <chr>           <chr>                
-#>  1 Air Temp          Air Temp… deg C Air … Temperature, a… deg C                
-#>  2 Air Temp          Air Temp… deg F Air … Temperature, a… deg F                
-#>  3 Barometric Press… Air BP_p… psi   Air … Barometric pre… psi                  
-#>  4 Barometric Press… Air BP_m… mmHg  Air … Barometric pre… mmHg                 
+#>  1 Air Temp          Air_Temp… deg C Air … Temperature, a… deg C                
+#>  2 Air Temp          Air_Temp… deg F Air … Temperature, a… deg F                
+#>  3 Barometric Press… Air_BP_p… psi   Air … Barometric pre… psi                  
+#>  4 Barometric Press… Air_BP_m… mmHg  Air … Barometric pre… mmHg                 
 #>  5 Chlorophyll       Chloroph… ug/l  Chlo… Chlorophyll a … ug/l                 
 #>  6 Chlorophyll       Chloroph… RFU   Chlo… Chlorophyll a … RFU                  
 #>  7 Chlorophyll       Pheophyt… ug/l  Pheo… Pheophytin a    ug/l                 
