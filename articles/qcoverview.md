@@ -105,8 +105,8 @@ Each flag column contains one of three values: `"pass"`, `"suspect"`, or
 observation can receive any combination of flags across the four
 columns.
 
-If no row in `dqodat` matches a parameter the function leaves all flags
-as `"pass"` and continues.
+If no row in `dqodat` matches a parameter a warning is returned and the
+function leaves all flags as `"pass"` and continues.
 
 ## QC checks explained
 

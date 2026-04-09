@@ -24,8 +24,8 @@ utilASRflag(cont, dqo, param)
 
   character string naming the parameter column to evaluate. Must match
   one of the parameter columns present in `contdat`. If `param` has no
-  matching entry in `dqodat$Parameter` all flags are returned as
-  `"pass"`.
+  matching entry in `dqodat$Parameter` a warning is returned and all
+  flags are returned as `"pass"`.
 
 ## Value
 
