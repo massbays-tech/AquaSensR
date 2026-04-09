@@ -47,8 +47,8 @@ Three arguments are required for the function:
 
 | Argument | Description |
 |----------|-------------|
-| `contdat` | Data frame returned by `readASRcont()` |
-| `dqodat` | Data frame returned by `readASRdqo()` |
+| `cont` | `contdat` data frame returned by `readASRcont()` |
+| `dqo` | `dqodat` data frame returned by `readASRdqo()` |
 | `param` | Name of the parameter column to evaluate (must match a column in `contdat` and a `Parameter` entry in `dqodat`) |
 
 ### Basic usage

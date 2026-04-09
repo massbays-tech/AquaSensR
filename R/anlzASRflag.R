@@ -1,6 +1,6 @@
 #' Plot QC flag results for a continuous monitoring parameter
 #'
-#' @param flagdat data frame returned by \code{\link{utilASRflag}}.
+#' @param flag data frame returned by \code{\link{utilASRflag}}.
 #'
 #' @details Produces an interactive \pkg{plotly} time series showing all
 #' observations as a line, with non-passing observations overlaid as markers.
@@ -35,7 +35,8 @@
 #'
 #' flagdat <- utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
 #' anlzASRflag(flagdat)
-anlzASRflag <- function(flagdat) {
+anlzASRflag <- function(flag) {
+  flagdat <- flag
   param <- names(flagdat)[2L]
   ylab <- paramsASR[paramsASR$Parameter == param, "Label"] |> as.character()
 

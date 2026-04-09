@@ -4,10 +4,10 @@
 \alias{anlzASRflag}
 \title{Plot QC flag results for a continuous monitoring parameter}
 \usage{
-anlzASRflag(flagdat)
+anlzASRflag(flag)
 }
 \arguments{
-\item{flagdat}{data frame returned by \code{\link{utilASRflag}}.}
+\item{flag}{data frame returned by \code{\link{utilASRflag}}.}
 }
 \value{
 An interactive \code{plotly} object.

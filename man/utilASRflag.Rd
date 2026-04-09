@@ -4,12 +4,12 @@
 \alias{utilASRflag}
 \title{Flag continuous monitoring data with QC criteria}
 \usage{
-utilASRflag(contdat, dqodat, param)
+utilASRflag(cont, dqo, param)
 }
 \arguments{
-\item{contdat}{data frame returned by \code{\link{readASRcont}}}
+\item{cont}{\code{condtat} data frame returned by \code{\link{readASRcont}}}
 
-\item{dqodat}{data frame returned by \code{\link{readASRdqo}}}
+\item{dqo}{\code{dqodat} data frame returned by \code{\link{readASRdqo}}}
 
 \item{param}{character string naming the parameter column to evaluate.
 Must match one of the parameter columns present in \code{contdat}.
@@ -71,5 +71,5 @@ dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 contdat <- readASRcont(contpth, runchk = FALSE)
 dqodat <- readASRdqo(dqopth, runchk = FALSE)
 
-utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
+utilASRflag(cont = contdat, dqo = dqodat, param = 'Water_Temp_C')
 }

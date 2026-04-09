@@ -10,8 +10,8 @@
 #' can be fully reset. Clicking \strong{Done / Close} stops the app and returns
 #' the filtered datasets for all parameters to the R session.
 #'
-#' @param contdat data frame returned by \code{\link{readASRcont}}
-#' @param dqodat data frame returned by \code{\link{readASRdqo}}
+#' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
+#' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}}
 #'
 #' @return A list with two elements, invisibly returned after the app closes:
 #'   \describe{
@@ -72,16 +72,16 @@
 #' }
 #'
 #' @export
-editASRflag <- function(contdat, dqodat) {
-  shiny::runApp(editASRflag_app(contdat, dqodat))
+editASRflag <- function(cont, dqo) {
+  shiny::runApp(editASRflag_app(cont, dqo))
 }
 
 # Builds the shinyApp object without running it.  Separated from editASRflag()
 # so that tests can call shiny::testServer() on the server function directly.
 # Not exported.
-editASRflag_app <- function(contdat, dqodat) {
+editASRflag_app <- function(cont, dqo) {
   # Compute flags for all parameters up front
-  flagdat_list <- utilASRflagall(contdat, dqodat)
+  flagdat_list <- utilASRflagall(cont, dqo)
   params <- names(flagdat_list)
 
   # Add stable .rowid to each flagdat
@@ -318,7 +318,7 @@ editASRflag_app <- function(contdat, dqodat) {
     shiny::observeEvent(input$done, {
       shiny::stopApp(
         returnValue = editASRflag_result(
-          contdat,
+          cont,
           flagdat_list,
           remaining_list()
         )
@@ -358,12 +358,12 @@ editASRflag_app <- function(contdat, dqodat) {
 # Computes the editASRflag return value from the final reactive state.
 # Separated so tests can verify the output logic without triggering stopApp.
 # Not exported.
-editASRflag_result <- function(contdat, flagdat_list, remaining_list) {
+editASRflag_result <- function(cont, flagdat_list, remaining_list) {
   params <- names(flagdat_list)
 
-  # contdat sorted by DateTime, with removed values replaced by NA.
-  # flagdat .rowid == row index of the DateTime-sorted contdat.
-  out_cont <- contdat[order(contdat$DateTime), ]
+  # cont sorted by DateTime, with removed values replaced by NA.
+  # flagdat .rowid == row index of the DateTime-sorted cont.
+  out_cont <- cont[order(cont$DateTime), ]
   for (p in params) {
     removed_rowids <- setdiff(
       flagdat_list[[p]]$.rowid,

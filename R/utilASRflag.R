@@ -1,7 +1,7 @@
 #' Flag continuous monitoring data with QC criteria
 #'
-#' @param contdat data frame returned by \code{\link{readASRcont}}
-#' @param dqodat data frame returned by \code{\link{readASRdqo}}
+#' @param cont \code{condtat} data frame returned by \code{\link{readASRcont}}
+#' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}}
 #' @param param character string naming the parameter column to evaluate.
 #'   Must match one of the parameter columns present in \code{contdat}.
 #'   If \code{param} has no matching entry in \code{dqodat$Parameter} all
@@ -59,8 +59,11 @@
 #' contdat <- readASRcont(contpth, runchk = FALSE)
 #' dqodat <- readASRdqo(dqopth, runchk = FALSE)
 #'
-#' utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
-utilASRflag <- function(contdat, dqodat, param) {
+#' utilASRflag(cont = contdat, dqo = dqodat, param = 'Water_Temp_C')
+utilASRflag <- function(cont, dqo, param) {
+  contdat <- cont
+  dqodat <- dqo
+
   # validate param
   parms <- paramsASR$Parameter
   if (!param %in% parms) {

@@ -4,12 +4,12 @@
 \alias{editASRflag}
 \title{Interactive editor for continuous monitoring data}
 \usage{
-editASRflag(contdat, dqodat)
+editASRflag(cont, dqo)
 }
 \arguments{
-\item{contdat}{data frame returned by \code{\link{readASRcont}}}
+\item{cont}{\code{contdat} data frame returned by \code{\link{readASRcont}}}
 
-\item{dqodat}{data frame returned by \code{\link{readASRdqo}}}
+\item{dqo}{\code{dqodat} data frame returned by \code{\link{readASRdqo}}}
 }
 \value{
 A list with two elements, invisibly returned after the app closes:
