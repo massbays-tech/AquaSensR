@@ -121,12 +121,12 @@ editASRflag_app <- function(cont, dqo) {
         shiny::actionButton(
           "param_prev",
           "\u2190 Prev",
-          style = "flex: 1;"
+          style = "flex: 1; background-color: #ebebeb;"
         ),
         shiny::actionButton(
           "param_next",
           "Next \u2192",
-          style = "flex: 1;"
+          style = "flex: 1; background-color: #ebebeb;"
         )
       ),
       shiny::hr(),
@@ -134,20 +134,17 @@ editASRflag_app <- function(cont, dqo) {
       shiny::actionButton(
         "undo",
         "Undo Last Removal",
-        class = "btn-warning",
-        style = "width: 100%; margin-bottom: 3px;"
+        style = "width: 100%; background-color: #eee685; border-color: #eee685; color: #000000ff;"
       ),
       shiny::actionButton(
         "reset",
         "Start Over",
-        class = "btn-danger",
-        style = "width: 100%; margin-bottom: 3px;"
+        style = "width: 100%; background-color: #ff6633; border-color: #ff6633; color: #fff;"
       ),
       shiny::actionButton(
         "done",
         "Done / Close",
-        class = "btn-success",
-        style = "width: 100%;"
+        style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
       shiny::hr(),
       shiny::h4(shiny::textOutput("removed_count", inline = TRUE)),
