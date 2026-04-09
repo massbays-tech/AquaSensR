@@ -14,19 +14,19 @@ filtered datasets for all parameters to the R session.
 ## Usage
 
 ``` r
-editASRflag(contdat, dqodat)
+editASRflag(cont, dqo)
 ```
 
 ## Arguments
 
-- contdat:
+- cont:
 
-  data frame returned by
+  `contdat` data frame returned by
   [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
 
-- dqodat:
+- dqo:
 
-  data frame returned by
+  `dqodat` data frame returned by
   [`readASRdqo`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
 
 ## Value

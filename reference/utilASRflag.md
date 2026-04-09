@@ -5,19 +5,19 @@ Flag continuous monitoring data with QC criteria
 ## Usage
 
 ``` r
-utilASRflag(contdat, dqodat, param)
+utilASRflag(cont, dqo, param)
 ```
 
 ## Arguments
 
-- contdat:
+- cont:
 
-  data frame returned by
+  `condtat` data frame returned by
   [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
 
-- dqodat:
+- dqo:
 
-  data frame returned by
+  `dqodat` data frame returned by
   [`readASRdqo`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
 
 - param:
@@ -81,7 +81,7 @@ dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 contdat <- readASRcont(contpth, runchk = FALSE)
 dqodat <- readASRdqo(dqopth, runchk = FALSE)
 
-utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
+utilASRflag(cont = contdat, dqo = dqodat, param = 'Water_Temp_C')
 #> # A tibble: 927 × 6
 #>    DateTime            Water_Temp_C gross_flag spike_flag roc_flag flat_flag
 #>    <dttm>                     <dbl> <chr>      <chr>      <chr>    <chr>    

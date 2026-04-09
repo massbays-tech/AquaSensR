@@ -62,11 +62,11 @@ chosen parameter in `contdat`.
 
 Three arguments are required for the function:
 
-| Argument  | Description                                                                                                     |
-|-----------|-----------------------------------------------------------------------------------------------------------------|
-| `contdat` | Data frame returned by [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)    |
-| `dqodat`  | Data frame returned by [`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)      |
-| `param`   | Name of the parameter column to evaluate (must match a column in `contdat` and a `Parameter` entry in `dqodat`) |
+| Argument | Description                                                                                                            |
+|----------|------------------------------------------------------------------------------------------------------------------------|
+| `cont`   | `contdat` data frame returned by [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md) |
+| `dqo`    | `dqodat` data frame returned by [`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)    |
+| `param`  | Name of the parameter column to evaluate (must match a column in `contdat` and a `Parameter` entry in `dqodat`)        |
 
 ### Basic usage
 
