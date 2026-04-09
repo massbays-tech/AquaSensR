@@ -13,8 +13,8 @@ utilASRflag(cont, dqo, param)
 
 \item{param}{character string naming the parameter column to evaluate.
 Must match one of the parameter columns present in \code{contdat}.
-If \code{param} has no matching entry in \code{dqodat$Parameter} all
-flags are returned as \code{"pass"}.}
+If \code{param} has no matching entry in \code{dqodat$Parameter} a warning
+is returned and all flags are returned as \code{"pass"}.}
 }
 \value{
 A data frame with columns \code{DateTime}, the

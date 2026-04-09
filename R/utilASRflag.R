@@ -4,8 +4,8 @@
 #' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}}
 #' @param param character string naming the parameter column to evaluate.
 #'   Must match one of the parameter columns present in \code{contdat}.
-#'   If \code{param} has no matching entry in \code{dqodat$Parameter} all
-#'   flags are returned as \code{"pass"}.
+#'   If \code{param} has no matching entry in \code{dqodat$Parameter} a warning
+#'   is returned and all flags are returned as \code{"pass"}.
 #'
 #' @details Applies four independent QC checks to the selected parameter in \code{contdat}, matching thresholds from \code{dqodat} by \code{Parameter}.  Each check produces its own flag
 #' (\code{"pass"}, \code{"suspect"}, or \code{"fail"}) so the user can see
@@ -77,6 +77,13 @@ utilASRflag <- function(cont, dqo, param) {
   if (!param %in% names(contdat)) {
     stop("'", param, "' column not found in contdat.", call. = FALSE)
   }
+  if (!param %in% dqodat$Parameter) {
+    warning(
+      "No matching parameter in dqodat. All flags will be 'pass'.",
+      call. = FALSE
+    )
+  }
+
   # sort by DateTime so consecutive checks are meaningful
   dat <- contdat[order(contdat$DateTime), ]
 

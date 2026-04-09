@@ -24,7 +24,8 @@
       "Bash('/c/Program Files/R/R-4.3.2/bin/Rscript.exe' -e 'devtools::load_all\\('\\\\''C:/proj/AquaSensR'\\\\'', quiet=TRUE\\); print\\(paramsASR[, c\\('\\\\''Parameter'\\\\'','\\\\''Label'\\\\''\\)]\\); cat\\(any\\(is.na\\(paramsASR$Label\\)\\)\\)')",
       "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"testthat::test_file\\('tests/testthat/test-utilASRimportcont.R'\\)\")",
       "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(filter = 'utilASRimportcont'\\)\")",
-      "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(filter = 'readASRdqo'\\)\")"
+      "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(filter = 'readASRdqo'\\)\")",
+      "Bash(/c/Program Files/R/R-4.5.1/bin/Rscript.exe:*)"
     ]
   }
 }

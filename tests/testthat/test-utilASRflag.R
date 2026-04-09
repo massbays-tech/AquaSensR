@@ -43,6 +43,20 @@ test_that("utilASRflag errors when param column missing from contdat", {
   expect_error(utilASRflag(cd, md, "pH_SU"), "column not found in contdat")
 })
 
+test_that("utilASRflag warns and returns all-pass when param not in dqodat", {
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
+  md[["Parameter"]] <- "pH_SU" # dqodat has no Water_Temp_C entry
+  expect_warning(
+    result <- utilASRflag(cd, md, "Water_Temp_C"),
+    "No matching parameter in dqodat"
+  )
+  expect_true(all(result$gross_flag == "pass"))
+  expect_true(all(result$spike_flag == "pass"))
+  expect_true(all(result$roc_flag == "pass"))
+  expect_true(all(result$flat_flag == "pass"))
+})
+
 # ---------------------------------------------------------------------------
 # Gross range
 # ---------------------------------------------------------------------------
