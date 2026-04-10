@@ -251,10 +251,25 @@ specified count.
 
 A run is defined by a minimum length or count (`FlatN`) and tolerance
 (`FlatDelta`), each read from the appropriate data quality objectives
-row. The tolerance is used to identify consecutive observations
-considered to be “identical” if the absolute step from the previous
-observation is within that tolerance. This allows for a small amount of
-measurement noise without stopping the run count.
+row. An observation extends the current run only when both of the
+following conditions are met:
+
+1.  **Step condition:** The absolute difference from the immediately
+    preceding observation is ≤ `FlatDelta`. This prevents a single large
+    jump (e.g., a real change in the environment) from continuing an
+    otherwise flat run.
+2.  **Anchor condition:** The absolute difference from the first
+    observation in the run (the anchor) is ≤ `FlatDelta`. This prevents
+    a series of small but consistent steps (a slow upward or downward
+    drift) from accumulating into a long run even though the signal is
+    clearly moving.
+
+Either condition failing immediately resets the run length to 1 and sets
+the current observation as the new anchor. This dual-condition approach
+avoids two common false-positive scenarios: gradual drift that never
+exceeds the step tolerance in any single interval but cumulatively moves
+well outside the flat band, and a large single-step change that happens
+to land near the run’s starting value.
 
 - Run length ≥ `FlatN` (using `FlatDelta` tolerance) from the
   `"Suspect"` row returns `"suspect"`
