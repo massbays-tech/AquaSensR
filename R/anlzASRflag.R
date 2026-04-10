@@ -75,7 +75,7 @@ anlzASRflag <- function(flag) {
     customdata = ~.rowid,
     type = "scatter",
     mode = "lines+markers",
-    line = list(color = "gray60", width = 1),
+    line = list(color = "#999999", width = 1),
     marker = list(opacity = 0, size = 6),
     name = param,
     showlegend = FALSE,
