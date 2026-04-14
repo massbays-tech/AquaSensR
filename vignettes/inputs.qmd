@@ -194,8 +194,7 @@ The `readASRdqo()` function imports the data quality objectives and runs a serie
 3. **At least one parameter is present**: At least one parameter in the `Parameter` column matches the `Parameter` column in `paramsASR`
 4. **Parameter format**: All parameters listed in the `Parameter` column should match those in the `Parameter` column in `paramsASR`
 5. **Flag column**: The `Flag` column should contain only "Fail" or "Suspect" entries
-6. **Rate of Change**: No entries for Fail Flag rows
-7. **Numeric columns**: All columns except `Parameter` and `Flag` should be numeric values
+6. **Numeric columns**: All columns except `Parameter` and `Flag` should be numeric values
 
 ### Example: triggering an error
 

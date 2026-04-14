@@ -90,6 +90,34 @@ test_that("utilASRflag gross_flag fires for suspect and fail on both bounds", {
   expect_true(all(result$flat_flag == "pass"))
 })
 
+test_that("utilASRflag skips gross fail check when fail thresholds are NA", {
+  # obs 5 at 36 exceeds GrMaxSuspect=30 but GrMaxFail is NA -> only suspect
+  vals <- rep(20, flag_n_obs)
+  vals[5] <- 36.0
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(GrMaxSuspect = 30) # GrMaxFail stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$gross_flag[5], "suspect")
+  expect_true(all(result$gross_flag[-5] == "pass"))
+})
+
+test_that("utilASRflag skips gross suspect check when suspect thresholds are NA", {
+  # obs 5 at 36 exceeds GrMaxFail=35 but GrMaxSuspect is NA -> only fail
+  vals <- rep(20, flag_n_obs)
+  vals[5] <- 36.0
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(GrMaxFail = 35) # GrMaxSuspect stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$gross_flag[5], "fail")
+  expect_true(all(result$gross_flag[-5] == "pass"))
+})
+
 # ---------------------------------------------------------------------------
 # Spike
 # ---------------------------------------------------------------------------
@@ -109,6 +137,36 @@ test_that("utilASRflag spike_flag fires for suspect and fail steps", {
   expect_true(all(result$gross_flag == "pass"))
   expect_true(all(result$roc_flag == "pass"))
   expect_true(all(result$flat_flag == "pass"))
+})
+
+test_that("utilASRflag skips spike fail check when SpikeFail is NA", {
+  # spike at the last obs so there is no return step: only one obs flagged.
+  # step of 9 >= SpikeSuspect=4 but SpikeFail is NA -> only suspect
+  vals <- rep(20, flag_n_obs)
+  vals[flag_n_obs] <- vals[flag_n_obs - 1L] + 9
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(SpikeSuspect = 4) # SpikeFail stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$spike_flag[flag_n_obs], "suspect")
+  expect_true(all(result$spike_flag[-flag_n_obs] == "pass"))
+})
+
+test_that("utilASRflag skips spike suspect check when SpikeSuspect is NA", {
+  # spike at the last obs so there is no return step: only one obs flagged.
+  # step of 9 >= SpikeFail=8 but SpikeSuspect is NA -> only fail
+  vals <- rep(20, flag_n_obs)
+  vals[flag_n_obs] <- vals[flag_n_obs - 1L] + 9
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(SpikeFail = 8) # SpikeSuspect stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$spike_flag[flag_n_obs], "fail")
+  expect_true(all(result$spike_flag[-flag_n_obs] == "pass"))
 })
 
 # ---------------------------------------------------------------------------
@@ -210,6 +268,34 @@ test_that("utilASRflag skips roc fail check when Fail RoCHours is NA", {
 # ---------------------------------------------------------------------------
 # Flatline
 # ---------------------------------------------------------------------------
+
+test_that("utilASRflag skips flat fail check when FlatFailN is NA", {
+  # run of 12 identical values (rl = 1..12) followed by incrementing values
+  # (step=1 > delta=0.02 each time, so no second run builds).
+  # FlatSuspectN=5 fires at obs 5-12, FlatFailN is NA -> no fail
+  vals <- c(rep(20, 12), 20 + seq_len(flag_n_obs - 12L))
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(FlatSuspectN = 5, FlatSuspectDelta = 0.02) # FlatFailN stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_true(all(result$flat_flag[5:12] == "suspect"))
+  expect_true(all(result$flat_flag[c(1:4, 13:flag_n_obs)] == "pass"))
+})
+
+test_that("utilASRflag skips flat suspect check when FlatSuspectN is NA", {
+  # same series; FlatFailN=10 fires at obs 10-12, FlatSuspectN is NA -> no suspect
+  vals <- c(rep(20, 12), 20 + seq_len(flag_n_obs - 12L))
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(FlatFailN = 10, FlatFailDelta = 0.02) # FlatSuspectN stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_true(all(result$flat_flag[10:12] == "fail"))
+  expect_true(all(result$flat_flag[c(1:9, 13:flag_n_obs)] == "pass"))
+})
 
 test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
   # obs 1-9:   slowly increasing (diffs = 0.1 > delta -> run always resets)

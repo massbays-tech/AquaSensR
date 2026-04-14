@@ -81,6 +81,8 @@ If no row in `dqodat` matches a parameter a warning is returned and the function
 
 AquaSensR implements four QC checks that reflect widely used sensor data quality standards. The underlying concepts and code borrow heavily from the [ContDataQC](https://leppott.github.io/ContDataQC) package. All threshold values are set in the data quality objectives file and can be customised per parameter.  Manual update of these thresholds is likely necessary to avoide false positives and negatives.  Importantly, these flags require manual verification and should not be used to automatically exclude data without review.
 
+Any threshold value set to `NA` in the `dqodat` file is silently skipped such that the corresponding severity level is not applied and affected observations remain `"pass"` for that check. This applies to the `"Suspect"` and `"Fail"` rows independently, so individual checks or severity levels can be disabled selectively by leaving their threshold columns blank in the input file.
+
 ### 1. Gross range
 
 **DQO columns:** `GrMin`, `GrMax` (thresholds differ by row: `Flag = "Fail"` vs `Flag = "Suspect"`)

@@ -58,25 +58,13 @@ test_that("checkASRdqo errors on invalid Flag values", {
   )
 })
 
-test_that("checkASRdqo errors when RoC values present in Fail rows", {
-  bad_data <- tst$dqodatchk
-  fail_idx1 <- which(bad_data$Flag == "Fail")[1]
-  bad_data$RoCStDv[fail_idx1] <- 6
-  bad_data$RoCHours[fail_idx1] <- 24
+test_that("checkASRdqo accepts RoC values in Fail rows", {
+  good_data <- tst$dqodatchk
+  fail_idx <- which(good_data$Flag == "Fail")[1]
+  good_data$RoCStDv[fail_idx] <- 6
+  good_data$RoCHours[fail_idx] <- 24
 
-  fail_idx2 <- which(bad_data$Flag == "Fail")[2]
-  bad_data$RoCHours[fail_idx2] <- 24
-
-  expect_error(
-    checkASRdqo(bad_data),
-    paste0(
-      '\tChecking Rate of Change flags...\n\tNo entries should be present for Rate of Change columns in rows with "Fail" flags. Please correct the following rows: ',
-      fail_idx1,
-      ', ',
-      fail_idx2
-    ),
-    fixed = TRUE
-  )
+  expect_no_error(checkASRdqo(good_data))
 })
 
 test_that("checkASRdqo errors on non-numeric values", {

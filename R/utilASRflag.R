@@ -40,6 +40,11 @@
 #' are flagged, using the \code{"Suspect"} row thresholds for suspect and the
 #' \code{"Fail"} row thresholds for fail.
 #'
+#' Any threshold value set to \code{NA} in \code{dqodat} is silently skipped.  The corresponding severity level is not applied and affected observations
+#' remain \code{"pass"} for that check.  This applies to both the
+#' \code{"Suspect"} and \code{"Fail"} rows independently, so individual checks
+#' or severity levels can be disabled selectively.
+#'
 #' Data are sorted by \code{DateTime} before processing.
 #'
 #' Underlying concepts and code for this function borrow heavily from those
