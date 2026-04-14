@@ -93,15 +93,20 @@ second observation in the jump is flagged.</p>
 standard deviation of all raw values within a trailing <code>RoCHours</code>-hour
 window is multiplied by <code>RoCStDv</code> to produce a threshold.  The
 observation is flagged <code>"suspect"</code> if its absolute lag-1 difference
-exceeds that threshold.  Requires at least 2 values in the window;
-otherwise <code>"pass"</code>.  Note that this check only produces
-<code>"suspect"</code> flags, not <code>"fail"</code> flags.  <code>RoCStDv</code> and
-<code>RoCHours</code> are read from the <code>"Suspect"</code> row only.</p>
+exceeds that threshold using the <code>"Suspect"</code> row thresholds, and
+<code>"fail"</code> using the <code>"Fail"</code> row thresholds.  Each row is checked
+independently; if <code>RoCStDv</code> or <code>RoCHours</code> is <code>NA</code> for a row
+that severity level is skipped.  Requires at least 2 values in the window;
+otherwise <code>"pass"</code>.</p>
 <p><strong>Flatline</strong> (<code>flat_flag</code>) — Counts consecutive observations
 where the absolute step from the previous observation is within
 <code>FlatDelta</code> units.  Observations whose run length reaches <code>FlatN</code>
 are flagged, using the <code>"Suspect"</code> row thresholds for suspect and the
 <code>"Fail"</code> row thresholds for fail.</p>
+<p>Any threshold value set to <code>NA</code> in <code>dqodat</code> is silently skipped.  The corresponding severity level is not applied and affected observations
+remain <code>"pass"</code> for that check.  This applies to both the
+<code>"Suspect"</code> and <code>"Fail"</code> rows independently, so individual checks
+or severity levels can be disabled selectively.</p>
 <p>Data are sorted by <code>DateTime</code> before processing.</p>
 <p>Underlying concepts and code for this function borrow heavily from those
 in the <a href="https://leppott.github.io/ContDataQC" class="external-link">ContDataQC</a> package.  Any

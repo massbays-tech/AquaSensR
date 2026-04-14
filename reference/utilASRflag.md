@@ -55,15 +55,22 @@ jump is flagged.
 deviation of all raw values within a trailing `RoCHours`-hour window is
 multiplied by `RoCStDv` to produce a threshold. The observation is
 flagged `"suspect"` if its absolute lag-1 difference exceeds that
-threshold. Requires at least 2 values in the window; otherwise `"pass"`.
-Note that this check only produces `"suspect"` flags, not `"fail"`
-flags. `RoCStDv` and `RoCHours` are read from the `"Suspect"` row only.
+threshold using the `"Suspect"` row thresholds, and `"fail"` using the
+`"Fail"` row thresholds. Each row is checked independently; if `RoCStDv`
+or `RoCHours` is `NA` for a row that severity level is skipped. Requires
+at least 2 values in the window; otherwise `"pass"`.
 
 **Flatline** (`flat_flag`) — Counts consecutive observations where the
 absolute step from the previous observation is within `FlatDelta` units.
 Observations whose run length reaches `FlatN` are flagged, using the
 `"Suspect"` row thresholds for suspect and the `"Fail"` row thresholds
 for fail.
+
+Any threshold value set to `NA` in `dqodat` is silently skipped. The
+corresponding severity level is not applied and affected observations
+remain `"pass"` for that check. This applies to both the `"Suspect"` and
+`"Fail"` rows independently, so individual checks or severity levels can
+be disabled selectively.
 
 Data are sorted by `DateTime` before processing.
 

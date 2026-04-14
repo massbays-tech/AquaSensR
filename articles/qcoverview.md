@@ -40,7 +40,6 @@ dqodat <- readASRdqo(dqopth)
 #>  Checking at least one parameter is present... OK
 #>  Checking parameter format... OK
 #>  Checking Flag column... OK
-#>  Checking Rate of Change flags... OK
 #>  Checking columns for non-numeric values... OK
 #> 
 #> All checks passed!
@@ -118,6 +117,13 @@ customised per parameter. Manual update of these thresholds is likely
 necessary to avoide false positives and negatives. Importantly, these
 flags require manual verification and should not be used to
 automatically exclude data without review.
+
+Any threshold value set to `NA` in the `dqodat` file is silently skipped
+such that the corresponding severity level is not applied and affected
+observations remain `"pass"` for that check. This applies to the
+`"Suspect"` and `"Fail"` rows independently, so individual checks or
+severity levels can be disabled selectively by leaving their threshold
+columns blank in the input file.
 
 ### 1. Gross range
 
@@ -197,8 +203,8 @@ table(flagdat$spike_flag)
 
 ### 3. Rate of change
 
-**DQO columns:** `RoCStDv`, `RoCHours` (from the `Flag = "Suspect"` row
-only)
+**DQO columns:** `RoCStDv`, `RoCHours` (thresholds differ by row:
+`Flag = "Fail"` vs `Flag = "Suspect"`)
 
 **Flag column:** `roc_flag`
 
@@ -213,13 +219,15 @@ For each observation the function:
     at that timestamp.
 2.  Computes the standard deviation (SD) of those values.
 3.  Multiplies the SD by `RoCStDv` to produce a contextual threshold.
-4.  Flags the observation `"suspect"` if the absolute lag-1 difference
-    exceeds that threshold.
+4.  Flags the observation if the absolute lag-1 difference exceeds that
+    threshold — `"suspect"` using the `"Suspect"` row thresholds and
+    `"fail"` using the `"Fail"` row thresholds.
 
 At least two values must fall within the window before a standard
 deviation can be computed; observations with fewer window values are not
-flagged. Also, this check only produces `"suspect"` flags, i.e., there
-is no `"fail"` flag.
+flagged. Each row is evaluated independently, so either or both severity
+levels can be active. Setting `RoCStDv` or `RoCHours` to `NA` for a row
+skips that severity level entirely.
 
 The key advantage over the spike check is sensitivity scaling. During a
 “calm” period, a small absolute change can exceed the threshold, while

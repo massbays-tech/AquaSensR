@@ -293,7 +293,6 @@ dqodat <- readASRdqo(dqopth)
 #>  Checking at least one parameter is present... OK
 #>  Checking parameter format... OK
 #>  Checking Flag column... OK
-#>  Checking Rate of Change flags... OK
 #>  Checking columns for non-numeric values... OK
 #> 
 #> All checks passed!
@@ -336,8 +335,7 @@ informative error if any check fails:
     column should match those in the `Parameter` column in `paramsASR`
 5.  **Flag column**: The `Flag` column should contain only “Fail” or
     “Suspect” entries
-6.  **Rate of Change**: No entries for Fail Flag rows
-7.  **Numeric columns**: All columns except `Parameter` and `Flag`
+6.  **Numeric columns**: All columns except `Parameter` and `Flag`
     should be numeric values
 
 ### Example: triggering an error
@@ -377,7 +375,7 @@ head(dqodat)
 #>   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours
 #>   <chr>        <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl>   <dbl>    <dbl>
 #> 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01       6       25
-#> 2 Water_Temp_C Fail     -1      30   2     100      0.01      NA       NA
+#> 2 Water_Temp_C Fail     -1      30   2     100      0.01       8       25
 #> 3 DO_pctsat    Suspect   0     100  10      30      0.01       6       25
 #> 4 DO_pctsat    Fail     -1     120  25      60      0.01      NA       NA
 #> 5 DO_mg_l      Suspect   2      16   2      30      0.01       6       25

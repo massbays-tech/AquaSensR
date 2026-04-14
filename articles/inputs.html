@@ -489,7 +489,6 @@
 <span><span class="co">#&gt;  Checking at least one parameter is present... OK</span></span>
 <span><span class="co">#&gt;  Checking parameter format... OK</span></span>
 <span><span class="co">#&gt;  Checking Flag column... OK</span></span>
-<span><span class="co">#&gt;  Checking Rate of Change flags... OK</span></span>
 <span><span class="co">#&gt;  Checking columns for non-numeric values... OK</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; All checks passed!</span></span></code></pre></div>
@@ -562,8 +561,6 @@
 <li>
 <strong>Flag column</strong>: The <code>Flag</code> column should contain only “Fail” or “Suspect” entries</li>
 <li>
-<strong>Rate of Change</strong>: No entries for Fail Flag rows</li>
-<li>
 <strong>Numeric columns</strong>: All columns except <code>Parameter</code> and <code>Flag</code> should be numeric values</li>
 </ol></section><section class="level3"><h3 id="example-triggering-an-error-1">Example: triggering an error<a class="anchor" aria-label="anchor" href="#example-triggering-an-error-1"></a>
 </h3>
@@ -597,7 +594,7 @@
 <span><span class="co">#&gt;   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt; 1 Water_Temp_C Suspect  -0.5    28   1.5    60      0.01       6       25</span></span>
-<span><span class="co">#&gt; 2 Water_Temp_C Fail     -1      30   2     100      0.01      NA       NA</span></span>
+<span><span class="co">#&gt; 2 Water_Temp_C Fail     -1      30   2     100      0.01       8       25</span></span>
 <span><span class="co">#&gt; 3 DO_pctsat    Suspect   0     100  10      30      0.01       6       25</span></span>
 <span><span class="co">#&gt; 4 DO_pctsat    Fail     -1     120  25      60      0.01      NA       NA</span></span>
 <span><span class="co">#&gt; 5 DO_mg_l      Suspect   2      16   2      30      0.01       6       25</span></span>

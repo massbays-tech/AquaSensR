@@ -68,7 +68,6 @@
 <li><p>At least one parameter is present: At least one parameter in the <code>Parameter</code> column matches the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
 <li><p>Parameter format: All parameters listed in the <code>Parameter</code> column should match those in the <code>Parameter</code> column in <code><a href="paramsASR.html">paramsASR</a></code></p></li>
 <li><p>Flag column: The <code>Flag</code> column should contain only "Fail" or "Suspect" entries</p></li>
-<li><p>Rate of Change: No entries for Fail Flag rows</p></li>
 <li><p>Numeric columns: All columns except <code>Parameter</code> and <code>Flag</code> should be numeric values</p></li>
 </ul></div>
 
@@ -96,7 +95,6 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking at least one parameter is present... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking parameter format... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking Flag column... OK</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking Rate of Change flags... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking columns for non-numeric values... OK</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> All checks passed!</span>
@@ -104,7 +102,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Parameter          Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> Water_Temp_C       Suspect  -<span style="color: #BB0000;">0.5</span>    28   1.5    60      0.01       6       25</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> Water_Temp_C       Fail     -<span style="color: #BB0000;">1</span>      30   2     100      0.01      <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> Water_Temp_C       Fail     -<span style="color: #BB0000;">1</span>      30   2     100      0.01       8       25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> DO_pctsat          Suspect   0     100  10      30      0.01       6       25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> DO_pctsat          Fail     -<span style="color: #BB0000;">1</span>     120  25      60      0.01      <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> DO_mg_l            Suspect   2      16   2      30      0.01       6       25</span>

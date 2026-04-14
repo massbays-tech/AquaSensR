@@ -42,7 +42,6 @@ readASRdqo(dqopth)
 #>  Checking at least one parameter is present... OK
 #>  Checking parameter format... OK
 #>  Checking Flag column... OK
-#>  Checking Rate of Change flags... OK
 #>  Checking columns for non-numeric values... OK
 #> 
 #> All checks passed!
@@ -50,7 +49,7 @@ readASRdqo(dqopth)
 #>    Parameter          Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours
 #>    <chr>              <chr>   <dbl> <dbl> <dbl> <dbl>     <dbl>   <dbl>    <dbl>
 #>  1 Water_Temp_C       Suspect  -0.5    28   1.5    60      0.01       6       25
-#>  2 Water_Temp_C       Fail     -1      30   2     100      0.01      NA       NA
+#>  2 Water_Temp_C       Fail     -1      30   2     100      0.01       8       25
 #>  3 DO_pctsat          Suspect   0     100  10      30      0.01       6       25
 #>  4 DO_pctsat          Fail     -1     120  25      60      0.01      NA       NA
 #>  5 DO_mg_l            Suspect   2      16   2      30      0.01       6       25
