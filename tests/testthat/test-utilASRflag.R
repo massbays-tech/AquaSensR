@@ -153,6 +153,60 @@ test_that("utilASRflag roc_flag fires at level shift in stable series", {
   expect_true(all(result$flat_flag == "pass"))
 })
 
+test_that("utilASRflag roc_flag fires fail when only Fail row is configured", {
+  # Same level-shift series; no Suspect thresholds, only Fail.
+  # At obs 20: sd ~ 2.236, threshold = 2.236 * 3 = 6.708. |diff| = 10 > 6.708 -> fail.
+  vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(RoCStDvFail = 3, RoCHoursFail = 25)
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$roc_flag[20], "fail")
+  expect_true(all(result$roc_flag[-20] == "pass"))
+})
+
+test_that("utilASRflag roc_flag upgrades suspect to fail when both rows configured", {
+  # Same level-shift; suspect threshold = 8.944, fail threshold = 6.708.
+  # obs 20 exceeds both -> upgraded to fail.
+  vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 25, RoCStDvFail = 3, RoCHoursFail = 25)
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$roc_flag[20], "fail")
+  expect_true(all(result$roc_flag[-20] == "pass"))
+})
+
+test_that("utilASRflag skips roc fail check when Fail RoCStDv is NA", {
+  vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
+
+  cd <- flag_make_cd(vals)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 25) # Fail row RoCStDv stays NA
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  # only suspect should fire, not fail
+  expect_equal(result$roc_flag[20], "suspect")
+  expect_true(all(result$roc_flag[-20] == "pass"))
+})
+
+test_that("utilASRflag skips roc fail check when Fail RoCHours is NA", {
+  vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
+
+  cd <- flag_make_cd(vals)
+  # RoCStDvFail set but RoCHoursFail left NA -> fail check skipped
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 25, RoCStDvFail = 3)
+
+  result <- utilASRflag(cd, md, "Water_Temp_C")
+
+  expect_equal(result$roc_flag[20], "suspect")
+  expect_true(all(result$roc_flag[-20] == "pass"))
+})
+
 # ---------------------------------------------------------------------------
 # Flatline
 # ---------------------------------------------------------------------------

@@ -25,7 +25,9 @@
       "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"testthat::test_file\\('tests/testthat/test-utilASRimportcont.R'\\)\")",
       "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(filter = 'utilASRimportcont'\\)\")",
       "Bash(\"C:/Program Files/R/R-4.4.2/bin/Rscript.exe\" -e \"devtools::test\\(filter = 'readASRdqo'\\)\")",
-      "Bash(/c/Program Files/R/R-4.5.1/bin/Rscript.exe:*)"
+      "Bash(/c/Program Files/R/R-4.5.1/bin/Rscript.exe:*)",
+      "Bash(Rscript.exe:*)",
+      "Bash(/c/Program Files/R/R-4.5.1/bin/Rscript:*)"
     ]
   }
 }

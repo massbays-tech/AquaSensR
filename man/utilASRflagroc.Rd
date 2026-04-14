@@ -18,11 +18,10 @@ as \code{flag}.}
 
 \item{dqo}{two-row data frame from data quality objectives for the parameter
 being checked, containing one row where \code{Flag == "Fail"} and one
-where \code{Flag == "Suspect"}.  The \code{"Suspect"} row's numeric
-columns \code{RoCStDv} (SD multiplier) and \code{RoCHours} (trailing window
-width in hours) control the check.  If either column is \code{NA} in the
-\code{"Suspect"} row the check is skipped.  Rate-of-change thresholds are
-not applied to \code{"Fail"} flags.}
+where \code{Flag == "Suspect"}.  Each row's numeric columns \code{RoCStDv}
+(SD multiplier) and \code{RoCHours} (trailing window width in hours)
+control the check independently.  If either column is \code{NA} for a
+given row that severity level is skipped entirely.}
 }
 \value{
 Updated character flag vector.
@@ -34,16 +33,17 @@ Apply rate-of-change QC flag
 For each observation the standard deviation of all raw values
 within a trailing \code{RoCHours}-hour window ending at (and including)
 that observation is multiplied by \code{RoCStDv} to produce a threshold.
-The observation is flagged \code{"suspect"} if the absolute lag-1
-difference exceeds that threshold.  At least 2 values must fall within
-the window to compute the standard deviation; otherwise the observation
-is skipped.  This check only produces \code{"suspect"} flags; it does
-not produce \code{"fail"} flags.
+The observation is flagged if the absolute lag-1 difference exceeds that
+threshold — \code{"suspect"} using the \code{"Suspect"} row thresholds
+and \code{"fail"} using the \code{"Fail"} row thresholds.  At least 2
+values must fall within the window to compute the standard deviation;
+otherwise the observation is skipped.  Flags are only ever upgraded (pass
+-> suspect -> fail), never downgraded.
 }
 \examples{
 flag <- rep("pass", 6)
 vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
-dqo <- data.frame(Flag = c("Fail", "Suspect"), RoCStDv = c(NA, 3), RoCHours = c(NA, 2))
+dqo <- data.frame(Flag = c("Fail", "Suspect"), RoCStDv = c(2, 3), RoCHours = c(2, 2))
 utilASRflagroc(flag, vals, datetimes, dqo)
 }

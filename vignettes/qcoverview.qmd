@@ -128,7 +128,7 @@ table(flagdat$spike_flag)
 
 ### 3. Rate of change
 
-**DQO columns:** `RoCStDv`, `RoCHours` (from the `Flag = "Suspect"` row only)
+**DQO columns:** `RoCStDv`, `RoCHours` (thresholds differ by row: `Flag = "Fail"` vs `Flag = "Suspect"`)
 
 **Flag column:** `roc_flag`
 
@@ -139,9 +139,9 @@ For each observation the function:
 1. Collects all values within a trailing `RoCHours`-hour window ending at that timestamp.
 2. Computes the standard deviation (SD) of those values.
 3. Multiplies the SD by `RoCStDv` to produce a contextual threshold.
-4. Flags the observation `"suspect"` if the absolute lag-1 difference exceeds that threshold.
+4. Flags the observation if the absolute lag-1 difference exceeds that threshold — `"suspect"` using the `"Suspect"` row thresholds and `"fail"` using the `"Fail"` row thresholds.
 
-At least two values must fall within the window before a standard deviation can be computed; observations with fewer window values are not flagged. Also, this check only produces `"suspect"` flags, i.e., there is no `"fail"` flag.
+At least two values must fall within the window before a standard deviation can be computed; observations with fewer window values are not flagged. Each row is evaluated independently, so either or both severity levels can be active. Setting `RoCStDv` or `RoCHours` to `NA` for a row skips that severity level entirely.
 
 The key advantage over the spike check is sensitivity scaling.  During a "calm" period, a small absolute change can exceed the threshold, while during a naturally variable period (e.g., diurnal temperature swings) the threshold rises accordingly.
 

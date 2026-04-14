@@ -46,10 +46,11 @@ second observation in the jump is flagged.
 standard deviation of all raw values within a trailing \code{RoCHours}-hour
 window is multiplied by \code{RoCStDv} to produce a threshold.  The
 observation is flagged \code{"suspect"} if its absolute lag-1 difference
-exceeds that threshold.  Requires at least 2 values in the window;
-otherwise \code{"pass"}.  Note that this check only produces
-\code{"suspect"} flags, not \code{"fail"} flags.  \code{RoCStDv} and
-\code{RoCHours} are read from the \code{"Suspect"} row only.
+exceeds that threshold using the \code{"Suspect"} row thresholds, and
+\code{"fail"} using the \code{"Fail"} row thresholds.  Each row is checked
+independently; if \code{RoCStDv} or \code{RoCHours} is \code{NA} for a row
+that severity level is skipped.  Requires at least 2 values in the window;
+otherwise \code{"pass"}.
 
 \strong{Flatline} (\code{flat_flag}) — Counts consecutive observations
 where the absolute step from the previous observation is within

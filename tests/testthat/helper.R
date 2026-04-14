@@ -23,6 +23,8 @@ flag_make_md <- function(
   SpikeSuspect = NA_real_,
   RoCStDv = NA_real_,
   RoCHours = NA_real_,
+  RoCStDvFail = NA_real_,
+  RoCHoursFail = NA_real_,
   FlatFailN = NA_real_,
   FlatFailDelta = NA_real_,
   FlatSuspectN = NA_real_,
@@ -37,8 +39,8 @@ flag_make_md <- function(
       Spike = SpikeFail,
       FlatN = FlatFailN,
       FlatDelta = FlatFailDelta,
-      RoCStDv = NA_real_,
-      RoCHours = NA_real_,
+      RoCStDv = RoCStDvFail,
+      RoCHours = RoCHoursFail,
       stringsAsFactors = FALSE
     ),
     data.frame(
