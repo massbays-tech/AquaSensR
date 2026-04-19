@@ -4,10 +4,15 @@
 \alias{anlzASRflag}
 \title{Plot QC flag results for a continuous monitoring parameter}
 \usage{
-anlzASRflag(flag)
+anlzASRflag(flag, overlay = NULL)
 }
 \arguments{
 \item{flag}{data frame returned by \code{\link{utilASRflag}}.}
+
+\item{overlay}{optional two-column data frame (e.g., \code{contdat}) with a \code{DateTime} column
+and one numeric parameter column.  When supplied, the series is drawn as a
+light blue line on a second y-axis on the right side of the plot.  Pass
+\code{NULL} (the default) to omit the overlay.}
 }
 \value{
 An interactive \code{plotly} object.

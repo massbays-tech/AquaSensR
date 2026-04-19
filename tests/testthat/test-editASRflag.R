@@ -425,3 +425,39 @@ test_that("plotly_click returns early when clicked rowid is no longer in remaini
     })
   )
 })
+
+# ---------------------------------------------------------------------------
+# Overlay parameter
+# ---------------------------------------------------------------------------
+
+test_that("flagPlot renders without error when overlay_param is a valid parameter", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(overlay_param = edit_second_param))
+    })
+  )
+})
+
+test_that("flagPlot renders without error when overlay_param is empty (None)", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Select an overlay then clear it back to None
+      session$setInputs(overlay_param = edit_second_param)
+      expect_no_error(session$setInputs(overlay_param = ""))
+    })
+  )
+})
+
+test_that("flagPlot renders without error when overlay_param is not a column in cont", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(overlay_param = "nonexistent_param"))
+    })
+  )
+})

@@ -31,8 +31,9 @@ Apply rate-of-change QC flag
 }
 \details{
 For each observation the standard deviation of all raw values
-within a trailing \code{RoCHours}-hour window ending at (and excluding
-that observation is multiplied by \code{RoCStDv} to produce a threshold.
+within a trailing \code{RoCHours}-hour window ending just before (and
+excluding) that observation is multiplied by \code{RoCStDv} to produce a
+threshold.
 The observation is flagged if the absolute lag-1 difference exceeds that
 threshold — \code{"suspect"} using the \code{"Suspect"} row thresholds
 and \code{"fail"} using the \code{"Fail"} row thresholds.  At least 2

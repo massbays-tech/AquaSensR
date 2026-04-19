@@ -1,6 +1,10 @@
 #' Plot QC flag results for a continuous monitoring parameter
 #'
 #' @param flag data frame returned by \code{\link{utilASRflag}}.
+#' @param overlay optional two-column data frame (e.g., \code{contdat}) with a \code{DateTime} column
+#'   and one numeric parameter column.  When supplied, the series is drawn as a
+#'   light blue line on a second y-axis on the right side of the plot.  Pass
+#'   \code{NULL} (the default) to omit the overlay.
 #'
 #' @details Produces an interactive \pkg{plotly} time series showing all
 #' observations as a line, with non-passing observations overlaid as markers.
@@ -35,7 +39,7 @@
 #'
 #' flagdat <- utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
 #' anlzASRflag(flagdat)
-anlzASRflag <- function(flag) {
+anlzASRflag <- function(flag, overlay = NULL) {
   flagdat <- flag
   param <- names(flagdat)[2L]
   ylab <- paramsASR[paramsASR$Parameter == param, "Label"] |> as.character()
@@ -149,6 +153,48 @@ anlzASRflag <- function(flag) {
     dragmode = "zoom",
     hovermode = "closest"
   )
+
+  if (!is.null(overlay)) {
+    ovl_param <- setdiff(names(overlay), "DateTime")[1L]
+    ovl_ylab <- paramsASR[paramsASR$Parameter == ovl_param, "Label"] |>
+      as.character()
+    if (length(ovl_ylab) == 0L || is.na(ovl_ylab[1L])) {
+      ovl_ylab <- ovl_param
+    }
+
+    p <- plotly::add_trace(
+      p,
+      data = overlay[order(overlay$DateTime), ],
+      x = ~DateTime,
+      y = overlay[[ovl_param]][order(overlay$DateTime)],
+      inherit = FALSE,
+      type = "scatter",
+      mode = "lines",
+      line = list(color = "#91bbd6", width = 1),
+      name = ovl_param,
+      yaxis = "y2",
+      showlegend = TRUE,
+      hovertemplate = paste0(
+        "<b>",
+        ovl_param,
+        "</b>: %{y}<br>",
+        "<b>DateTime</b>: %{x}",
+        "<extra></extra>"
+      )
+    )
+
+    p <- plotly::layout(
+      p,
+      margin = list(r = 90),
+      yaxis2 = list(
+        overlaying = "y",
+        side = "right",
+        title = list(text = ovl_ylab, standoff = 15),
+        showgrid = FALSE,
+        automargin = TRUE
+      )
+    )
+  }
 
   plotly::config(
     p,

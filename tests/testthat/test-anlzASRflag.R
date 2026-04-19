@@ -30,6 +30,33 @@ test_that("anlzASRflag returns a plotly object with flags present", {
 })
 
 # ---------------------------------------------------------------------------
+# Overlay argument
+# ---------------------------------------------------------------------------
+
+test_that("anlzASRflag with overlay = NULL (default) returns a plotly object", {
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
+  fd <- utilASRflag(cd, md, "Water_Temp_C")
+  expect_s3_class(anlzASRflag(fd, overlay = NULL), "plotly")
+})
+
+test_that("anlzASRflag with a valid overlay returns a plotly object", {
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
+  fd <- utilASRflag(cd, md, "Water_Temp_C")
+  ovl <- data.frame(DateTime = flag_times, Sal_ppt = seq_len(flag_n_obs) * 0.1)
+  expect_s3_class(anlzASRflag(fd, overlay = ovl), "plotly")
+})
+
+test_that("anlzASRflag with overlay param not in paramsASR falls back to column name", {
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
+  fd <- utilASRflag(cd, md, "Water_Temp_C")
+  ovl <- data.frame(DateTime = flag_times, unknown_param = seq_len(flag_n_obs))
+  expect_no_error(anlzASRflag(fd, overlay = ovl))
+})
+
+# ---------------------------------------------------------------------------
 # No console noise
 # ---------------------------------------------------------------------------
 

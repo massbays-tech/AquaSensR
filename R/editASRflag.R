@@ -129,6 +129,14 @@ editASRflag_app <- function(cont, dqo) {
           style = "flex: 1; background-color: #ebebeb;"
         )
       ),
+      shiny::h4("Overlay"),
+      shiny::selectizeInput(
+        "overlay_param",
+        label = NULL,
+        choices = c("None" = ""),
+        selected = "",
+        options = list(allowEmptyOption = TRUE)
+      ),
       shiny::hr(),
       shiny::h4("Controls"),
       shiny::actionButton(
@@ -166,6 +174,18 @@ editASRflag_app <- function(cont, dqo) {
   # Server
   # -------------------------------------------------------------------------
   server <- function(input, output, session) {
+    # Populate overlay choices on startup, excluding the initially selected param.
+    shiny::observe({
+      others <- params[params != input$param_select]
+      shiny::updateSelectInput(
+        session,
+        "overlay_param",
+        choices = c("None" = "", stats::setNames(others, param_labels[others])),
+        selected = ""
+      )
+    }) |>
+      shiny::bindEvent(TRUE, once = TRUE)
+
     # `remaining_list`: named list of working copies, one per parameter.
     remaining_list <- shiny::reactiveVal(flagdat_list)
 
@@ -179,6 +199,13 @@ editASRflag_app <- function(cont, dqo) {
     x_range <- shiny::reactiveVal(NULL)
     shiny::observeEvent(input$param_select, {
       x_range(NULL)
+      others <- params[params != input$param_select]
+      shiny::updateSelectInput(
+        session,
+        "overlay_param",
+        choices = c("None" = "", stats::setNames(others, param_labels[others])),
+        selected = ""
+      )
     })
 
     shiny::observeEvent(input$param_prev, {
@@ -236,7 +263,15 @@ editASRflag_app <- function(cont, dqo) {
     # ---- Plot ---------------------------------------------------------------
     output$flagPlot <- plotly::renderPlotly({
       rng <- shiny::isolate(x_range())
-      p <- anlzASRflag(cur_remaining())
+      ovl_param <- input$overlay_param
+      ovl <- if (
+        !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
+      ) {
+        cont[, c("DateTime", ovl_param), drop = FALSE]
+      } else {
+        NULL
+      }
+      p <- anlzASRflag(cur_remaining(), overlay = ovl)
       p <- plotly::event_register(p, "plotly_relayout")
       if (!is.null(rng)) {
         p <- plotly::layout(
