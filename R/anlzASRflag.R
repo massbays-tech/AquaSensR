@@ -171,7 +171,7 @@ anlzASRflag <- function(flag, overlay = NULL) {
       type = "scatter",
       mode = "lines",
       line = list(color = "#91bbd6", width = 1),
-      name = ovl_param,
+      name = ovl_ylab,
       yaxis = "y2",
       showlegend = TRUE,
       hovertemplate = paste0(

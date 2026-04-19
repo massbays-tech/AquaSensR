@@ -132,7 +132,18 @@ editASRflag_app <- function(cont, dqo) {
     sidebar = bslib::sidebar(
       width = 300,
       open = "open",
-      shiny::h4("Parameter"),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("Parameter", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "Parameter",
+          "Select the parameter to review and edit. Use Prev and Next to cycle through all available parameters. Edits are tracked independently for each parameter."
+        )
+      ),
       shiny::selectInput(
         "param_select",
         label = NULL,
@@ -152,7 +163,18 @@ editASRflag_app <- function(cont, dqo) {
           style = "flex: 1; background-color: #ebebeb;"
         )
       ),
-      shiny::h4("Overlay"),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("Overlay", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "Overlay",
+          "Optionally display a second parameter on the plot. This can help identify whether flagged observations in the current parameter can be explained with changes in another."
+        )
+      ),
       shiny::selectizeInput(
         "overlay_param",
         label = NULL,
@@ -161,7 +183,32 @@ editASRflag_app <- function(cont, dqo) {
         options = list(allowEmptyOption = TRUE)
       ),
       shiny::hr(),
-      shiny::h4("Controls"),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("Controls", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "Controls",
+          shiny::tags$ul(
+            style = "padding-left: 1.2em; margin: 0;",
+            shiny::tags$li(
+              shiny::tags$b("Undo Last Removal:"),
+              " restores the most recently removed point or selection batch."
+            ),
+            shiny::tags$li(
+              shiny::tags$b("Start Over:"),
+              " restores all removed points for the current parameter."
+            ),
+            shiny::tags$li(
+              shiny::tags$b("Done / Close:"),
+              " stops the app and returns the cleaned data."
+            )
+          )
+        )
+      ),
       shiny::actionButton(
         "undo",
         "Undo Last Removal",
@@ -178,7 +225,21 @@ editASRflag_app <- function(cont, dqo) {
         style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
       shiny::hr(),
-      shiny::h4(shiny::textOutput("removed_count", inline = TRUE)),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4(
+          shiny::textOutput("removed_count", inline = TRUE),
+          style = "margin: 0;"
+        ),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "Removed Points",
+          "Points removed during this session for the current parameter. The table shows each removed observation along with its flag values from all four QC checks."
+        )
+      ),
       shiny::div(
         style = "font-size: 12px;",
         DT::DTOutput("removed_table")
@@ -203,65 +264,189 @@ editASRflag_app <- function(cont, dqo) {
         shiny::div(
           style = "display: flex; gap: 4px; margin-bottom: 6px;",
           shiny::actionButton(
-            "apply_dqo", "Apply",
+            "apply_dqo",
+            "Apply",
             style = "flex: 1; background-color: #4a7ebf; border-color: #4a7ebf; color: #fff;"
           ),
           shiny::actionButton(
-            "reset_dqo", "Reset to original",
+            "reset_dqo",
+            "Reset to original",
             style = "flex: 1; background-color: #ebebeb;"
           )
         ),
-        shiny::h6("Gross range", style = "font-weight: bold; margin-top: 10px;"),
+        shiny::div(
+          style = "display: flex; align-items: center; gap: 6px; margin-top: 10px;",
+          shiny::h6("Gross range", style = "font-weight: bold; margin: 0;"),
+          bslib::popover(
+            shiny::icon(
+              "circle-info",
+              style = "color: #6c757d; cursor: pointer;"
+            ),
+            title = "Gross range",
+            "Flags observations outside absolute physical or sensor limits and Fail bounds are flagged suspect."
+          )
+        ),
         shiny::fluidRow(
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Suspect")),
-            shiny::numericInput("dqo_GrMin_Suspect", "Min", value = NA, width = "100%"),
-            shiny::numericInput("dqo_GrMax_Suspect", "Max", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_GrMin_Suspect",
+              "Min",
+              value = NA,
+              width = "100%"
+            ),
+            shiny::numericInput(
+              "dqo_GrMax_Suspect",
+              "Max",
+              value = NA,
+              width = "100%"
+            )
           ),
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Fail")),
-            shiny::numericInput("dqo_GrMin_Fail", "Min", value = NA, width = "100%"),
-            shiny::numericInput("dqo_GrMax_Fail", "Max", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_GrMin_Fail",
+              "Min",
+              value = NA,
+              width = "100%"
+            ),
+            shiny::numericInput(
+              "dqo_GrMax_Fail",
+              "Max",
+              value = NA,
+              width = "100%"
+            )
           )
         ),
         shiny::hr(style = "margin: 6px 0;"),
-        shiny::h6("Spike", style = "font-weight: bold;"),
+        shiny::div(
+          style = "display: flex; align-items: center; gap: 6px;",
+          shiny::h6("Spike", style = "font-weight: bold; margin: 0;"),
+          bslib::popover(
+            shiny::icon(
+              "circle-info",
+              style = "color: #6c757d; cursor: pointer;"
+            ),
+            title = "Spike",
+            "Flags abrupt step changes between consecutive observations. The absolute lag-1 difference is compared to a fixed threshold. Values at or above the threshold are flagged."
+          )
+        ),
         shiny::fluidRow(
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Suspect")),
-            shiny::numericInput("dqo_Spike_Suspect", "Threshold", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_Spike_Suspect",
+              "Threshold",
+              value = NA,
+              width = "100%"
+            )
           ),
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Fail")),
-            shiny::numericInput("dqo_Spike_Fail", "Threshold", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_Spike_Fail",
+              "Threshold",
+              value = NA,
+              width = "100%"
+            )
           )
         ),
         shiny::hr(style = "margin: 6px 0;"),
-        shiny::h6("Rate of change", style = "font-weight: bold;"),
+        shiny::div(
+          style = "display: flex; align-items: center; gap: 6px;",
+          shiny::h6("Rate of change", style = "font-weight: bold; margin: 0;"),
+          bslib::popover(
+            shiny::icon(
+              "circle-info",
+              style = "color: #6c757d; cursor: pointer;"
+            ),
+            title = "Rate of change",
+            "Flags steps that are large relative to recent variability. The standard deviation of the preceding window (hours) is multiplied by the SD multiplier to produce an adaptive threshold."
+          )
+        ),
         shiny::fluidRow(
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Suspect")),
-            shiny::numericInput("dqo_RoCStDv_Suspect",  "SD mult.",    value = NA, width = "100%"),
-            shiny::numericInput("dqo_RoCHours_Suspect", "Window (hr)", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_RoCStDv_Suspect",
+              "SD mult.",
+              value = NA,
+              width = "100%"
+            ),
+            shiny::numericInput(
+              "dqo_RoCHours_Suspect",
+              "Window (hr)",
+              value = NA,
+              width = "100%"
+            )
           ),
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Fail")),
-            shiny::numericInput("dqo_RoCStDv_Fail",  "SD mult.",    value = NA, width = "100%"),
-            shiny::numericInput("dqo_RoCHours_Fail", "Window (hr)", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_RoCStDv_Fail",
+              "SD mult.",
+              value = NA,
+              width = "100%"
+            ),
+            shiny::numericInput(
+              "dqo_RoCHours_Fail",
+              "Window (hr)",
+              value = NA,
+              width = "100%"
+            )
           )
         ),
         shiny::hr(style = "margin: 6px 0;"),
-        shiny::h6("Flatline", style = "font-weight: bold;"),
+        shiny::div(
+          style = "display: flex; align-items: center; gap: 6px;",
+          shiny::h6("Flatline", style = "font-weight: bold; margin: 0;"),
+          bslib::popover(
+            shiny::icon(
+              "circle-info",
+              style = "color: #6c757d; cursor: pointer;"
+            ),
+            title = "Flatline",
+            "Flags runs of nearly identical consecutive values. An observation is flagged if all absolute differences over the preceding N readings fall within Delta."
+          )
+        ),
         shiny::fluidRow(
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Suspect")),
-            shiny::numericInput("dqo_FlatN_Suspect",     "N",     value = NA, width = "100%"),
-            shiny::numericInput("dqo_FlatDelta_Suspect", "Delta", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_FlatN_Suspect",
+              "N",
+              value = NA,
+              width = "100%"
+            ),
+            shiny::numericInput(
+              "dqo_FlatDelta_Suspect",
+              "Delta",
+              value = NA,
+              width = "100%"
+            )
           ),
-          shiny::column(6,
+          shiny::column(
+            6,
             shiny::tags$small(shiny::strong("Fail")),
-            shiny::numericInput("dqo_FlatN_Fail",     "N",     value = NA, width = "100%"),
-            shiny::numericInput("dqo_FlatDelta_Fail", "Delta", value = NA, width = "100%")
+            shiny::numericInput(
+              "dqo_FlatN_Fail",
+              "N",
+              value = NA,
+              width = "100%"
+            ),
+            shiny::numericInput(
+              "dqo_FlatDelta_Fail",
+              "Delta",
+              value = NA,
+              width = "100%"
+            )
           )
         )
       ),
@@ -289,20 +474,76 @@ editASRflag_app <- function(cont, dqo) {
     # Push all 14 DQO threshold inputs for parameter p from working_dqo.
     update_dqo_inputs <- function(wd, p) {
       gv <- function(ft, col) dqo_val(wd, p, ft, col)
-      shiny::updateNumericInput(session, "dqo_GrMin_Suspect",     value = gv("Suspect", "GrMin"))
-      shiny::updateNumericInput(session, "dqo_GrMax_Suspect",     value = gv("Suspect", "GrMax"))
-      shiny::updateNumericInput(session, "dqo_GrMin_Fail",        value = gv("Fail",    "GrMin"))
-      shiny::updateNumericInput(session, "dqo_GrMax_Fail",        value = gv("Fail",    "GrMax"))
-      shiny::updateNumericInput(session, "dqo_Spike_Suspect",     value = gv("Suspect", "Spike"))
-      shiny::updateNumericInput(session, "dqo_Spike_Fail",        value = gv("Fail",    "Spike"))
-      shiny::updateNumericInput(session, "dqo_RoCStDv_Suspect",   value = gv("Suspect", "RoCStDv"))
-      shiny::updateNumericInput(session, "dqo_RoCHours_Suspect",  value = gv("Suspect", "RoCHours"))
-      shiny::updateNumericInput(session, "dqo_RoCStDv_Fail",      value = gv("Fail",    "RoCStDv"))
-      shiny::updateNumericInput(session, "dqo_RoCHours_Fail",     value = gv("Fail",    "RoCHours"))
-      shiny::updateNumericInput(session, "dqo_FlatN_Suspect",     value = gv("Suspect", "FlatN"))
-      shiny::updateNumericInput(session, "dqo_FlatDelta_Suspect", value = gv("Suspect", "FlatDelta"))
-      shiny::updateNumericInput(session, "dqo_FlatN_Fail",        value = gv("Fail",    "FlatN"))
-      shiny::updateNumericInput(session, "dqo_FlatDelta_Fail",    value = gv("Fail",    "FlatDelta"))
+      shiny::updateNumericInput(
+        session,
+        "dqo_GrMin_Suspect",
+        value = gv("Suspect", "GrMin")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_GrMax_Suspect",
+        value = gv("Suspect", "GrMax")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_GrMin_Fail",
+        value = gv("Fail", "GrMin")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_GrMax_Fail",
+        value = gv("Fail", "GrMax")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_Spike_Suspect",
+        value = gv("Suspect", "Spike")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_Spike_Fail",
+        value = gv("Fail", "Spike")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_RoCStDv_Suspect",
+        value = gv("Suspect", "RoCStDv")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_RoCHours_Suspect",
+        value = gv("Suspect", "RoCHours")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_RoCStDv_Fail",
+        value = gv("Fail", "RoCStDv")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_RoCHours_Fail",
+        value = gv("Fail", "RoCHours")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_FlatN_Suspect",
+        value = gv("Suspect", "FlatN")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_FlatDelta_Suspect",
+        value = gv("Suspect", "FlatDelta")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_FlatN_Fail",
+        value = gv("Fail", "FlatN")
+      )
+      shiny::updateNumericInput(
+        session,
+        "dqo_FlatDelta_Fail",
+        value = gv("Fail", "FlatDelta")
+      )
     }
 
     # Re-flag parameter p with wd, reset its remaining/history to the new baseline.
@@ -495,23 +736,25 @@ editASRflag_app <- function(cont, dqo) {
     # ---- Apply DQO edits and re-flag (current parameter only) ---------------
     shiny::observeEvent(input$apply_dqo, {
       p <- input$param_select
-      if (is.null(p)) return()
+      if (is.null(p)) {
+        return()
+      }
       wd <- working_dqo()
       sm <- wd$Parameter == p & wd$Flag == "Suspect"
       fm <- wd$Parameter == p & wd$Flag == "Fail"
-      wd[sm, "GrMin"]     <- input$dqo_GrMin_Suspect
-      wd[sm, "GrMax"]     <- input$dqo_GrMax_Suspect
-      wd[sm, "Spike"]     <- input$dqo_Spike_Suspect
-      wd[sm, "RoCStDv"]   <- input$dqo_RoCStDv_Suspect
-      wd[sm, "RoCHours"]  <- input$dqo_RoCHours_Suspect
-      wd[sm, "FlatN"]     <- input$dqo_FlatN_Suspect
+      wd[sm, "GrMin"] <- input$dqo_GrMin_Suspect
+      wd[sm, "GrMax"] <- input$dqo_GrMax_Suspect
+      wd[sm, "Spike"] <- input$dqo_Spike_Suspect
+      wd[sm, "RoCStDv"] <- input$dqo_RoCStDv_Suspect
+      wd[sm, "RoCHours"] <- input$dqo_RoCHours_Suspect
+      wd[sm, "FlatN"] <- input$dqo_FlatN_Suspect
       wd[sm, "FlatDelta"] <- input$dqo_FlatDelta_Suspect
-      wd[fm, "GrMin"]     <- input$dqo_GrMin_Fail
-      wd[fm, "GrMax"]     <- input$dqo_GrMax_Fail
-      wd[fm, "Spike"]     <- input$dqo_Spike_Fail
-      wd[fm, "RoCStDv"]   <- input$dqo_RoCStDv_Fail
-      wd[fm, "RoCHours"]  <- input$dqo_RoCHours_Fail
-      wd[fm, "FlatN"]     <- input$dqo_FlatN_Fail
+      wd[fm, "GrMin"] <- input$dqo_GrMin_Fail
+      wd[fm, "GrMax"] <- input$dqo_GrMax_Fail
+      wd[fm, "Spike"] <- input$dqo_Spike_Fail
+      wd[fm, "RoCStDv"] <- input$dqo_RoCStDv_Fail
+      wd[fm, "RoCHours"] <- input$dqo_RoCHours_Fail
+      wd[fm, "FlatN"] <- input$dqo_FlatN_Fail
       wd[fm, "FlatDelta"] <- input$dqo_FlatDelta_Fail
       reflag_param(wd, p)
     })
@@ -519,11 +762,13 @@ editASRflag_app <- function(cont, dqo) {
     # ---- Reset DQO to original values (current parameter only) --------------
     shiny::observeEvent(input$reset_dqo, {
       p <- input$param_select
-      if (is.null(p)) return()
+      if (is.null(p)) {
+        return()
+      }
       wd <- working_dqo()
       orig <- dqo[dqo$Parameter == p, , drop = FALSE]
       for (ft in c("Suspect", "Fail")) {
-        wd_mask   <- wd$Parameter  == p & wd$Flag  == ft
+        wd_mask <- wd$Parameter == p & wd$Flag == ft
         orig_mask <- orig$Flag == ft
         if (any(wd_mask) && any(orig_mask)) {
           wd[wd_mask, ] <- orig[orig_mask, ]
