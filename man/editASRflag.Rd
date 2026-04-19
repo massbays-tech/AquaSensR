@@ -57,14 +57,37 @@ remove the selected area if present after removal.
 \item \strong{Parameter}: drop-down selector to switch between
 parameters.  Edits to each parameter are preserved independently when
 switching.
+\item \strong{Overlay}: optional drop-down to display a second parameter
+as a gray line on a right-side y-axis, useful for spotting co-occurring
+changes across parameters.
 \item \strong{Undo Last Removal}: restores the most recently removed
 point or batch of points for the current parameter (one drag-selection
 at a time).
 \item \strong{Start Over}: restores all removed points for the current
-parameter and resets to the original flagged dataset.
+parameter and resets to the most recently applied DQO thresholds.
 \item \strong{Done / Close}: stops the app and returns the filtered
 datasets for all parameters to the R session.
 }
+}
+
+\subsection{DQO Settings panel}{
+A collapsible panel on the right side of the plot exposes the numeric QC
+thresholds for the currently selected parameter.  Each of the four checks
+(gross range, spike, rate of change, flatline) shows independent
+\strong{Suspect} and \strong{Fail} threshold columns.
+
+\itemize{
+\item \strong{Apply}: re-computes flags for the current parameter using
+the edited thresholds.  Any points previously removed for that
+parameter are cleared, since the set of flagged observations may have
+changed.
+\item \strong{Reset to original}: reverts the inputs to the values
+supplied in \code{dqo} and re-computes flags, also clearing any
+existing removals for the current parameter.
+}
+
+Threshold edits are per-parameter and independent; switching parameters
+shows that parameter's current thresholds without affecting others.
 }
 
 The app is constructed inline so that flag data are available directly to

@@ -461,3 +461,130 @@ test_that("flagPlot renders without error when overlay_param is not a column in 
     })
   )
 })
+
+# ---------------------------------------------------------------------------
+# DQO Settings panel — apply_dqo and reset_dqo
+# ---------------------------------------------------------------------------
+
+# Convenience: pull one threshold from tst$dqodat for a given param/flag/col.
+dqo_lookup <- function(p, flag_type, col) {
+  v <- tst$dqodat[tst$dqodat$Parameter == p & tst$dqodat$Flag == flag_type, col,
+                  drop = TRUE]
+  if (length(v) == 0L) NA_real_ else v[[1L]]
+}
+
+test_that("apply_dqo fires without error and resets removals for current param", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Remove a point first
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Apply DQO — should re-flag and clear removals
+      session$setInputs(
+        dqo_GrMin_Suspect    = dqo_lookup(edit_first_param, "Suspect", "GrMin"),
+        dqo_GrMax_Suspect    = dqo_lookup(edit_first_param, "Suspect", "GrMax"),
+        dqo_GrMin_Fail       = dqo_lookup(edit_first_param, "Fail",    "GrMin"),
+        dqo_GrMax_Fail       = dqo_lookup(edit_first_param, "Fail",    "GrMax"),
+        dqo_Spike_Suspect    = dqo_lookup(edit_first_param, "Suspect", "Spike"),
+        dqo_Spike_Fail       = dqo_lookup(edit_first_param, "Fail",    "Spike"),
+        dqo_RoCStDv_Suspect  = dqo_lookup(edit_first_param, "Suspect", "RoCStDv"),
+        dqo_RoCHours_Suspect = dqo_lookup(edit_first_param, "Suspect", "RoCHours"),
+        dqo_RoCStDv_Fail     = dqo_lookup(edit_first_param, "Fail",    "RoCStDv"),
+        dqo_RoCHours_Fail    = dqo_lookup(edit_first_param, "Fail",    "RoCHours"),
+        dqo_FlatN_Suspect    = dqo_lookup(edit_first_param, "Suspect", "FlatN"),
+        dqo_FlatDelta_Suspect= dqo_lookup(edit_first_param, "Suspect", "FlatDelta"),
+        dqo_FlatN_Fail       = dqo_lookup(edit_first_param, "Fail",    "FlatN"),
+        dqo_FlatDelta_Fail   = dqo_lookup(edit_first_param, "Fail",    "FlatDelta"),
+        apply_dqo = 1L
+      )
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("apply_dqo does not affect removals for other parameters", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      # Remove a point on the second parameter
+      session$setInputs(param_select = edit_second_param)
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Apply DQO on the first parameter — second param's removals unchanged
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(
+        dqo_GrMin_Suspect = dqo_lookup(edit_first_param, "Suspect", "GrMin"),
+        dqo_GrMax_Suspect = dqo_lookup(edit_first_param, "Suspect", "GrMax"),
+        dqo_GrMin_Fail    = dqo_lookup(edit_first_param, "Fail",    "GrMin"),
+        dqo_GrMax_Fail    = dqo_lookup(edit_first_param, "Fail",    "GrMax"),
+        dqo_Spike_Suspect    = dqo_lookup(edit_first_param, "Suspect", "Spike"),
+        dqo_Spike_Fail       = dqo_lookup(edit_first_param, "Fail",    "Spike"),
+        dqo_RoCStDv_Suspect  = dqo_lookup(edit_first_param, "Suspect", "RoCStDv"),
+        dqo_RoCHours_Suspect = dqo_lookup(edit_first_param, "Suspect", "RoCHours"),
+        dqo_RoCStDv_Fail     = dqo_lookup(edit_first_param, "Fail",    "RoCStDv"),
+        dqo_RoCHours_Fail    = dqo_lookup(edit_first_param, "Fail",    "RoCHours"),
+        dqo_FlatN_Suspect    = dqo_lookup(edit_first_param, "Suspect", "FlatN"),
+        dqo_FlatDelta_Suspect= dqo_lookup(edit_first_param, "Suspect", "FlatDelta"),
+        dqo_FlatN_Fail       = dqo_lookup(edit_first_param, "Fail",    "FlatN"),
+        dqo_FlatDelta_Fail   = dqo_lookup(edit_first_param, "Fail",    "FlatDelta"),
+        apply_dqo = 1L
+      )
+
+      session$setInputs(param_select = edit_second_param)
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
+test_that("reset_dqo fires without error and clears removals for current param", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      expect_no_error(session$setInputs(reset_dqo = 1L))
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("start_over after apply_dqo resets to DQO-adjusted baseline not original", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+
+      # Apply DQO (same values — just confirms the baseline is updated)
+      session$setInputs(
+        dqo_GrMin_Suspect    = dqo_lookup(edit_first_param, "Suspect", "GrMin"),
+        dqo_GrMax_Suspect    = dqo_lookup(edit_first_param, "Suspect", "GrMax"),
+        dqo_GrMin_Fail       = dqo_lookup(edit_first_param, "Fail",    "GrMin"),
+        dqo_GrMax_Fail       = dqo_lookup(edit_first_param, "Fail",    "GrMax"),
+        dqo_Spike_Suspect    = dqo_lookup(edit_first_param, "Suspect", "Spike"),
+        dqo_Spike_Fail       = dqo_lookup(edit_first_param, "Fail",    "Spike"),
+        dqo_RoCStDv_Suspect  = dqo_lookup(edit_first_param, "Suspect", "RoCStDv"),
+        dqo_RoCHours_Suspect = dqo_lookup(edit_first_param, "Suspect", "RoCHours"),
+        dqo_RoCStDv_Fail     = dqo_lookup(edit_first_param, "Fail",    "RoCStDv"),
+        dqo_RoCHours_Fail    = dqo_lookup(edit_first_param, "Fail",    "RoCHours"),
+        dqo_FlatN_Suspect    = dqo_lookup(edit_first_param, "Suspect", "FlatN"),
+        dqo_FlatDelta_Suspect= dqo_lookup(edit_first_param, "Suspect", "FlatDelta"),
+        dqo_FlatN_Fail       = dqo_lookup(edit_first_param, "Fail",    "FlatN"),
+        dqo_FlatDelta_Fail   = dqo_lookup(edit_first_param, "Fail",    "FlatDelta"),
+        apply_dqo = 1L
+      )
+
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Start Over should restore the DQO-adjusted baseline (0 removals)
+      session$setInputs(reset = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})

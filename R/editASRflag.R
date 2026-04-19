@@ -47,14 +47,37 @@
 #'     \item \strong{Parameter}: drop-down selector to switch between
 #'       parameters.  Edits to each parameter are preserved independently when
 #'       switching.
+#'     \item \strong{Overlay}: optional drop-down to display a second parameter
+#'       as a gray line on a right-side y-axis, useful for spotting co-occurring
+#'       changes across parameters.
 #'     \item \strong{Undo Last Removal}: restores the most recently removed
 #'       point or batch of points for the current parameter (one drag-selection
 #'       at a time).
 #'     \item \strong{Start Over}: restores all removed points for the current
-#'       parameter and resets to the original flagged dataset.
+#'       parameter and resets to the most recently applied DQO thresholds.
 #'     \item \strong{Done / Close}: stops the app and returns the filtered
 #'       datasets for all parameters to the R session.
 #'   }
+#' }
+#'
+#' \subsection{DQO Settings panel}{
+#'   A collapsible panel on the right side of the plot exposes the numeric QC
+#'   thresholds for the currently selected parameter.  Each of the four checks
+#'   (gross range, spike, rate of change, flatline) shows independent
+#'   \strong{Suspect} and \strong{Fail} threshold columns.
+#'
+#'   \itemize{
+#'     \item \strong{Apply}: re-computes flags for the current parameter using
+#'       the edited thresholds.  Any points previously removed for that
+#'       parameter are cleared, since the set of flagged observations may have
+#'       changed.
+#'     \item \strong{Reset to original}: reverts the inputs to the values
+#'       supplied in \code{dqo} and re-computes flags, also clearing any
+#'       existing removals for the current parameter.
+#'   }
+#'
+#'   Threshold edits are per-parameter and independent; switching parameters
+#'   shows that parameter's current thresholds without affecting others.
 #' }
 #'
 #' The app is constructed inline so that flag data are available directly to
@@ -167,13 +190,140 @@ editASRflag_app <- function(cont, dqo) {
       "\u2018Box Select\u2019 or \u2018Lasso Select\u2019 toolbar buttons to remove a region.",
       "Double-click the plot background to clear selection and start a new one."
     ),
-    plotly::plotlyOutput("flagPlot", height = "550px")
+    bslib::layout_sidebar(
+      sidebar = bslib::sidebar(
+        position = "right",
+        open = "closed",
+        title = "DQO Settings",
+        width = 310,
+        shiny::p(shiny::tags$small(
+          "Edit thresholds and click Apply.",
+          "Applying new thresholds resets any removals for the current parameter."
+        )),
+        shiny::div(
+          style = "display: flex; gap: 4px; margin-bottom: 6px;",
+          shiny::actionButton(
+            "apply_dqo", "Apply",
+            style = "flex: 1; background-color: #4a7ebf; border-color: #4a7ebf; color: #fff;"
+          ),
+          shiny::actionButton(
+            "reset_dqo", "Reset to original",
+            style = "flex: 1; background-color: #ebebeb;"
+          )
+        ),
+        shiny::h6("Gross range", style = "font-weight: bold; margin-top: 10px;"),
+        shiny::fluidRow(
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Suspect")),
+            shiny::numericInput("dqo_GrMin_Suspect", "Min", value = NA, width = "100%"),
+            shiny::numericInput("dqo_GrMax_Suspect", "Max", value = NA, width = "100%")
+          ),
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Fail")),
+            shiny::numericInput("dqo_GrMin_Fail", "Min", value = NA, width = "100%"),
+            shiny::numericInput("dqo_GrMax_Fail", "Max", value = NA, width = "100%")
+          )
+        ),
+        shiny::hr(style = "margin: 6px 0;"),
+        shiny::h6("Spike", style = "font-weight: bold;"),
+        shiny::fluidRow(
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Suspect")),
+            shiny::numericInput("dqo_Spike_Suspect", "Threshold", value = NA, width = "100%")
+          ),
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Fail")),
+            shiny::numericInput("dqo_Spike_Fail", "Threshold", value = NA, width = "100%")
+          )
+        ),
+        shiny::hr(style = "margin: 6px 0;"),
+        shiny::h6("Rate of change", style = "font-weight: bold;"),
+        shiny::fluidRow(
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Suspect")),
+            shiny::numericInput("dqo_RoCStDv_Suspect",  "SD mult.",    value = NA, width = "100%"),
+            shiny::numericInput("dqo_RoCHours_Suspect", "Window (hr)", value = NA, width = "100%")
+          ),
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Fail")),
+            shiny::numericInput("dqo_RoCStDv_Fail",  "SD mult.",    value = NA, width = "100%"),
+            shiny::numericInput("dqo_RoCHours_Fail", "Window (hr)", value = NA, width = "100%")
+          )
+        ),
+        shiny::hr(style = "margin: 6px 0;"),
+        shiny::h6("Flatline", style = "font-weight: bold;"),
+        shiny::fluidRow(
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Suspect")),
+            shiny::numericInput("dqo_FlatN_Suspect",     "N",     value = NA, width = "100%"),
+            shiny::numericInput("dqo_FlatDelta_Suspect", "Delta", value = NA, width = "100%")
+          ),
+          shiny::column(6,
+            shiny::tags$small(shiny::strong("Fail")),
+            shiny::numericInput("dqo_FlatN_Fail",     "N",     value = NA, width = "100%"),
+            shiny::numericInput("dqo_FlatDelta_Fail", "Delta", value = NA, width = "100%")
+          )
+        )
+      ),
+      plotly::plotlyOutput("flagPlot", height = "550px")
+    )
   )
 
   # -------------------------------------------------------------------------
   # Server
   # -------------------------------------------------------------------------
   server <- function(input, output, session) {
+    # Mutable copy of the DQO used for on-the-fly threshold edits.
+    working_dqo <- shiny::reactiveVal(dqo)
+
+    # Tracks the current DQO-adjusted flag baseline per parameter.
+    # "Start Over" and "Done" use this so they stay consistent after DQO edits.
+    base_flagdat_list <- shiny::reactiveVal(flagdat_list)
+
+    # Pull one threshold value from a DQO data frame.
+    dqo_val <- function(wd, p, flag_type, col) {
+      v <- wd[wd$Parameter == p & wd$Flag == flag_type, col, drop = TRUE]
+      if (length(v) == 0L) NA_real_ else v[[1L]]
+    }
+
+    # Push all 14 DQO threshold inputs for parameter p from working_dqo.
+    update_dqo_inputs <- function(wd, p) {
+      gv <- function(ft, col) dqo_val(wd, p, ft, col)
+      shiny::updateNumericInput(session, "dqo_GrMin_Suspect",     value = gv("Suspect", "GrMin"))
+      shiny::updateNumericInput(session, "dqo_GrMax_Suspect",     value = gv("Suspect", "GrMax"))
+      shiny::updateNumericInput(session, "dqo_GrMin_Fail",        value = gv("Fail",    "GrMin"))
+      shiny::updateNumericInput(session, "dqo_GrMax_Fail",        value = gv("Fail",    "GrMax"))
+      shiny::updateNumericInput(session, "dqo_Spike_Suspect",     value = gv("Suspect", "Spike"))
+      shiny::updateNumericInput(session, "dqo_Spike_Fail",        value = gv("Fail",    "Spike"))
+      shiny::updateNumericInput(session, "dqo_RoCStDv_Suspect",   value = gv("Suspect", "RoCStDv"))
+      shiny::updateNumericInput(session, "dqo_RoCHours_Suspect",  value = gv("Suspect", "RoCHours"))
+      shiny::updateNumericInput(session, "dqo_RoCStDv_Fail",      value = gv("Fail",    "RoCStDv"))
+      shiny::updateNumericInput(session, "dqo_RoCHours_Fail",     value = gv("Fail",    "RoCHours"))
+      shiny::updateNumericInput(session, "dqo_FlatN_Suspect",     value = gv("Suspect", "FlatN"))
+      shiny::updateNumericInput(session, "dqo_FlatDelta_Suspect", value = gv("Suspect", "FlatDelta"))
+      shiny::updateNumericInput(session, "dqo_FlatN_Fail",        value = gv("Fail",    "FlatN"))
+      shiny::updateNumericInput(session, "dqo_FlatDelta_Fail",    value = gv("Fail",    "FlatDelta"))
+    }
+
+    # Re-flag parameter p with wd, reset its remaining/history to the new baseline.
+    reflag_param <- function(wd, p) {
+      working_dqo(wd)
+      new_fd <- utilASRflag(cont, wd, param = p)
+      new_fd$.rowid <- seq_len(nrow(new_fd))
+
+      bfl <- base_flagdat_list()
+      bfl[[p]] <- new_fd
+      base_flagdat_list(bfl)
+
+      rl <- remaining_list()
+      rl[[p]] <- new_fd
+      remaining_list(rl)
+
+      hl <- removed_history_list()
+      hl[[p]] <- list()
+      removed_history_list(hl)
+    }
+
     # Populate overlay choices on startup, excluding the initially selected param.
     shiny::observe({
       others <- params[params != input$param_select]
@@ -183,6 +333,7 @@ editASRflag_app <- function(cont, dqo) {
         choices = c("None" = "", stats::setNames(others, param_labels[others])),
         selected = ""
       )
+      update_dqo_inputs(working_dqo(), input$param_select)
     }) |>
       shiny::bindEvent(TRUE, once = TRUE)
 
@@ -206,6 +357,7 @@ editASRflag_app <- function(cont, dqo) {
         choices = c("None" = "", stats::setNames(others, param_labels[others])),
         selected = ""
       )
+      update_dqo_inputs(working_dqo(), input$param_select)
     })
 
     shiny::observeEvent(input$param_prev, {
@@ -340,9 +492,50 @@ editASRflag_app <- function(cont, dqo) {
       update_remaining(dat[order(dat$DateTime), , drop = FALSE])
     })
 
+    # ---- Apply DQO edits and re-flag (current parameter only) ---------------
+    shiny::observeEvent(input$apply_dqo, {
+      p <- input$param_select
+      if (is.null(p)) return()
+      wd <- working_dqo()
+      sm <- wd$Parameter == p & wd$Flag == "Suspect"
+      fm <- wd$Parameter == p & wd$Flag == "Fail"
+      wd[sm, "GrMin"]     <- input$dqo_GrMin_Suspect
+      wd[sm, "GrMax"]     <- input$dqo_GrMax_Suspect
+      wd[sm, "Spike"]     <- input$dqo_Spike_Suspect
+      wd[sm, "RoCStDv"]   <- input$dqo_RoCStDv_Suspect
+      wd[sm, "RoCHours"]  <- input$dqo_RoCHours_Suspect
+      wd[sm, "FlatN"]     <- input$dqo_FlatN_Suspect
+      wd[sm, "FlatDelta"] <- input$dqo_FlatDelta_Suspect
+      wd[fm, "GrMin"]     <- input$dqo_GrMin_Fail
+      wd[fm, "GrMax"]     <- input$dqo_GrMax_Fail
+      wd[fm, "Spike"]     <- input$dqo_Spike_Fail
+      wd[fm, "RoCStDv"]   <- input$dqo_RoCStDv_Fail
+      wd[fm, "RoCHours"]  <- input$dqo_RoCHours_Fail
+      wd[fm, "FlatN"]     <- input$dqo_FlatN_Fail
+      wd[fm, "FlatDelta"] <- input$dqo_FlatDelta_Fail
+      reflag_param(wd, p)
+    })
+
+    # ---- Reset DQO to original values (current parameter only) --------------
+    shiny::observeEvent(input$reset_dqo, {
+      p <- input$param_select
+      if (is.null(p)) return()
+      wd <- working_dqo()
+      orig <- dqo[dqo$Parameter == p, , drop = FALSE]
+      for (ft in c("Suspect", "Fail")) {
+        wd_mask   <- wd$Parameter  == p & wd$Flag  == ft
+        orig_mask <- orig$Flag == ft
+        if (any(wd_mask) && any(orig_mask)) {
+          wd[wd_mask, ] <- orig[orig_mask, ]
+        }
+      }
+      update_dqo_inputs(wd, p)
+      reflag_param(wd, p)
+    })
+
     # ---- Start over (current parameter only) --------------------------------
     shiny::observeEvent(input$reset, {
-      update_remaining(flagdat_list[[input$param_select]])
+      update_remaining(base_flagdat_list()[[input$param_select]])
       update_history(list())
     })
 
@@ -351,7 +544,7 @@ editASRflag_app <- function(cont, dqo) {
       shiny::stopApp(
         returnValue = editASRflag_result(
           cont,
-          flagdat_list,
+          base_flagdat_list(),
           remaining_list()
         )
       )
@@ -360,7 +553,7 @@ editASRflag_app <- function(cont, dqo) {
     # ---- Removed points count and table (current parameter) ----------------
     removed_points <- shiny::reactive({
       hist <- cur_history()
-      fd <- flagdat_list[[input$param_select]]
+      fd <- base_flagdat_list()[[input$param_select]]
       cols <- setdiff(names(fd), ".rowid")
       if (length(hist) == 0L) {
         return(fd[0L, cols, drop = FALSE])
