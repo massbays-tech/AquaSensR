@@ -136,8 +136,8 @@ The rate-of-change (RoC) check is an adaptive counterpart to the spike check. Ra
 
 For each observation the function:
 
-1. Collects all values within a trailing `RoCHours`-hour window ending at that timestamp.
-2. Computes the standard deviation (SD) of those values.
+1. Collects all values within a trailing `RoCHours`-hour window ending just before that timestamp (the current observation is excluded).
+2. Computes the standard deviation (SD) of those preceding values.
 3. Multiplies the SD by `RoCStDv` to produce a contextual threshold.
 4. Flags the observation `"suspect"` if the absolute lag-1 difference exceeds that threshold.
 
