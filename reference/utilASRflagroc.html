@@ -83,8 +83,9 @@ given row that severity level is skipped entirely.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>For each observation the standard deviation of all raw values
-within a trailing <code>RoCHours</code>-hour window ending at (and excluding
-that observation is multiplied by <code>RoCStDv</code> to produce a threshold.
+within a trailing <code>RoCHours</code>-hour window ending just before (and
+excluding) that observation is multiplied by <code>RoCStDv</code> to produce a
+threshold.
 The observation is flagged if the absolute lag-1 difference exceeds that
 threshold — <code>"suspect"</code> using the <code>"Suspect"</code> row thresholds
 and <code>"fail"</code> using the <code>"Fail"</code> row thresholds.  At least 2

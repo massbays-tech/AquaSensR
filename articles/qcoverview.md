@@ -333,3 +333,9 @@ value, and timestamp. Items in the legend can be clicked to toggle
 visibility of a check or severity level, which is useful for reviewing
 specific flags in a busy plot. The plot can also be zoomed and panned to
 focus on specific periods.
+
+A second parameter can be overlaid on the plot by passing a two-column
+data frame (with `DateTime` and the parameter of interest) to the
+`overlay` argument. The overlay is drawn as a light blue line on a
+right-side y-axis, making it easy to see whether flagged observations in
+one parameter co-occur with changes in another.

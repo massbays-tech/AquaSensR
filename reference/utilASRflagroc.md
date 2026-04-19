@@ -39,7 +39,7 @@ Updated character flag vector.
 ## Details
 
 For each observation the standard deviation of all raw values within a
-trailing `RoCHours`-hour window ending at (and excluding that
+trailing `RoCHours`-hour window ending just before (and excluding) that
 observation is multiplied by `RoCStDv` to produce a threshold. The
 observation is flagged if the absolute lag-1 difference exceeds that
 threshold — `"suspect"` using the `"Suspect"` row thresholds and
