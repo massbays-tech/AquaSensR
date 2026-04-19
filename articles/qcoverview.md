@@ -339,3 +339,8 @@ data frame (with `DateTime` and the parameter of interest) to the
 `overlay` argument. The overlay is drawn as a light blue line on a
 right-side y-axis, making it easy to see whether flagged observations in
 one parameter co-occur with changes in another.
+
+``` r
+overlay_df <- contdat[, c("DateTime", "DO_pctsat")]
+anlzASRflag(flagdat, overlay = overlay_df)
+```
