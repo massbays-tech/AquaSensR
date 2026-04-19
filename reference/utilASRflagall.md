@@ -105,11 +105,11 @@ utilASRflagall(contdat, dqodat)
 #>  2 2024-08-14 13:56:43               410. pass       pass       pass    
 #>  3 2024-08-14 13:56:53               410. pass       pass       pass    
 #>  4 2024-08-14 13:57:03               410. pass       pass       pass    
-#>  5 2024-08-14 13:57:13               409  pass       pass       pass    
+#>  5 2024-08-14 13:57:13               409  pass       pass       suspect 
 #>  6 2024-08-14 13:57:23               409. pass       pass       pass    
 #>  7 2024-08-14 13:57:33               409. pass       pass       pass    
 #>  8 2024-08-14 13:57:43               409. pass       pass       pass    
-#>  9 2024-08-14 13:57:53               404. pass       pass       pass    
+#>  9 2024-08-14 13:57:53               404. pass       pass       suspect 
 #> 10 2024-08-14 13:58:03               399. pass       suspect    pass    
 #> # ℹ 917 more rows
 #> # ℹ 1 more variable: flat_flag <chr>
@@ -126,7 +126,7 @@ utilASRflagall(contdat, dqodat)
 #>  6 2024-08-14 13:57:23      266 pass       pass       pass     pass     
 #>  7 2024-08-14 13:57:33      266 pass       pass       pass     pass     
 #>  8 2024-08-14 13:57:43      266 pass       pass       pass     pass     
-#>  9 2024-08-14 13:57:53      262 pass       pass       pass     pass     
+#>  9 2024-08-14 13:57:53      262 pass       pass       suspect  pass     
 #> 10 2024-08-14 13:58:03      259 pass       pass       pass     pass     
 #> # ℹ 917 more rows
 #> 
@@ -142,7 +142,7 @@ utilASRflagall(contdat, dqodat)
 #>  6 2024-08-14 13:57:23         0.2  fail       pass       pass     pass     
 #>  7 2024-08-14 13:57:33         0.2  fail       pass       pass     pass     
 #>  8 2024-08-14 13:57:43         0.2  fail       pass       pass     pass     
-#>  9 2024-08-14 13:57:53         0.19 fail       pass       pass     pass     
+#>  9 2024-08-14 13:57:53         0.19 fail       pass       suspect  pass     
 #> 10 2024-08-14 13:58:03         0.19 fail       pass       pass     pass     
 #> # ℹ 917 more rows
 #> 

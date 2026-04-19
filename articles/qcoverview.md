@@ -216,8 +216,8 @@ the series.
 For each observation the function:
 
 1.  Collects all values within a trailing `RoCHours`-hour window ending
-    at that timestamp.
-2.  Computes the standard deviation (SD) of those values.
+    just before that timestamp (the current observation is excluded).
+2.  Computes the standard deviation (SD) of those preceding values.
 3.  Multiplies the SD by `RoCStDv` to produce a contextual threshold.
 4.  Flags the observation if the absolute lag-1 difference exceeds that
     threshold — `"suspect"` using the `"Suspect"` row thresholds and
@@ -240,8 +240,8 @@ change check:
 ``` r
 table(flagdat$roc_flag)
 #> 
-#> pass 
-#>  927
+#> fail pass 
+#>    1  926
 ```
 
 ### 4. Flatline
