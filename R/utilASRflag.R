@@ -28,16 +28,22 @@
 #' standard deviation of all raw values within a trailing \code{RoCHours}-hour
 #' window is multiplied by \code{RoCStDv} to produce a threshold.  The
 #' observation is flagged \code{"suspect"} if its absolute lag-1 difference
-#' exceeds that threshold.  Requires at least 2 values in the window;
-#' otherwise \code{"pass"}.  Note that this check only produces
-#' \code{"suspect"} flags, not \code{"fail"} flags.  \code{RoCStDv} and
-#' \code{RoCHours} are read from the \code{"Suspect"} row only.
+#' exceeds that threshold using the \code{"Suspect"} row thresholds, and
+#' \code{"fail"} using the \code{"Fail"} row thresholds.  Each row is checked
+#' independently; if \code{RoCStDv} or \code{RoCHours} is \code{NA} for a row
+#' that severity level is skipped.  Requires at least 2 values in the window;
+#' otherwise \code{"pass"}.
 #'
 #' \strong{Flatline} (\code{flat_flag}) — Counts consecutive observations
 #' where the absolute step from the previous observation is within
 #' \code{FlatDelta} units.  Observations whose run length reaches \code{FlatN}
 #' are flagged, using the \code{"Suspect"} row thresholds for suspect and the
 #' \code{"Fail"} row thresholds for fail.
+#'
+#' Any threshold value set to \code{NA} in \code{dqodat} is silently skipped.  The corresponding severity level is not applied and affected observations
+#' remain \code{"pass"} for that check.  This applies to both the
+#' \code{"Suspect"} and \code{"Fail"} rows independently, so individual checks
+#' or severity levels can be disabled selectively.
 #'
 #' Data are sorted by \code{DateTime} before processing.
 #'

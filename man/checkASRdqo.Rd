@@ -25,7 +25,6 @@ The following checks are made:
 \item At least one parameter is present: At least one parameter in the \code{Parameter} column matches the \code{Parameter} column in \code{\link{paramsASR}}
 \item Parameter format: All parameters listed in the \code{Parameter} column should match those in the \code{Parameter} column in \code{\link{paramsASR}}
 \item Flag column: The \code{Flag} column should contain only "Fail" or "Suspect" entries
-\item Rate of Change: No entries for Fail Flag rows
 \item Numeric columns: All columns except \code{Parameter} and \code{Flag} should be numeric values
 }
 }

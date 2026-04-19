@@ -8,21 +8,21 @@
 #'   as \code{flag}.
 #' @param dqo two-row data frame from data quality objectives for the parameter
 #'   being checked, containing one row where \code{Flag == "Fail"} and one
-#'   where \code{Flag == "Suspect"}.  The \code{"Suspect"} row's numeric
-#'   columns \code{RoCStDv} (SD multiplier) and \code{RoCHours} (trailing window
-#'   width in hours) control the check.  If either column is \code{NA} in the
-#'   \code{"Suspect"} row the check is skipped.  Rate-of-change thresholds are
-#'   not applied to \code{"Fail"} flags.
+#'   where \code{Flag == "Suspect"}.  Each row's numeric columns \code{RoCStDv}
+#'   (SD multiplier) and \code{RoCHours} (trailing window width in hours)
+#'   control the check independently.  If either column is \code{NA} for a
+#'   given row that severity level is skipped entirely.
 #'
 #' @details For each observation the standard deviation of all raw values
 #'   within a trailing \code{RoCHours}-hour window ending just before (and
 #'   excluding) that observation is multiplied by \code{RoCStDv} to produce a
 #'   threshold.
-#'   The observation is flagged \code{"suspect"} if the absolute lag-1
-#'   difference exceeds that threshold.  At least 2 values must fall within
-#'   the window to compute the standard deviation; otherwise the observation
-#'   is skipped.  This check only produces \code{"suspect"} flags; it does
-#'   not produce \code{"fail"} flags.
+#'   The observation is flagged if the absolute lag-1 difference exceeds that
+#'   threshold — \code{"suspect"} using the \code{"Suspect"} row thresholds
+#'   and \code{"fail"} using the \code{"Fail"} row thresholds.  At least 2
+#'   values must fall within the window to compute the standard deviation;
+#'   otherwise the observation is skipped.  Flags are only ever upgraded (pass
+#'   -> suspect -> fail), never downgraded.
 #'
 #' @return Updated character flag vector.
 #'
@@ -32,39 +32,60 @@
 #' flag <- rep("pass", 6)
 #' vals <- c(10, 10.2, 10.1, 10.3, 15.0, 10.2)
 #' datetimes <- as.POSIXct("2024-01-01") + seq(0, 5) * 900  # 15-min intervals
-#' dqo <- data.frame(Flag = c("Fail", "Suspect"), RoCStDv = c(NA, 3), RoCHours = c(NA, 2))
+#' dqo <- data.frame(Flag = c("Fail", "Suspect"), RoCStDv = c(2, 3), RoCHours = c(2, 2))
 #' utilASRflagroc(flag, vals, datetimes, dqo)
 utilASRflagroc <- function(flag, vals, datetimes, dqo) {
   susp <- dqo[dqo$Flag == "Suspect", ]
-  if (nrow(susp) == 0) {
-    return(flag)
-  }
-  if (!("RoCStDv" %in% names(susp)) || is.na(susp$RoCStDv)) {
-    return(flag)
-  }
-  if (!("RoCHours" %in% names(susp)) || is.na(susp$RoCHours)) {
-    return(flag)
-  }
+  fail <- dqo[dqo$Flag == "Fail", ]
 
   diffs <- c(NA_real_, diff(vals)) # signed lag-1 differences; first is NA
   times_num <- as.numeric(datetimes)
-  win_sec <- susp$RoCHours * 3600 # trailing window width in seconds
 
-  roc_sd <- vapply(
-    seq_along(vals),
-    function(i) {
-      if (is.na(diffs[i])) {
-        return(NA_real_)
-      }
-      in_win <- times_num < times_num[i] &
-        (times_num[i] - times_num) <= win_sec
-      v <- vals[in_win & !is.na(vals)]
-      if (length(v) < 2L) NA_real_ else stats::sd(v)
-    },
-    numeric(1L)
-  )
-  is_roc <- !is.na(diffs) &
-    !is.na(roc_sd) &
-    abs(diffs) > roc_sd * susp$RoCStDv
-  utilASRflagupdate(flag, "suspect", is_roc)
+  roc_is_flagged <- function(roc_stdv, roc_hours) {
+    win_sec <- roc_hours * 3600
+    roc_sd <- vapply(
+      seq_along(vals),
+      function(i) {
+        if (is.na(diffs[i])) {
+          return(NA_real_)
+        }
+        in_win <- times_num < times_num[i] &
+          (times_num[i] - times_num) <= win_sec
+        v <- vals[in_win & !is.na(vals)]
+        if (length(v) < 2L) NA_real_ else stats::sd(v)
+      },
+      numeric(1L)
+    )
+    !is.na(diffs) & !is.na(roc_sd) & abs(diffs) > roc_sd * roc_stdv
+  }
+
+  if (
+    nrow(susp) > 0 &&
+      "RoCStDv" %in% names(susp) &&
+      !is.na(susp$RoCStDv) &&
+      "RoCHours" %in% names(susp) &&
+      !is.na(susp$RoCHours)
+  ) {
+    flag <- utilASRflagupdate(
+      flag,
+      "suspect",
+      roc_is_flagged(susp$RoCStDv, susp$RoCHours)
+    )
+  }
+
+  if (
+    nrow(fail) > 0 &&
+      "RoCStDv" %in% names(fail) &&
+      !is.na(fail$RoCStDv) &&
+      "RoCHours" %in% names(fail) &&
+      !is.na(fail$RoCHours)
+  ) {
+    flag <- utilASRflagupdate(
+      flag,
+      "fail",
+      roc_is_flagged(fail$RoCStDv, fail$RoCHours)
+    )
+  }
+
+  flag
 }

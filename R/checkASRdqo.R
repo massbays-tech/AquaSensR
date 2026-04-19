@@ -11,7 +11,6 @@
 #'  \item At least one parameter is present: At least one parameter in the \code{Parameter} column matches the \code{Parameter} column in \code{\link{paramsASR}}
 #'  \item Parameter format: All parameters listed in the \code{Parameter} column should match those in the \code{Parameter} column in \code{\link{paramsASR}}
 #'  \item Flag column: The \code{Flag} column should contain only "Fail" or "Suspect" entries
-#'  \item Rate of Change: No entries for Fail Flag rows
 #'  \item Numeric columns: All columns except \code{Parameter} and \code{Flag} should be numeric values
 #' }
 #'
@@ -113,22 +112,6 @@ checkASRdqo <- function(dqodat) {
       msg,
       '\n\tFlag column should contain only "Fail" or "Suspect" entries. Please correct the following: ',
       paste(unique(tochk), collapse = ', '),
-      call. = FALSE
-    )
-  }
-  message(paste(msg, 'OK'))
-
-  # check rate of change, do for both RoCStDv and RoCHours
-  msg <- '\tChecking Rate of Change flags...'
-  fail_rows <- which(dqodat$Flag == "Fail")
-  chk <- dqodat[fail_rows, c("RoCStDv", "RoCHours")]
-  chk <- apply(chk, 1, function(x) any(!is.na(x) & x != ""))
-  if (any(chk)) {
-    tochk <- fail_rows[chk]
-    stop(
-      msg,
-      '\n\tNo entries should be present for Rate of Change columns in rows with "Fail" flags. Please correct the following rows: ',
-      paste(tochk, collapse = ', '),
       call. = FALSE
     )
   }
