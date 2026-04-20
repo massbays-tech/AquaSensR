@@ -92,12 +92,10 @@ thresholds for the currently selected parameter. Each of the four checks
 **Suspect** and **Fail** threshold columns.
 
 - **Apply**: re-computes flags for the current parameter using the
-  edited thresholds. Any points previously removed for that parameter
-  are cleared, since the set of flagged observations may have changed.
+  edited thresholds. Previously removed points are retained.
 
 - **Reset to original**: reverts the inputs to the values supplied in
-  `dqo` and re-computes flags, also clearing any existing removals for
-  the current parameter.
+  `dqo` and re-computes flags. Any points already removed are retained.
 
 Threshold edits are per-parameter and independent; switching parameters
 shows that parameter's current thresholds without affecting others.

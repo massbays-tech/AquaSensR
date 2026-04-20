@@ -142,12 +142,10 @@ thresholds for the currently selected parameter.  Each of the four checks
 (gross range, spike, rate of change, flatline) shows independent
 <strong>Suspect</strong> and <strong>Fail</strong> threshold columns.</p>
 <ul><li><p><strong>Apply</strong>: re-computes flags for the current parameter using
-the edited thresholds.  Any points previously removed for that
-parameter are cleared, since the set of flagged observations may have
-changed.</p></li>
+the edited thresholds.  Previously removed points are retained.</p></li>
 <li><p><strong>Reset to original</strong>: reverts the inputs to the values
-supplied in <code>dqo</code> and re-computes flags, also clearing any
-existing removals for the current parameter.</p></li>
+supplied in <code>dqo</code> and re-computes flags.  Any points already
+removed are retained.</p></li>
 </ul><p>Threshold edits are per-parameter and independent; switching parameters
 shows that parameter's current thresholds without affecting others.</p>
 </div>
