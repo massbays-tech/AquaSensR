@@ -598,8 +598,107 @@ test_that("start_over after apply_dqo resets to DQO-adjusted baseline not origin
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
 
-      # Start Over should restore the DQO-adjusted baseline (0 removals)
+      # Start Over shows modal first; count unchanged until confirmed
       session$setInputs(reset = 1L)
+      expect_equal(output$removed_count, "Removed Points: 1")
+      session$setInputs(reset_confirm = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Linked removal
+# ---------------------------------------------------------------------------
+
+test_that("linked removal also removes matching DateTimes from linked param", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(
+        param_select = edit_first_param,
+        link_params  = edit_second_param
+      )
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Switch to linked param and verify the same DateTime was also removed
+      session$setInputs(param_select = edit_second_param)
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
+test_that("undo from primary param also restores linked param", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(
+        param_select = edit_first_param,
+        link_params  = edit_second_param
+      )
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+
+      # Undo from the primary param restores both
+      session$setInputs(undo = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+
+      session$setInputs(param_select = edit_second_param)
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("undo from linked param also restores primary param", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(
+        param_select = edit_first_param,
+        link_params  = edit_second_param
+      )
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+
+      # Switch to the linked param and undo from there
+      session$setInputs(param_select = edit_second_param)
+      expect_equal(output$removed_count, "Removed Points: 1")
+      session$setInputs(undo = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+
+      # Primary param should also be restored
+      session$setInputs(param_select = edit_first_param)
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("solo removal after linked removal only undoes solo batch on first undo", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      # Linked removal: rowid 1 removed from both params
+      session$setInputs(
+        param_select = edit_first_param,
+        link_params  = edit_second_param
+      )
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+
+      # Solo removal on second param only: rowid 2
+      session$setInputs(
+        param_select = edit_second_param,
+        link_params  = character(0)
+      )
+      session$setInputs(`plotly_click-A` = '{"customdata":2}')
+      expect_equal(output$removed_count, "Removed Points: 2")
+
+      # First undo removes only the solo batch (rowid 2)
+      session$setInputs(undo = 1L)
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Second undo removes the linked batch — also restores first param
+      session$setInputs(undo = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+      session$setInputs(param_select = edit_first_param)
       expect_equal(output$removed_count, "Removed Points: 0")
     })
   )

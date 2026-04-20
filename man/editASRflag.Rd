@@ -60,9 +60,16 @@ switching.
 \item \strong{Overlay}: optional drop-down to display a second parameter
 as a gray line on a right-side y-axis, useful for spotting co-occurring
 changes across parameters.
+\item \strong{Linked Removal}: optional multi-select to choose one or
+more additional parameters that will receive the same point removals as
+the currently displayed parameter.  Any timestamps removed from the
+current parameter are simultaneously removed from all linked parameters.
+Undo restores the current parameter and all linked parameters together
+as a single operation, regardless of which parameter is active
+when undo is clicked.  Start Over affects the current parameter only.
 \item \strong{Undo Last Removal}: restores the most recently removed
-point or batch of points for the current parameter (one drag-selection
-at a time).
+point or batch of points.  If the removal was linked, all affected
+parameters are restored together.
 \item \strong{Start Over}: restores all removed points for the current
 parameter and resets to the most recently applied DQO thresholds.
 \item \strong{Done / Close}: stops the app and returns the filtered

@@ -50,9 +50,16 @@
 #'     \item \strong{Overlay}: optional drop-down to display a second parameter
 #'       as a gray line on a right-side y-axis, useful for spotting co-occurring
 #'       changes across parameters.
+#'     \item \strong{Linked Removal}: optional multi-select to choose one or
+#'       more additional parameters that will receive the same point removals as
+#'       the currently displayed parameter.  Any timestamps removed from the
+#'       current parameter are simultaneously removed from all linked parameters.
+#'       Undo restores the current parameter and all linked parameters together
+#'       as a single operation, regardless of which parameter is active
+#'       when undo is clicked.  Start Over affects the current parameter only.
 #'     \item \strong{Undo Last Removal}: restores the most recently removed
-#'       point or batch of points for the current parameter (one drag-selection
-#'       at a time).
+#'       point or batch of points.  If the removal was linked, all affected
+#'       parameters are restored together.
 #'     \item \strong{Start Over}: restores all removed points for the current
 #'       parameter and resets to the most recently applied DQO thresholds.
 #'     \item \strong{Done / Close}: stops the app and returns the filtered
@@ -178,7 +185,27 @@ editASRflag_app <- function(cont, dqo) {
         label = NULL,
         choices = c("None" = ""),
         selected = "",
-        options = list(allowEmptyOption = TRUE)
+        options = list(allowEmptyOption = TRUE, placeholder = "None")
+      ),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("Linked Removal", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "Linked Removal",
+          "Select one or more parameters to receive the same point removals as the current parameter. Undo restores all linked parameters in the same batch together. Start Over affects the current parameter only."
+        )
+      ),
+      shiny::selectizeInput(
+        "link_params",
+        label = NULL,
+        choices = NULL,
+        selected = NULL,
+        multiple = TRUE,
+        options = list(placeholder = "None")
       ),
       shiny::hr(),
       shiny::div(
@@ -459,6 +486,18 @@ editASRflag_app <- function(cont, dqo) {
     # Mutable copy of the DQO used for on-the-fly threshold edits.
     working_dqo <- shiny::reactiveVal(dqo)
 
+    # Integer counter for grouping linked removals. Each removal event (click
+    # or selection) increments this and stamps every affected parameter's batch
+    # with the same group_id so undo can restore them atomically.
+    grp_counter <- local({
+      n <- 0L
+      list(gen = function() {
+        n <<- n + 1L
+        n
+      })
+    })
+    new_group_id <- grp_counter$gen
+
     # Tracks the current DQO-adjusted flag baseline per parameter.
     # "Start Over" and "Done" use this so they stay consistent after DQO edits.
     base_flagdat_list <- shiny::reactiveVal(flagdat_list)
@@ -563,11 +602,10 @@ editASRflag_app <- function(cont, dqo) {
       hl <- removed_history_list()
       if (length(removed_rowids) > 0L) {
         rl[[p]] <- new_fd[!new_fd$.rowid %in% removed_rowids, , drop = FALSE]
-        hl[[p]] <- list(new_fd[
-          new_fd$.rowid %in% removed_rowids,
-          ,
-          drop = FALSE
-        ])
+        hl[[p]] <- list(list(
+          group_id = new_group_id(),
+          data = new_fd[new_fd$.rowid %in% removed_rowids, , drop = FALSE]
+        ))
       } else {
         rl[[p]] <- new_fd
         hl[[p]] <- list()
@@ -576,14 +614,21 @@ editASRflag_app <- function(cont, dqo) {
       removed_history_list(hl)
     }
 
-    # Populate overlay choices on startup, excluding the initially selected param.
+    # Populate overlay and link_params choices on startup.
     shiny::observe({
       others <- params[params != input$param_select]
+      other_choices <- stats::setNames(others, param_labels[others])
       shiny::updateSelectInput(
         session,
         "overlay_param",
-        choices = c("None" = "", stats::setNames(others, param_labels[others])),
+        choices = c("None" = "", other_choices),
         selected = ""
+      )
+      shiny::updateSelectizeInput(
+        session,
+        "link_params",
+        choices = other_choices,
+        selected = NULL
       )
       update_dqo_inputs(working_dqo(), input$param_select)
     }) |>
@@ -593,7 +638,9 @@ editASRflag_app <- function(cont, dqo) {
     remaining_list <- shiny::reactiveVal(flagdat_list)
 
     # `removed_history_list`: named list of per-parameter undo stacks.
-    # Each element is a list of removed batches (data frames).
+    # Each element is a list of entries: list(group_id = <int>, data = <data frame>).
+    # Entries with the same group_id were created by a single linked removal and
+    # are restored atomically by undo.
     removed_history_list <- shiny::reactiveVal(
       stats::setNames(lapply(params, function(p) list()), params)
     )
@@ -603,11 +650,18 @@ editASRflag_app <- function(cont, dqo) {
     shiny::observeEvent(input$param_select, {
       x_range(NULL)
       others <- params[params != input$param_select]
+      other_choices <- stats::setNames(others, param_labels[others])
       shiny::updateSelectInput(
         session,
         "overlay_param",
-        choices = c("None" = "", stats::setNames(others, param_labels[others])),
+        choices = c("None" = "", other_choices),
         selected = ""
+      )
+      shiny::updateSelectizeInput(
+        session,
+        "link_params",
+        choices = other_choices,
+        selected = intersect(input$link_params, others)
       )
       update_dqo_inputs(working_dqo(), input$param_select)
     })
@@ -664,6 +718,29 @@ editASRflag_app <- function(cont, dqo) {
       removed_history_list(hl)
     }
 
+    # Remove matching DateTimes from each linked parameter's remaining data and
+    # add a history entry with the same group_id so undo restores them together.
+    apply_linked_removals <- function(datetimes, gid) {
+      lp <- input$link_params
+      if (length(lp) == 0L || is.null(lp)) {
+        return()
+      }
+      rl <- remaining_list()
+      hl <- removed_history_list()
+      for (p in lp) {
+        dat <- rl[[p]]
+        mask <- dat$DateTime %in% datetimes
+        if (!any(mask)) {
+          next
+        }
+        to_remove <- dat[mask, , drop = FALSE]
+        rl[[p]] <- dat[!mask, , drop = FALSE]
+        hl[[p]] <- c(hl[[p]], list(list(group_id = gid, data = to_remove)))
+      }
+      remaining_list(rl)
+      removed_history_list(hl)
+    }
+
     # ---- Plot ---------------------------------------------------------------
     output$flagPlot <- plotly::renderPlotly({
       rng <- shiny::isolate(x_range())
@@ -671,7 +748,16 @@ editASRflag_app <- function(cont, dqo) {
       ovl <- if (
         !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
       ) {
-        cont[, c("DateTime", ovl_param), drop = FALSE]
+        # Use remaining data for the overlay param if it is a linked parameter
+        # so that linked removals are reflected in the overlay line.
+        if (ovl_param %in% names(remaining_list())) {
+          remaining_list()[[ovl_param]][,
+            c("DateTime", ovl_param),
+            drop = FALSE
+          ]
+        } else {
+          cont[, c("DateTime", ovl_param), drop = FALSE]
+        }
       } else {
         NULL
       }
@@ -702,9 +788,14 @@ editASRflag_app <- function(cont, dqo) {
           return()
         }
 
+        gid <- new_group_id()
         to_remove <- dat[mask, , drop = FALSE]
         update_remaining(dat[!mask, , drop = FALSE])
-        update_history(c(cur_history(), list(to_remove)))
+        update_history(c(
+          cur_history(),
+          list(list(group_id = gid, data = to_remove))
+        ))
+        apply_linked_removals(to_remove$DateTime, gid)
       }
     )
 
@@ -724,24 +815,56 @@ editASRflag_app <- function(cont, dqo) {
           return()
         }
 
+        gid <- new_group_id()
         to_remove <- dat[mask, , drop = FALSE]
         update_remaining(dat[!mask, , drop = FALSE])
-        update_history(c(cur_history(), list(to_remove)))
+        update_history(c(
+          cur_history(),
+          list(list(group_id = gid, data = to_remove))
+        ))
+        apply_linked_removals(to_remove$DateTime, gid)
       }
     )
 
-    # ---- Undo last removal batch (current parameter only) -------------------
+    # ---- Undo last removal batch (propagates to linked params) ---------------
     shiny::observeEvent(input$undo, {
       hist <- cur_history()
       if (length(hist) == 0L) {
         return()
       }
 
-      last_batch <- hist[[length(hist)]]
+      last_entry <- hist[[length(hist)]]
+      gid <- last_entry$group_id
       update_history(hist[-length(hist)])
 
-      dat <- rbind(cur_remaining(), last_batch)
+      dat <- rbind(cur_remaining(), last_entry$data)
       update_remaining(dat[order(dat$DateTime), , drop = FALSE])
+
+      # Restore any other parameters whose top-of-stack shares the same group_id.
+      rl <- remaining_list()
+      hl <- removed_history_list()
+      changed <- FALSE
+      for (p in params) {
+        if (p == input$param_select) {
+          next
+        }
+        ph <- hl[[p]]
+        if (length(ph) == 0L) {
+          next
+        }
+        top <- ph[[length(ph)]]
+        if (!identical(top$group_id, gid)) {
+          next
+        }
+        restored <- rbind(rl[[p]], top$data)
+        rl[[p]] <- restored[order(restored$DateTime), , drop = FALSE]
+        hl[[p]] <- ph[-length(ph)]
+        changed <- TRUE
+      }
+      if (changed) {
+        remaining_list(rl)
+        removed_history_list(hl)
+      }
     })
 
     # ---- Apply DQO edits and re-flag (current parameter only) ---------------
@@ -820,8 +943,11 @@ editASRflag_app <- function(cont, dqo) {
         title = "Done / Close",
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
-          shiny::actionButton("done_confirm", "Close",
-            style = "background-color: #037B71; border-color: #037B71; color: #fff;")
+          shiny::actionButton(
+            "done_confirm",
+            "Close",
+            style = "background-color: #037B71; border-color: #037B71; color: #fff;"
+          )
         ),
         easyClose = TRUE
       ))
@@ -846,7 +972,7 @@ editASRflag_app <- function(cont, dqo) {
       if (length(hist) == 0L) {
         return(fd[0L, cols, drop = FALSE])
       }
-      do.call(rbind, lapply(hist, function(x) x[, cols, drop = FALSE]))
+      do.call(rbind, lapply(hist, function(x) x$data[, cols, drop = FALSE]))
     })
 
     output$removed_count <- shiny::renderText({
