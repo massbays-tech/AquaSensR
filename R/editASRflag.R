@@ -68,12 +68,10 @@
 #'
 #'   \itemize{
 #'     \item \strong{Apply}: re-computes flags for the current parameter using
-#'       the edited thresholds.  Any points previously removed for that
-#'       parameter are cleared, since the set of flagged observations may have
-#'       changed.
+#'       the edited thresholds.  Previously removed points are retained.
 #'     \item \strong{Reset to original}: reverts the inputs to the values
-#'       supplied in \code{dqo} and re-computes flags, also clearing any
-#'       existing removals for the current parameter.
+#'       supplied in \code{dqo} and re-computes flags.  Any points already
+#'       removed are retained.
 #'   }
 #'
 #'   Threshold edits are per-parameter and independent; switching parameters
@@ -259,7 +257,7 @@ editASRflag_app <- function(cont, dqo) {
         width = 310,
         shiny::p(shiny::tags$small(
           "Edit thresholds and click Apply.",
-          "Applying new thresholds resets any removals for the current parameter."
+          "Previously removed points are retained with DQO changes."
         )),
         shiny::div(
           style = "display: flex; gap: 4px; margin-bottom: 6px;",
@@ -546,8 +544,13 @@ editASRflag_app <- function(cont, dqo) {
       )
     }
 
-    # Re-flag parameter p with wd, reset its remaining/history to the new baseline.
+    # Re-flag parameter p with wd, retaining any points already removed.
     reflag_param <- function(wd, p) {
+      removed_rowids <- setdiff(
+        base_flagdat_list()[[p]]$.rowid,
+        cur_remaining()$.rowid
+      )
+
       working_dqo(wd)
       new_fd <- utilASRflag(cont, wd, param = p)
       new_fd$.rowid <- seq_len(nrow(new_fd))
@@ -557,11 +560,19 @@ editASRflag_app <- function(cont, dqo) {
       base_flagdat_list(bfl)
 
       rl <- remaining_list()
-      rl[[p]] <- new_fd
-      remaining_list(rl)
-
       hl <- removed_history_list()
-      hl[[p]] <- list()
+      if (length(removed_rowids) > 0L) {
+        rl[[p]] <- new_fd[!new_fd$.rowid %in% removed_rowids, , drop = FALSE]
+        hl[[p]] <- list(new_fd[
+          new_fd$.rowid %in% removed_rowids,
+          ,
+          drop = FALSE
+        ])
+      } else {
+        rl[[p]] <- new_fd
+        hl[[p]] <- list()
+      }
+      remaining_list(rl)
       removed_history_list(hl)
     }
 
@@ -765,6 +776,7 @@ editASRflag_app <- function(cont, dqo) {
       if (is.null(p)) {
         return()
       }
+
       wd <- working_dqo()
       orig <- dqo[dqo$Parameter == p, , drop = FALSE]
       for (ft in c("Suspect", "Fail")) {
@@ -780,12 +792,43 @@ editASRflag_app <- function(cont, dqo) {
 
     # ---- Start over (current parameter only) --------------------------------
     shiny::observeEvent(input$reset, {
+      shiny::showModal(shiny::modalDialog(
+        "This will restore all removed points for the current parameter. Proceed?",
+        title = "Start Over",
+        footer = shiny::tagList(
+          shiny::modalButton("Cancel"),
+          shiny::actionButton(
+            "reset_confirm",
+            "Proceed",
+            style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
+          )
+        ),
+        easyClose = TRUE
+      ))
+    })
+
+    shiny::observeEvent(input$reset_confirm, {
+      shiny::removeModal()
       update_remaining(base_flagdat_list()[[input$param_select]])
       update_history(list())
     })
 
-    # ---- Done: return results to the R session ------------------------------
+    # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
+      shiny::showModal(shiny::modalDialog(
+        "Are you sure you want to close the app?",
+        title = "Done / Close",
+        footer = shiny::tagList(
+          shiny::modalButton("Cancel"),
+          shiny::actionButton("done_confirm", "Close",
+            style = "background-color: #037B71; border-color: #037B71; color: #fff;")
+        ),
+        easyClose = TRUE
+      ))
+    })
+
+    shiny::observeEvent(input$done_confirm, {
+      shiny::removeModal()
       shiny::stopApp(
         returnValue = editASRflag_result(
           cont,

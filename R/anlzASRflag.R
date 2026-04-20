@@ -189,7 +189,8 @@ anlzASRflag <- function(flag, overlay = NULL) {
       yaxis2 = list(
         overlaying = "y",
         side = "right",
-        title = list(text = ovl_ylab, standoff = 15),
+        title = list(text = ovl_ylab, standoff = 15, font = list(color = "#91bbd6")),
+        tickfont = list(color = "#91bbd6"),
         showgrid = FALSE,
         automargin = TRUE
       )

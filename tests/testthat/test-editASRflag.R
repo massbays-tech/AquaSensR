@@ -20,8 +20,9 @@
 #     param_next / param_prev cannot be tested by reading input$param_select.
 #     Navigation is tested by manually switching param_select instead.
 #
-#  d. stopApp() segfaults inside testServer — never trigger input$done in a
-#     testServer block; use editASRflag_result() tests instead.
+#  d. stopApp() segfaults inside testServer — never trigger input$done or
+#     input$done_confirm in a testServer block; use editASRflag_result() tests
+#     instead.  (input$done now shows a modal; input$done_confirm calls stopApp.)
 #
 #  e. Plotly observers emit warnings about unregistered events (no rendered
 #     plot). Wrap testServer calls in suppressWarnings().
@@ -145,7 +146,7 @@ test_that("undo is per-batch: two clicks require two undos to fully restore", {
 # Reset
 # ---------------------------------------------------------------------------
 
-test_that("reset restores all removed points for the current parameter", {
+test_that("reset restores all removed points after confirmation", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
@@ -154,7 +155,11 @@ test_that("reset restores all removed points for the current parameter", {
       session$setInputs(`plotly_click-A` = '{"customdata":2}')
       expect_equal(output$removed_count, "Removed Points: 2")
 
+      # reset shows the modal; count unchanged until confirmed
       session$setInputs(reset = 1L)
+      expect_equal(output$removed_count, "Removed Points: 2")
+
+      session$setInputs(reset_confirm = 1L)
       expect_equal(output$removed_count, "Removed Points: 0")
     })
   )
@@ -482,7 +487,7 @@ test_that("apply_dqo fires without error and resets removals for current param",
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
 
-      # Apply DQO — should re-flag and clear removals
+      # Apply DQO — should re-flag and retain removals
       session$setInputs(
         dqo_GrMin_Suspect    = dqo_lookup(edit_first_param, "Suspect", "GrMin"),
         dqo_GrMax_Suspect    = dqo_lookup(edit_first_param, "Suspect", "GrMax"),
@@ -500,7 +505,7 @@ test_that("apply_dqo fires without error and resets removals for current param",
         dqo_FlatDelta_Fail   = dqo_lookup(edit_first_param, "Fail",    "FlatDelta"),
         apply_dqo = 1L
       )
-      expect_equal(output$removed_count, "Removed Points: 0")
+      expect_equal(output$removed_count, "Removed Points: 1")
     })
   )
 })
@@ -540,7 +545,7 @@ test_that("apply_dqo does not affect removals for other parameters", {
   )
 })
 
-test_that("reset_dqo fires without error and clears removals for current param", {
+test_that("reset_dqo fires without error and retains prior removals", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
@@ -548,6 +553,17 @@ test_that("reset_dqo fires without error and clears removals for current param",
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
 
+      expect_no_error(session$setInputs(reset_dqo = 1L))
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
+test_that("reset_dqo with no prior removals results in zero removed points", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(reset_dqo = 1L))
       expect_equal(output$removed_count, "Removed Points: 0")
     })
