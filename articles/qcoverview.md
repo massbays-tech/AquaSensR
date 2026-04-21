@@ -240,8 +240,8 @@ change check:
 ``` r
 table(flagdat$roc_flag)
 #> 
-#> fail pass 
-#>    1  926
+#> pass 
+#>  927
 ```
 
 ### 4. Flatline
