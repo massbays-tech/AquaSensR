@@ -194,13 +194,13 @@ test_that("utilASRflag skips roc check when RoCStDv set but RoCHours is NA", {
 
 test_that("utilASRflag roc_flag fires at level shift in stable series", {
   # 19 obs at 20 then a level shift to 30 (step = 10).
-  # At obs 20: window = obs 1-20, sd(c(rep(20, 19), 30)) = sqrt(5) ~ 2.236,
-  # threshold = 2.236 * 4 = 8.944. |diff| = 10 > 8.944 -> suspect.
+  # At obs 20 (t = 4.75 h): window = obs 4-19 (4-h trailing window, all at 20),
+  # sd = 0, threshold = 0 * 4 = 0. |diff| = 10 > 0 -> suspect.
   # All subsequent diffs = 0 -> pass.
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCStDv = 4, RoCHours = 25)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 4)
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
 
@@ -213,11 +213,12 @@ test_that("utilASRflag roc_flag fires at level shift in stable series", {
 
 test_that("utilASRflag roc_flag fires fail when only Fail row is configured", {
   # Same level-shift series; no Suspect thresholds, only Fail.
-  # At obs 20: sd ~ 2.236, threshold = 2.236 * 3 = 6.708. |diff| = 10 > 6.708 -> fail.
+  # At obs 20 (t = 4.75 h): window = obs 4-19 (4-h trailing window, all at 20),
+  # sd = 0, threshold = 0 * 3 = 0. |diff| = 10 > 0 -> fail.
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCStDvFail = 3, RoCHoursFail = 25)
+  md <- flag_make_md(RoCStDvFail = 3, RoCHoursFail = 4)
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
 
@@ -226,12 +227,12 @@ test_that("utilASRflag roc_flag fires fail when only Fail row is configured", {
 })
 
 test_that("utilASRflag roc_flag upgrades suspect to fail when both rows configured", {
-  # Same level-shift; suspect threshold = 8.944, fail threshold = 6.708.
+  # Same level-shift; sd = 0 in 4-h trailing window, both thresholds = 0.
   # obs 20 exceeds both -> upgraded to fail.
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCStDv = 4, RoCHours = 25, RoCStDvFail = 3, RoCHoursFail = 25)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 4, RoCStDvFail = 3, RoCHoursFail = 4)
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
 
@@ -243,7 +244,7 @@ test_that("utilASRflag skips roc fail check when Fail RoCStDv is NA", {
   vals <- c(rep(20, 19), rep(30, flag_n_obs - 19L))
 
   cd <- flag_make_cd(vals)
-  md <- flag_make_md(RoCStDv = 4, RoCHours = 25) # Fail row RoCStDv stays NA
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 4) # Fail row RoCStDv stays NA
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
 
@@ -257,7 +258,7 @@ test_that("utilASRflag skips roc fail check when Fail RoCHours is NA", {
 
   cd <- flag_make_cd(vals)
   # RoCStDvFail set but RoCHoursFail left NA -> fail check skipped
-  md <- flag_make_md(RoCStDv = 4, RoCHours = 25, RoCStDvFail = 3)
+  md <- flag_make_md(RoCStDv = 4, RoCHours = 4, RoCStDvFail = 3)
 
   result <- utilASRflag(cd, md, "Water_Temp_C")
 
