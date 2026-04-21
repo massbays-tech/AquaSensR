@@ -49,6 +49,9 @@ utilASRflagroc <- function(flag, vals, datetimes, dqo) {
         if (is.na(diffs[i])) {
           return(NA_real_)
         }
+        if ((times_num[i] - times_num[1L]) < win_sec) {
+          return(NA_real_)
+        }
         in_win <- times_num < times_num[i] &
           (times_num[i] - times_num) <= win_sec
         v <- vals[in_win & !is.na(vals)]
