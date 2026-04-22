@@ -63,11 +63,13 @@ URL: <https://github.com/massbays-tech/AquaSensR>, <https://massbays-tech.github
 BugReports: https://github.com/massbays-tech/AquaSensR/issues
 LazyData: true
 LazyDataCompression: xz
-Suggests: 
+Suggests:
     covr,
+    here,
     knitr,
     patchwork,
     quarto,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    webshot2
 Config/testthat/edition: 3
 VignetteBuilder: quarto

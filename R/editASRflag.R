@@ -107,7 +107,14 @@ editASRflag <- function(cont, dqo) {
 # Builds the shinyApp object without running it.  Separated from editASRflag()
 # so that tests can call shiny::testServer() on the server function directly.
 # Not exported.
-editASRflag_app <- function(cont, dqo) {
+#
+# @param cont    contdat data frame (see editASRflag).
+# @param dqo     dqodat data frame (see editASRflag).
+# @param dqo_sidebar_open Logical; if TRUE the DQO Settings right-sidebar is
+#   rendered in the open state on startup.  Default FALSE matches the normal
+#   interactive behaviour.  Set TRUE when generating vignette screenshots via
+#   webshot2 so the panel is visible in the initial render without JS clicks.
+editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
   # Compute flags for all parameters up front
   flagdat_list <- utilASRflagall(cont, dqo)
   params <- names(flagdat_list)
@@ -279,7 +286,7 @@ editASRflag_app <- function(cont, dqo) {
     bslib::layout_sidebar(
       sidebar = bslib::sidebar(
         position = "right",
-        open = "closed",
+        open = if (dqo_sidebar_open) "open" else "closed",
         title = "DQO Settings",
         width = 310,
         shiny::p(shiny::tags$small(

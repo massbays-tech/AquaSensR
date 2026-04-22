@@ -211,3 +211,65 @@ A second parameter can be overlaid on the plot by passing a two-column data fram
 overlay_df <- contdat[, c("DateTime", "DO_pctsat")]
 anlzASRflag(flagdat, overlay = overlay_df)
 ```
+
+## `editASRflag()` to review and clean data interactively
+
+`editASRflag()` opens a Shiny application that lets you inspect the flag plot for every parameter and selectively remove observations before exporting the cleaned data back to R.  The app uses `utilASRflag()` and `anlzASRflag()` under the hood to generate the flags and plots, but adds interactive selection tools and linked parameter removal to facilitate data cleaning.
+
+The app can be opened by providing `contdat` and `dqodat` as arguments to `editASRflag()`.  The app lets you interactively evaluate your data until you click **Done / Close**, at which point the cleaned data are returned to your R session.
+
+```r
+cleaned <- editASRflag(contdat, dqodat)
+```
+
+### Interface overview
+
+![The main editASRflag interface. The left sidebar contains parameter selection, overlay option, linked-removal controls, and the removed-points table. The flag plot for the selected parameter is in the center. The DQO Settings panel (right, not shown here) is accessed by clicking the toggle on the right edge of the plot area.](figures/editASRflag_main.png){fig-alt="Screenshot of the editASRflag Shiny app showing the flag plot and left sidebar." width="100%"}
+
+### Selecting and removing points
+
+Zoom and pan with the plot toolbar (visible when the pointer hovers over the plot, top-right corner) to focus on regions of interest before selecting.  Three removal methods are available:
+
+- **Click**: remove a single point directly on the line or flag marker.
+- **Box Select**: drag a rectangle over a region to remove multiple points at once.
+- **Lasso Select**: draw a free-form outline around the points you want to remove.
+
+After a box or lasso selection, double-click the plot background to clear the selection highlight before starting a new one.  Each removal action is logged in the **Removed Points** table in the left sidebar (scroll down to view and/or expand the sidebard by clicking and dragging the edge to the right).
+
+### Sidebar controls
+
+| Control | Action |
+|---------|--------|
+| **Parameter** | Switch between parameters.  Prev/Next buttons cycle through all parameters. |
+| **Overlay** | Display a second parameter as a gray line on a right-side axis. |
+| **Linked Removal** | Propagate every removal to one or more additional parameters simultaneously.  Undo restores all linked parameters in the same batch. |
+| **Undo Last Removal** | Restore the most recently removed point or selection batch.  Linked parameters are restored together. |
+| **Start Over** | Restore all removed points for the current parameter only. |
+| **Done / Close** | Stop the app and return the cleaned data. |
+
+### DQO Settings panel
+
+Clicking the toggle on the right edge of the plot area opens the **DQO Settings** panel. The panel shows the numeric QC thresholds from `dqodat` for the currently selected parameter across all four checks and both severity levels.
+
+![The DQO Settings panel, showing editable Suspect and Fail threshold inputs for each of the four QC checks.](figures/editASRflag_dqo.png){fig-alt="Screenshot of the editASRflag DQO Settings panel with numeric inputs for gross range, spike, rate of change, and flatline thresholds." width="100%"}
+
+Editing thresholds and clicking **Apply** re-computes flags for the current parameter while preserving any points already removed.  **Reset to original** reverts the inputs to the values from the original `dqo` file and re-evaluates all flags.  Threshold edits are per-parameter and independent.
+
+### Return value
+
+`editASRflag()` returns a named list with two elements:
+
+| Element | Description |
+|---------|-------------|
+| `contdat` | The original data frame sorted by `DateTime`, with all removed observations replaced by `NA`. |
+| `removed` | A stacked data frame of every removed observation, with columns `Parameter`, `DateTime`, and all four flag columns. |
+
+```r
+# Access the cleaned continuous data
+head(cleaned$contdat)
+
+# Review what was removed and it's flags
+head(cleaned$removed)
+```
+
+Removed rows in `contdat` are set to `NA` rather than dropped so the time series remains regular and aligned across all parameters.

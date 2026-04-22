@@ -49,6 +49,11 @@ test_that("editASRflag_app returns a shiny.appobj", {
   expect_s3_class(app, "shiny.appobj")
 })
 
+test_that("editASRflag_app with dqo_sidebar_open = TRUE returns a shiny.appobj", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, dqo_sidebar_open = TRUE)
+  expect_s3_class(app, "shiny.appobj")
+})
+
 # ---------------------------------------------------------------------------
 # Initial state
 # ---------------------------------------------------------------------------
