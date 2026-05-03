@@ -48,10 +48,10 @@ The following checks are made:
   [`paramsASR`](https://massbays-tech.github.io/AquaSensR/reference/paramsASR.md)
   is required for downstream analysis and upload to WQX
 
-- Date format (separate columns only): Should be in a format recognized
-  by
-  [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html)
-  (e.g. `"2024-06-01"`)
+- Date format (separate columns only): Should be parseable by
+  [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+  using year-first (`"2024-06-01"`), month-first (`"06/01/2024"`), or
+  day-first (`"01/06/2024"`) formats
 
 - Time format (separate columns only): Should be parseable by
   [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
@@ -60,8 +60,9 @@ The following checks are made:
 
 - DateTime format (combined column only): Should be parseable by
   [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
-  using 24-hour or 12-hour AM/PM formats (e.g. `"2024-06-01 16:30:33"`
-  or `"2024-06-01 4:30:33 PM"`)
+  using year-first, month-first, or day-first date order combined with
+  24-hour or 12-hour AM/PM time (e.g. `"2024-06-01 16:30:33"`,
+  `"06/01/2024 16:30:33"`, or `"2024-06-01 4:30:33 PM"`)
 
 - Missing values: No missing values in any columns
 

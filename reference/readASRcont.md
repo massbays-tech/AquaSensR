@@ -12,7 +12,9 @@ readASRcont(contpth, tz = "Etc/GMT+5", runchk = TRUE)
 
 - contpth:
 
-  character string of path to the continuous data file
+  character string of path to the continuous data file. Supported
+  formats are Excel (`.xlsx`), CSV (`.csv`), or comma-delimited text
+  (`.txt`).
 
 - tz:
 
@@ -33,26 +35,27 @@ downstream analysis
 
 ## Details
 
-The file is imported via
+For Excel files the file is imported via
 [`utilASRimportcont`](https://massbays-tech.github.io/AquaSensR/reference/utilASRimportcont.md),
 which forces `Date`, `Time`, and `DateTime` columns to character and
-converts Excel numeric serial representations to human-readable strings
-before checks are run.
+converts Excel numeric serial representations to human-readable strings.
+Excel files must not be open in another program (e.g. Excel,
+LibreOffice) when this function is run.
+
+For CSV and comma-delimited text files the file is read with `read.csv`,
+with `Date`, `Time`, and `DateTime` columns forced to character and all
+other columns type-guessed. No lock-file check is performed for these
+formats.
 
 Always verify the correct time zone for your data. If your data are in a
 different time zone than Etc/GMT+5 (default), specify the correct time
 zone in the `tz` argument.
-
-The file must not be open in another program (e.g. Excel, LibreOffice)
-when this function is run, otherwise an error will indicate to close the
-file before proceeding.
 
 ## Examples
 
 ``` r
 
 contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
-
 readASRcont(contpth)
 #> Running checks on continuous data...
 #>  Checking column names... OK
@@ -78,4 +81,59 @@ readASRcont(contpth)
 #> 10 2024-08-14 13:58:03         24.2      77.6    6.5                399.
 #> # ℹ 917 more rows
 #> # ℹ 3 more variables: TDS_mg_l <dbl>, Salinity_ppt <dbl>, pH_SU <dbl>
+
+contpth <- system.file('extdata/ExampleCont1.csv', package = 'AquaSensR')
+readASRcont(contpth)
+#> Running checks on continuous data...
+#>  Checking column names... OK
+#>  Checking Date, Time are present... OK
+#>  Checking at least one parameter column is present... OK
+#>  Checking date format... OK
+#>  Checking time format... OK
+#>  Checking for missing values... OK
+#>  Checking parameter columns for non-numeric values... OK
+#> 
+#> All checks passed!
+#> # A tibble: 927 × 8
+#>    DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm
+#>    <dttm>                     <dbl>     <dbl>   <dbl>              <dbl>
+#>  1 2024-08-14 13:56:33         24.2      76.9    6.44               410.
+#>  2 2024-08-14 13:56:43         24.2      76.7    6.43               410.
+#>  3 2024-08-14 13:56:53         24.2      76.6    6.42               410.
+#>  4 2024-08-14 13:57:03         24.2      76.5    6.41               410.
+#>  5 2024-08-14 13:57:13         24.2      76.3    6.4                409 
+#>  6 2024-08-14 13:57:23         24.2      76.3    6.39               409.
+#>  7 2024-08-14 13:57:33         24.2      76.2    6.39               409.
+#>  8 2024-08-14 13:57:43         24.2      76.1    6.38               409.
+#>  9 2024-08-14 13:57:53         24.2      76.5    6.41               404.
+#> 10 2024-08-14 13:58:03         24.2      77.6    6.5                399.
+#> # ℹ 917 more rows
+#> # ℹ 3 more variables: TDS_mg_l <int>, Salinity_ppt <dbl>, pH_SU <dbl>
+
+contpth <- system.file('extdata/ExampleCont2.txt', package = 'AquaSensR')
+readASRcont(contpth)
+#> Running checks on continuous data...
+#>  Checking column names... OK
+#>  Checking DateTime is present... OK
+#>  Checking at least one parameter column is present... OK
+#>  Checking DateTime format... OK
+#>  Checking for missing values... OK
+#>  Checking parameter columns for non-numeric values... OK
+#> 
+#> All checks passed!
+#> # A tibble: 927 × 8
+#>    DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm
+#>    <dttm>                     <dbl>     <dbl>   <dbl>              <dbl>
+#>  1 2024-08-14 13:56:33         24.2      76.9    6.44               410.
+#>  2 2024-08-14 13:56:43         24.2      76.7    6.43               410.
+#>  3 2024-08-14 13:56:53         24.2      76.6    6.42               410.
+#>  4 2024-08-14 13:57:03         24.2      76.5    6.41               410.
+#>  5 2024-08-14 13:57:13         24.2      76.3    6.4                409 
+#>  6 2024-08-14 13:57:23         24.2      76.3    6.39               409.
+#>  7 2024-08-14 13:57:33         24.2      76.2    6.39               409.
+#>  8 2024-08-14 13:57:43         24.2      76.1    6.38               409.
+#>  9 2024-08-14 13:57:53         24.2      76.5    6.41               404.
+#> 10 2024-08-14 13:58:03         24.2      77.6    6.5                399.
+#> # ℹ 917 more rows
+#> # ℹ 3 more variables: TDS_mg_l <int>, Salinity_ppt <dbl>, pH_SU <dbl>
 ```

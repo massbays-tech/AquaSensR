@@ -37,14 +37,16 @@ includes:
   [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
   (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and
   reformatted to `HH:MM:SS` before being united with `Date` into a
-  single `DateTime` column, which is then converted to POSIXct with the
-  specified time zone.
+  single `DateTime` column, which is then converted to POSIXct using
+  `parse_date_time()` with year-first, month-first, and day-first date
+  orders.
 
 - Convert DateTime to POSIXct (combined column format only): The
   `DateTime` column is parsed flexibly using
   [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
-  (accepting 24-hour and 12-hour AM/PM formats) and converted to POSIXct
-  with the specified time zone.
+  with year-first, month-first, and day-first date orders combined with
+  24-hour and 12-hour AM/PM time formats, and converted to POSIXct with
+  the specified time zone.
 
 - Convert non-numeric columns to numeric: Converts all columns except
   DateTime to numeric if they are not already.

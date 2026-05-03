@@ -53,7 +53,9 @@
 
 
 <dl><dt id="arg-contpth">contpth<a class="anchor" aria-label="anchor" href="#arg-contpth"></a></dt>
-<dd><p>character string of path to the continuous data file</p></dd>
+<dd><p>character string of path to the continuous data file.
+Supported formats are Excel (<code>.xlsx</code>), CSV (<code>.csv</code>), or
+comma-delimited text (<code>.txt</code>).</p></dd>
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
@@ -70,19 +72,22 @@
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The file is imported via <code><a href="utilASRimportcont.html">utilASRimportcont</a></code>, which forces
-<code>Date</code>, <code>Time</code>, and <code>DateTime</code> columns to character and
-converts Excel numeric serial representations to human-readable strings
-before checks are run.</p>
+    <p>For Excel files the file is imported via <code><a href="utilASRimportcont.html">utilASRimportcont</a></code>,
+which forces <code>Date</code>, <code>Time</code>, and <code>DateTime</code> columns to
+character and converts Excel numeric serial representations to
+human-readable strings.  Excel files must not be open in another program
+(e.g. Excel, LibreOffice) when this function is run.</p>
+<p>For CSV and comma-delimited text files the file is read with
+<code>read.csv</code>, with <code>Date</code>, <code>Time</code>, and <code>DateTime</code> columns
+forced to character and all other columns type-guessed.  No lock-file check
+is performed for these formats.</p>
 <p>Always verify the correct time zone for your data.  If your data are in a different time zone than Etc/GMT+5 (default), specify the correct time zone in the <code>tz</code> argument.</p>
-<p>The file must not be open in another program (e.g. Excel, LibreOffice) when this function is run, otherwise an error will indicate to close the file before proceeding.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont2.xlsx'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Running checks on continuous data...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking column names... OK</span>
@@ -108,6 +113,61 @@ before checks are run.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-08-14 <span style="color: #949494;">13:58:03</span>         24.2      77.6    6.5                399.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 917 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: TDS_mg_l &lt;dbl&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont1.csv'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running checks on continuous data...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking column names... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking Date, Time are present... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking at least one parameter column is present... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking date format... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking time format... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking for missing values... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking parameter columns for non-numeric values... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> All checks passed!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2024-08-14 <span style="color: #949494;">13:56:33</span>         24.2      76.9    6.44               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2024-08-14 <span style="color: #949494;">13:56:43</span>         24.2      76.7    6.43               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2024-08-14 <span style="color: #949494;">13:56:53</span>         24.2      76.6    6.42               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2024-08-14 <span style="color: #949494;">13:57:03</span>         24.2      76.5    6.41               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2024-08-14 <span style="color: #949494;">13:57:13</span>         24.2      76.3    6.4                409 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2024-08-14 <span style="color: #949494;">13:57:23</span>         24.2      76.3    6.39               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2024-08-14 <span style="color: #949494;">13:57:33</span>         24.2      76.2    6.39               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-08-14 <span style="color: #949494;">13:57:43</span>         24.2      76.1    6.38               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-08-14 <span style="color: #949494;">13:57:53</span>         24.2      76.5    6.41               404.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-08-14 <span style="color: #949494;">13:58:03</span>         24.2      77.6    6.5                399.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 917 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: TDS_mg_l &lt;int&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/ExampleCont2.txt'</span>, package <span class="op">=</span> <span class="st">'AquaSensR'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">readASRcont</span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running checks on continuous data...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking column names... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking DateTime is present... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking at least one parameter column is present... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking DateTime format... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking for missing values... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	Checking parameter columns for non-numeric values... OK</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> All checks passed!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 927 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2024-08-14 <span style="color: #949494;">13:56:33</span>         24.2      76.9    6.44               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2024-08-14 <span style="color: #949494;">13:56:43</span>         24.2      76.7    6.43               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2024-08-14 <span style="color: #949494;">13:56:53</span>         24.2      76.6    6.42               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2024-08-14 <span style="color: #949494;">13:57:03</span>         24.2      76.5    6.41               410.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2024-08-14 <span style="color: #949494;">13:57:13</span>         24.2      76.3    6.4                409 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2024-08-14 <span style="color: #949494;">13:57:23</span>         24.2      76.3    6.39               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2024-08-14 <span style="color: #949494;">13:57:33</span>         24.2      76.2    6.39               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-08-14 <span style="color: #949494;">13:57:43</span>         24.2      76.1    6.38               409.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-08-14 <span style="color: #949494;">13:57:53</span>         24.2      76.5    6.41               404.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-08-14 <span style="color: #949494;">13:58:03</span>         24.2      77.6    6.5                399.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 917 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: TDS_mg_l &lt;int&gt;, Salinity_ppt &lt;dbl&gt;, pH_SU &lt;dbl&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

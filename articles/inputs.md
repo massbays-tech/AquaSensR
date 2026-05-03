@@ -8,9 +8,11 @@ AquaSensR requires two input files to use the functions in the package:
     objectives used by the four QC checks (gross range, spike, rate of
     change, and flatline).
 
-Both file types are Excel workbooks (`.xlsx`). This vignette describes
-how to import and check each input dataset. It is critical that the
-input datasets follow the exact specified format. Example files with the
+The DQO file is an Excel workbook (`.xlsx`). The continuous monitoring
+data file can be an Excel workbook (`.xlsx`), a CSV file (`.csv`), or a
+comma-delimited text file (`.txt`). This vignette describes how to
+import and check each input dataset. It is critical that the input
+datasets follow the exact specified format. Example files with the
 correct format are included with the package and are used throughout.
 
 ## Load the package
@@ -100,14 +102,14 @@ format](#output-format) below).
 
 ### Format requirements
 
-The continuous monitoring data workbook must follow one of two accepted
+The continuous monitoring data file must follow one of two accepted
 schemas. Additional unrecognised columns will trigger an error.
 
 **Format 1: separate Date and Time columns**
 
 | Column | Description |
 |----|----|
-| `Date` | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`) |
+| `Date` | Observation date, parseable by [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html) in year-first (e.g., `2024-06-01`), month-first (e.g., `06/01/2024`), or day-first (e.g., `01/06/2024`) formats |
 | `Time` | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`) |
 
@@ -115,7 +117,7 @@ schemas. Additional unrecognised columns will trigger an error.
 
 | Column | Description |
 |----|----|
-| `DateTime` | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
+| `DateTime` | Combined date and time with the date in year-first (e.g., `2024-06-01 16:30:33`), month-first (e.g., `06/01/2024 16:30:33`), or day-first format, combined with 24-hour or 12-hour AM/PM time (e.g., `2024-06-01 4:30:33 PM`) |
 | At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`) |
 
 Currently, AquaSensR allows the following parameters. Note the inclusion
@@ -198,9 +200,10 @@ informative error if any check fails:
     `DateTime` (Format 2).
 3.  **At least one parameter column**: at least one column matches an
     entry in `paramsASR$Parameter`.
-4.  **Date format** *(Format 1 only)*: all values in `Date` parse
-    successfully with
-    [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html).
+4.  **Date format** *(Format 1 only)*: all values in `Date` are
+    parseable by
+    [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+    in year-first, month-first, or day-first formats.
 5.  **Time format** *(Format 1 only)*: all values in `Time` are
     parseable by
     [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
@@ -208,7 +211,8 @@ informative error if any check fails:
 6.  **DateTime format** *(Format 2 only)*: all values in `DateTime` are
     parseable by
     [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
-    in 24-hour or 12-hour AM/PM formats.
+    with year-first, month-first, or day-first date order combined with
+    24-hour or 12-hour AM/PM time.
 7.  **No missing values**: no `NA` in any column.
 8.  **Numeric parameter columns**: all parameter columns contain numeric
     values.
