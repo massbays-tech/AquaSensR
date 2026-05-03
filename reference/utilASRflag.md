@@ -60,11 +60,11 @@ threshold using the `"Suspect"` row thresholds, and `"fail"` using the
 or `RoCHours` is `NA` for a row that severity level is skipped. Requires
 at least 2 values in the window; otherwise `"pass"`.
 
-**Flatline** (`flat_flag`) — Counts consecutive observations where the
-absolute step from the previous observation is within `FlatDelta` units.
-Observations whose run length reaches `FlatN` are flagged, using the
-`"Suspect"` row thresholds for suspect and the `"Fail"` row thresholds
-for fail.
+**Flatline** (`flat_flag`) — Observations accumulate run length as long
+as the range (max minus min) of all values in the current run is
+strictly less than `FlatDelta`. Observations whose run length reaches
+`FlatN` are flagged, using the `"Suspect"` row thresholds for suspect
+and the `"Fail"` row thresholds for fail.
 
 Any threshold value set to `NA` in `dqodat` is silently skipped. The
 corresponding severity level is not applied and affected observations

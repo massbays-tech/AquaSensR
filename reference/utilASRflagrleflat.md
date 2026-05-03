@@ -17,10 +17,9 @@ utilASRflagrleflat(vals, delta)
 - delta:
 
   non-negative numeric scalar tolerance. An observation extends the
-  current run only when both (1) its absolute difference from the
-  immediately preceding observation is \\\le\\ `delta`, and (2) its
-  absolute difference from the first observation in the run (the anchor)
-  is \\\le\\ `delta`. Either condition failing resets the run.
+  current run only when the range (max minus min) of all values in the
+  run so far, including the new observation, is strictly \\\<\\ `delta`.
+  If this condition fails the run resets.
 
 ## Value
 
@@ -29,14 +28,13 @@ position.
 
 ## Details
 
-For each position \\i\\, the run extends only when both conditions hold:
-(1) the step from the previous observation is \\\le\\ `delta` (prevents
-a large single-step jump from continuing the run), and (2) the value is
-within \\\le\\ `delta` of the first observation in the current run
-(prevents slow cumulative drift from accumulating run length
-indefinitely). Either condition failing resets the run and anchors to
-the current observation. A run length of 1 means the observation is not
-part of a flat stretch. `NA` values in `vals` break the run.
+For each position \\i\\, the run extends only when adding the current
+observation to the run keeps the range (max minus min of all values in
+the run) strictly \\\<\\ `delta`. This prevents both large single-step
+jumps and slow cumulative drift from accumulating run length. A range
+equal to `delta` is not considered flatline. A run length of 1 means the
+observation is not part of a flat stretch. `NA` values in `vals` break
+the run.
 
 ## Examples
 

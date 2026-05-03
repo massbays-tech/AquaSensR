@@ -50,6 +50,7 @@ file before proceeding.
 ## Examples
 
 ``` r
+
 contpth <- system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR')
 
 readASRcont(contpth)

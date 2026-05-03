@@ -529,11 +529,11 @@
 </tr>
 <tr class="even">
 <td><code>FlatN</code></td>
-<td>Flatline, consecutive identical observations for a flag</td>
+<td>Flatline, run length at which a flag is triggered</td>
 </tr>
 <tr class="odd">
 <td><code>FlatDelta</code></td>
-<td>Flatline, maximum within-run absolute change treated as “identical” for a flag</td>
+<td>Flatline, the run range (max minus min) must be strictly less than this value to continue the run; a change equal to or greater than <code>FlatDelta</code> resets the run</td>
 </tr>
 <tr class="even">
 <td><code>RoCStDv</code></td>

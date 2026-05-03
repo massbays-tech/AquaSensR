@@ -78,10 +78,12 @@ in which case that level of check is skipped.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Uses <code><a href="utilASRflagrleflat.html">utilASRflagrleflat</a></code> to compute consecutive run lengths.
-An observation is flagged <code>"suspect"</code> when its run length (computed
-with <code>FlatDelta</code> from the <code>"Suspect"</code> row) reaches <code>FlatN</code>,
-and <code>"fail"</code> when its run length (computed with <code>FlatDelta</code> from
-the <code>"Fail"</code> row) reaches <code>FlatN</code>.</p>
+A run extends as long as the range (max minus min) of all values in the
+run so far is strictly less than <code>FlatDelta</code>.  An observation is
+flagged <code>"suspect"</code> when its run length reaches <code>FlatN</code> (using
+<code>FlatDelta</code> from the <code>"Suspect"</code> row), and <code>"fail"</code> when
+its run length reaches <code>FlatN</code> (using <code>FlatDelta</code> from the
+<code>"Fail"</code> row).</p>
     </div>
 
     <div class="section level2">

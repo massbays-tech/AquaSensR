@@ -98,11 +98,11 @@ exceeds that threshold using the <code>"Suspect"</code> row thresholds, and
 independently; if <code>RoCStDv</code> or <code>RoCHours</code> is <code>NA</code> for a row
 that severity level is skipped.  Requires at least 2 values in the window;
 otherwise <code>"pass"</code>.</p>
-<p><strong>Flatline</strong> (<code>flat_flag</code>) — Counts consecutive observations
-where the absolute step from the previous observation is within
-<code>FlatDelta</code> units.  Observations whose run length reaches <code>FlatN</code>
-are flagged, using the <code>"Suspect"</code> row thresholds for suspect and the
-<code>"Fail"</code> row thresholds for fail.</p>
+<p><strong>Flatline</strong> (<code>flat_flag</code>) — Observations accumulate run length
+as long as the range (max minus min) of all values in the current run is
+strictly less than <code>FlatDelta</code>.  Observations whose run length reaches
+<code>FlatN</code> are flagged, using the <code>"Suspect"</code> row thresholds for
+suspect and the <code>"Fail"</code> row thresholds for fail.</p>
 <p>Any threshold value set to <code>NA</code> in <code>dqodat</code> is silently skipped.  The corresponding severity level is not applied and affected observations
 remain <code>"pass"</code> for that check.  This applies to both the
 <code>"Suspect"</code> and <code>"Fail"</code> rows independently, so individual checks

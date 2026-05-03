@@ -36,10 +36,12 @@ Updated character flag vector.
 
 Uses
 [`utilASRflagrleflat`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflagrleflat.md)
-to compute consecutive run lengths. An observation is flagged
-`"suspect"` when its run length (computed with `FlatDelta` from the
-`"Suspect"` row) reaches `FlatN`, and `"fail"` when its run length
-(computed with `FlatDelta` from the `"Fail"` row) reaches `FlatN`.
+to compute consecutive run lengths. A run extends as long as the range
+(max minus min) of all values in the run so far is strictly less than
+`FlatDelta`. An observation is flagged `"suspect"` when its run length
+reaches `FlatN` (using `FlatDelta` from the `"Suspect"` row), and
+`"fail"` when its run length reaches `FlatN` (using `FlatDelta` from the
+`"Fail"` row).
 
 ## Examples
 

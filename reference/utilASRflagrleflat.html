@@ -58,10 +58,9 @@
 
 <dt id="arg-delta">delta<a class="anchor" aria-label="anchor" href="#arg-delta"></a></dt>
 <dd><p>non-negative numeric scalar tolerance.  An observation extends
-the current run only when both (1) its absolute difference from the
-immediately preceding observation is \(\le\) <code>delta</code>, and (2) its
-absolute difference from the first observation in the run (the anchor) is
-\(\le\) <code>delta</code>.  Either condition failing resets the run.</p></dd>
+the current run only when the range (max minus min) of all values in the
+run so far, including the new observation, is strictly \(&lt;\) <code>delta</code>.
+If this condition fails the run resets.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -71,13 +70,11 @@ at each position.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>For each position \(i\), the run extends only when both
-conditions hold: (1) the step from the previous observation is
-\(\le\) <code>delta</code> (prevents a large single-step jump from continuing
-the run), and (2) the value is within \(\le\) <code>delta</code> of the first
-observation in the current run (prevents slow cumulative drift from
-accumulating run length indefinitely).  Either condition failing resets the
-run and anchors to the current observation.
+    <p>For each position \(i\), the run extends only when adding the
+current observation to the run keeps the range (max minus min of all
+values in the run) strictly \(&lt;\) <code>delta</code>.  This prevents both
+large single-step jumps and slow cumulative drift from accumulating run
+length.  A range equal to <code>delta</code> is not considered flatline.
 A run length of 1 means the observation is not part of a flat stretch.
 <code>NA</code> values in <code>vals</code> break the run.</p>
     </div>

@@ -14,12 +14,14 @@ A precompiled version of the package can be installed from
 [R-Universe](https://massbays-tech.r-universe.dev/AquaSensR) as follows:
 
 ``` r
+
 install.packages('AquaSensR', repos = c('https://massbays-tech.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 A source version of the package can be installed from GitHub as follows:
 
 ``` r
+
 # Install the remotes package if you haven't already
 install.packages("remotes")
 

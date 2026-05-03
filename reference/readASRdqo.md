@@ -33,6 +33,7 @@ file before proceeding.
 ## Examples
 
 ``` r
+
 dqopth <- system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR')
 
 readASRdqo(dqopth)

@@ -18,6 +18,7 @@ correct format are included with the package and are used throughout.
 Load the package in an R session after installation:
 
 ``` r
+
 library(AquaSensR)
 ```
 
@@ -28,6 +29,7 @@ variables. In practice you will supply paths to your own files, for
 example:
 
 ``` r
+
 contpth <- "path/to/your/ContinuousData.xlsx"
 dqopth <- "path/to/your/DQO.xlsx"
 ```
@@ -35,6 +37,7 @@ dqopth <- "path/to/your/DQO.xlsx"
 The examples below use the files included with the package:
 
 ``` r
+
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 ```
@@ -61,6 +64,7 @@ The examples below demonstrate both.
 **Format 1** — separate `Date` and `Time` columns (`ExampleCont1.xlsx`):
 
 ``` r
+
 contdat <- readASRcont(contpth)
 #> Running checks on continuous data...
 #>  Checking column names... OK
@@ -77,6 +81,7 @@ contdat <- readASRcont(contpth)
 **Format 2** — combined `DateTime` column (`ExampleCont2.xlsx`):
 
 ``` r
+
 contpth2 <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
 contdat2 <- readASRcont(contpth2)
 #> Running checks on continuous data...
@@ -100,18 +105,18 @@ schemas. Additional unrecognised columns will trigger an error.
 
 **Format 1: separate Date and Time columns**
 
-| Column                        | Description                                                                                                                              |
-|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `Date`                        | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`)             |
-| `Time`                        | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`)                                                         |
+| Column | Description |
+|----|----|
+| `Date` | Observation date, parseable by [`lubridate::ymd()`](https://lubridate.tidyverse.org/reference/ymd.html) (e.g., `2024-06-01`) |
+| `Time` | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`) |
 
 **Format 2: combined DateTime column**
 
-| Column                        | Description                                                                                                             |
-|-------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `DateTime`                    | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
-| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`)                                        |
+| Column | Description |
+|----|----|
+| `DateTime` | Combined date and time in 24-hour (e.g., `2024-06-01 16:30:33`) or 12-hour AM/PM (e.g., `2024-06-01 4:30:33 PM`) format |
+| At least one parameter column | Column name must match a `Parameter` entry in `paramsASR` (e.g., `Water_Temp_C`) |
 
 Currently, AquaSensR allows the following parameters. Note the inclusion
 of the units in the parameter name. Make sure the parameter name matches
@@ -160,6 +165,7 @@ The list above can also be viewed in R with the `paramsASR` dataset,
 which is included in the package and used for the checks.
 
 ``` r
+
 paramsASR
 #> # A tibble: 36 × 6
 #>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
@@ -215,6 +221,7 @@ to stop immediately. The following examples demonstrate this for both
 formats.
 
 ``` r
+
 nms <- names(readxl::read_excel(contpth, n_max = 0))
 col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 contdat_raw <- suppressWarnings(
@@ -245,6 +252,7 @@ returns a data frame with the same structure regardless of input format:
 - One numeric column per parameter present in the input file
 
 ``` r
+
 head(contdat)
 #> # A tibble: 6 × 8
 #>   DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm TDS_mg_l
@@ -259,6 +267,7 @@ head(contdat)
 ```
 
 ``` r
+
 head(contdat2)
 #> # A tibble: 6 × 8
 #>   DateTime            Water_Temp_C DO_pctsat DO_mg_l Conductivity_uS_cm TDS_mg_l
@@ -286,6 +295,7 @@ runs checks via
 and returns a formatted data frame.
 
 ``` r
+
 dqodat <- readASRdqo(dqopth)
 #> Running checks on data quality objectives...
 #>  Checking column names... OK
@@ -303,17 +313,17 @@ dqodat <- readASRdqo(dqopth)
 The workbook must contain exactly the following columns (all required;
 thresholds you do not want to apply should be left blank / `NA`):
 
-| Column      | Description                                                                              |
-|-------------|------------------------------------------------------------------------------------------|
-| `Parameter` | Parameter name matching `paramsASR$Parameter`                                            |
-| `Flag`      | Flag level for the thresholds in the row, either “Fail” or “Suspect”                     |
-| `GrMin`     | Gross range, lower threshold                                                             |
-| `GrMax`     | Gross range, upper threshold                                                             |
-| `Spike`     | Spike, absolute step size for a flag                                                     |
-| `FlatN`     | Flatline, consecutive identical observations for a flag                                  |
-| `FlatDelta` | Flatline, maximum within-run absolute change treated as “identical” for a flag           |
-| `RoCStDv`   | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCStDv`) |
-| `RoCHours`  | Rate of change, look-back window length in hours                                         |
+| Column | Description |
+|----|----|
+| `Parameter` | Parameter name matching `paramsASR$Parameter` |
+| `Flag` | Flag level for the thresholds in the row, either “Fail” or “Suspect” |
+| `GrMin` | Gross range, lower threshold |
+| `GrMax` | Gross range, upper threshold |
+| `Spike` | Spike, absolute step size for a flag |
+| `FlatN` | Flatline, run length at which a flag is triggered |
+| `FlatDelta` | Flatline, the run range (max minus min) must be strictly less than this value to continue the run; a change equal to or greater than `FlatDelta` resets the run |
+| `RoCStDv` | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCStDv`) |
+| `RoCHours` | Rate of change, look-back window length in hours |
 
 ### Checks performed
 
@@ -344,6 +354,7 @@ Supplying an unrecognised parameter name fails the parameter format
 check:
 
 ``` r
+
 # import the data for the example
 dqodat_raw <- suppressWarnings(
   readxl::read_excel(dqopth, na = c("NA", "na", ""), guess_max = Inf)
@@ -370,6 +381,7 @@ returns a data frame with the columns listed in the format requirements
 table above, with all threshold columns coerced to numeric.
 
 ``` r
+
 head(dqodat)
 #> # A tibble: 6 × 9
 #>   Parameter    Flag    GrMin GrMax Spike FlatN FlatDelta RoCStDv RoCHours
