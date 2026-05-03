@@ -180,8 +180,8 @@ The workbook must contain exactly the following columns (all required; threshold
 | `GrMin` | Gross range, lower threshold |
 | `GrMax` | Gross range, upper threshold |
 | `Spike` | Spike, absolute step size for a flag |
-| `FlatN` | Flatline, consecutive identical observations for a flag |
-| `FlatDelta` | Flatline, maximum within-run absolute change treated as "identical" for a flag |
+| `FlatN` | Flatline, run length at which a flag is triggered |
+| `FlatDelta` | Flatline, the run range (max minus min) must be strictly less than this value to continue the run; a change equal to or greater than `FlatDelta` resets the run |
 | `RoCStDv` | Rate of change, multiplier applied to the rolling SD (flag if `\|diff\| > SD × RoCStDv`) |
 | `RoCHours` | Rate of change, look-back window length in hours |
 

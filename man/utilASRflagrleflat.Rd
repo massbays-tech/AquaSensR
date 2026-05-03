@@ -10,10 +10,9 @@ utilASRflagrleflat(vals, delta)
 \item{vals}{numeric vector of observed values.}
 
 \item{delta}{non-negative numeric scalar tolerance.  An observation extends
-the current run only when both (1) its absolute difference from the
-immediately preceding observation is \eqn{\le} \code{delta}, and (2) its
-absolute difference from the first observation in the run (the anchor) is
-\eqn{\le} \code{delta}.  Either condition failing resets the run.}
+the current run only when the range (max minus min) of all values in the
+run so far, including the new observation, is strictly \eqn{<} \code{delta}.
+If this condition fails the run resets.}
 }
 \value{
 Integer vector the same length as \code{vals} giving the run length
@@ -23,13 +22,11 @@ at each position.
 Compute consecutive run lengths for flatline detection
 }
 \details{
-For each position \eqn{i}, the run extends only when both
-conditions hold: (1) the step from the previous observation is
-\eqn{\le} \code{delta} (prevents a large single-step jump from continuing
-the run), and (2) the value is within \eqn{\le} \code{delta} of the first
-observation in the current run (prevents slow cumulative drift from
-accumulating run length indefinitely).  Either condition failing resets the
-run and anchors to the current observation.
+For each position \eqn{i}, the run extends only when adding the
+current observation to the run keeps the range (max minus min of all
+values in the run) strictly \eqn{<} \code{delta}.  This prevents both
+large single-step jumps and slow cumulative drift from accumulating run
+length.  A range equal to \code{delta} is not considered flatline.
 A run length of 1 means the observation is not part of a flat stretch.
 \code{NA} values in \code{vals} break the run.
 }

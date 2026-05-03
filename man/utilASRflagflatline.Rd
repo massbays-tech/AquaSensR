@@ -28,10 +28,12 @@ Apply flatline QC flag
 }
 \details{
 Uses \code{\link{utilASRflagrleflat}} to compute consecutive run lengths.
-An observation is flagged \code{"suspect"} when its run length (computed
-with \code{FlatDelta} from the \code{"Suspect"} row) reaches \code{FlatN},
-and \code{"fail"} when its run length (computed with \code{FlatDelta} from
-the \code{"Fail"} row) reaches \code{FlatN}.
+A run extends as long as the range (max minus min) of all values in the
+run so far is strictly less than \code{FlatDelta}.  An observation is
+flagged \code{"suspect"} when its run length reaches \code{FlatN} (using
+\code{FlatDelta} from the \code{"Suspect"} row), and \code{"fail"} when
+its run length reaches \code{FlatN} (using \code{FlatDelta} from the
+\code{"Fail"} row).
 }
 \examples{
 flag <- rep("pass", 8)

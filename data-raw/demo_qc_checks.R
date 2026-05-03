@@ -168,8 +168,8 @@ fd3 <- utilASRflag(cd3, md3, "Water_Temp_C")
 # Normal temps ~20 °C (sd = 0.4).  Two "sensor stuck" periods:
 #
 #   obs 150-165 (16 obs): long flatline
-#     - rl resets at obs 150 (boundary diff likely > FlatFailDelta)
-#     - within-run |diff| = 0 <= FlatFailDelta = 0.02
+#     - rl resets at obs 150 (boundary range > FlatFailDelta)
+#     - within-run range (max - min) = 0 < FlatFailDelta = 0.02
 #     - rl grows to 15 by obs 165
 #     - FlatSuspectN = 5  -> suspect from obs 154 onward
 #     - FlatFailN    = 10 -> fail    from obs 159 onward

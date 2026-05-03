@@ -2,18 +2,15 @@
 #'
 #' @param vals numeric vector of observed values.
 #' @param delta non-negative numeric scalar tolerance.  An observation extends
-#'   the current run only when both (1) its absolute difference from the
-#'   immediately preceding observation is \eqn{\le} \code{delta}, and (2) its
-#'   absolute difference from the first observation in the run (the anchor) is
-#'   \eqn{\le} \code{delta}.  Either condition failing resets the run.
+#'   the current run only when the range (max minus min) of all values in the
+#'   run so far, including the new observation, is strictly \eqn{<} \code{delta}.
+#'   If this condition fails the run resets.
 #'
-#' @details For each position \eqn{i}, the run extends only when both
-#'   conditions hold: (1) the step from the previous observation is
-#'   \eqn{\le} \code{delta} (prevents a large single-step jump from continuing
-#'   the run), and (2) the value is within \eqn{\le} \code{delta} of the first
-#'   observation in the current run (prevents slow cumulative drift from
-#'   accumulating run length indefinitely).  Either condition failing resets the
-#'   run and anchors to the current observation.
+#' @details For each position \eqn{i}, the run extends only when adding the
+#'   current observation to the run keeps the range (max minus min of all
+#'   values in the run) strictly \eqn{<} \code{delta}.  This prevents both
+#'   large single-step jumps and slow cumulative drift from accumulating run
+#'   length.  A range equal to \code{delta} is not considered flatline.
 #'   A run length of 1 means the observation is not part of a flat stretch.
 #'   \code{NA} values in \code{vals} break the run.
 #'
@@ -29,19 +26,26 @@ utilASRflagrleflat <- function(vals, delta) {
   n <- length(vals)
   rl <- integer(n)
   rl[1L] <- 1L
-  run_start_val <- vals[1L]
+  run_min <- vals[1L]
+  run_max <- vals[1L]
   for (i in seq_len(n - 1L) + 1L) {
-    if (
-      !is.na(vals[i]) &&
-        !is.na(vals[i - 1L]) &&
-        !is.na(run_start_val) &&
-        abs(vals[i] - vals[i - 1L]) <= delta &&
-        abs(vals[i] - run_start_val) <= delta
-    ) {
-      rl[i] <- rl[i - 1L] + 1L
+    v <- vals[i]
+    if (!is.na(v) && !is.na(run_min)) {
+      new_min <- min(run_min, v)
+      new_max <- max(run_max, v)
+      if (round(new_max - new_min, 10) < delta) {
+        rl[i] <- rl[i - 1L] + 1L
+        run_min <- new_min
+        run_max <- new_max
+      } else {
+        rl[i] <- 1L
+        run_min <- v
+        run_max <- v
+      }
     } else {
       rl[i] <- 1L
-      run_start_val <- vals[i]
+      run_min <- v
+      run_max <- v
     }
   }
   rl

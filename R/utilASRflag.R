@@ -34,11 +34,11 @@
 #' that severity level is skipped.  Requires at least 2 values in the window;
 #' otherwise \code{"pass"}.
 #'
-#' \strong{Flatline} (\code{flat_flag}) — Counts consecutive observations
-#' where the absolute step from the previous observation is within
-#' \code{FlatDelta} units.  Observations whose run length reaches \code{FlatN}
-#' are flagged, using the \code{"Suspect"} row thresholds for suspect and the
-#' \code{"Fail"} row thresholds for fail.
+#' \strong{Flatline} (\code{flat_flag}) — Observations accumulate run length
+#' as long as the range (max minus min) of all values in the current run is
+#' strictly less than \code{FlatDelta}.  Observations whose run length reaches
+#' \code{FlatN} are flagged, using the \code{"Suspect"} row thresholds for
+#' suspect and the \code{"Fail"} row thresholds for fail.
 #'
 #' Any threshold value set to \code{NA} in \code{dqodat} is silently skipped.  The corresponding severity level is not applied and affected observations
 #' remain \code{"pass"} for that check.  This applies to both the

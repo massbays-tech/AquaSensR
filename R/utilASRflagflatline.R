@@ -12,10 +12,12 @@
 #'   in which case that level of check is skipped.
 #'
 #' @details Uses \code{\link{utilASRflagrleflat}} to compute consecutive run lengths.
-#'   An observation is flagged \code{"suspect"} when its run length (computed
-#'   with \code{FlatDelta} from the \code{"Suspect"} row) reaches \code{FlatN},
-#'   and \code{"fail"} when its run length (computed with \code{FlatDelta} from
-#'   the \code{"Fail"} row) reaches \code{FlatN}.
+#'   A run extends as long as the range (max minus min) of all values in the
+#'   run so far is strictly less than \code{FlatDelta}.  An observation is
+#'   flagged \code{"suspect"} when its run length reaches \code{FlatN} (using
+#'   \code{FlatDelta} from the \code{"Suspect"} row), and \code{"fail"} when
+#'   its run length reaches \code{FlatN} (using \code{FlatDelta} from the
+#'   \code{"Fail"} row).
 #'
 #' @return Updated character flag vector.
 #'
@@ -34,11 +36,15 @@ utilASRflagflatline <- function(flag, vals, dqo) {
   fail <- dqo[dqo$Flag == "Fail", ]
 
   has_susp <- nrow(susp) > 0 &&
-    "FlatN" %in% names(dqo) && !is.na(susp$FlatN) &&
-    "FlatDelta" %in% names(dqo) && !is.na(susp$FlatDelta)
+    "FlatN" %in% names(dqo) &&
+    !is.na(susp$FlatN) &&
+    "FlatDelta" %in% names(dqo) &&
+    !is.na(susp$FlatDelta)
   has_fail <- nrow(fail) > 0 &&
-    "FlatN" %in% names(dqo) && !is.na(fail$FlatN) &&
-    "FlatDelta" %in% names(dqo) && !is.na(fail$FlatDelta)
+    "FlatN" %in% names(dqo) &&
+    !is.na(fail$FlatN) &&
+    "FlatDelta" %in% names(dqo) &&
+    !is.na(fail$FlatDelta)
 
   if (has_susp) {
     rl <- utilASRflagrleflat(vals, susp$FlatDelta)

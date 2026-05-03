@@ -272,7 +272,7 @@ test_that("utilASRflag skips roc fail check when Fail RoCHours is NA", {
 
 test_that("utilASRflag skips flat fail check when FlatFailN is NA", {
   # run of 12 identical values (rl = 1..12) followed by incrementing values
-  # (step=1 > delta=0.02 each time, so no second run builds).
+  # (range grows to 1 after 2 obs > delta=0.02, so no second run builds).
   # FlatSuspectN=5 fires at obs 5-12, FlatFailN is NA -> no fail
   vals <- c(rep(20, 12), 20 + seq_len(flag_n_obs - 12L))
 
@@ -286,7 +286,7 @@ test_that("utilASRflag skips flat fail check when FlatFailN is NA", {
 })
 
 test_that("utilASRflag skips flat suspect check when FlatSuspectN is NA", {
-  # same series; FlatFailN=10 fires at obs 10-12, FlatSuspectN is NA -> no suspect
+  # same series (range > delta after 2 increments); FlatFailN=10 fires at obs 10-12, FlatSuspectN is NA -> no suspect
   vals <- c(rep(20, 12), 20 + seq_len(flag_n_obs - 12L))
 
   cd <- flag_make_cd(vals)
@@ -299,13 +299,13 @@ test_that("utilASRflag skips flat suspect check when FlatSuspectN is NA", {
 })
 
 test_that("utilASRflag flat_flag fires for suspect and fail run lengths", {
-  # obs 1-9:   slowly increasing (diffs = 0.1 > delta -> run always resets)
+  # obs 1-9:   slowly increasing (range grows to 0.1 after 2 obs > delta -> run always resets)
   # obs 10:    25.0 (large boundary break)
   # obs 11-25: 20.0 (stuck sensor, 15 identical readings)
   #   rl[11] = 1 (boundary reset), rl[12] = 2, ..., rl[25] = 15
   #   FlatSuspectN = 5  -> suspect from obs 15
   #   FlatFailN   = 10  -> fail    from obs 20
-  # obs 26-30: slowly increasing (run resets each step)
+  # obs 26-30: slowly increasing (range > delta after 2 obs -> run resets)
   vals <- c(
     seq(20.1, 20.9, by = 0.1),
     25.0,
