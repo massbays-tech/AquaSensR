@@ -6,8 +6,8 @@
 #' @details This function is used internally within \code{\link{readASRcont}} to format the input data for downstream analysis.  The formatting includes:
 #'
 #' \itemize{
-#'   \item Combine Date and Time columns (separate column format only): The \code{Time} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and reformatted to \code{HH:MM:SS} before being united with \code{Date} into a single \code{DateTime} column, which is then converted to POSIXct with the specified time zone.
-#'   \item Convert DateTime to POSIXct (combined column format only): The \code{DateTime} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour and 12-hour AM/PM formats) and converted to POSIXct with the specified time zone.
+#'   \item Combine Date and Time columns (separate column format only): The \code{Time} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} (accepting 24-hour, 12-hour AM/PM, and Excel-prefixed formats) and reformatted to \code{HH:MM:SS} before being united with \code{Date} into a single \code{DateTime} column, which is then converted to POSIXct using \code{parse_date_time()} with year-first, month-first, and day-first date orders.
+#'   \item Convert DateTime to POSIXct (combined column format only): The \code{DateTime} column is parsed flexibly using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} with year-first, month-first, and day-first date orders combined with 24-hour and 12-hour AM/PM time formats, and converted to POSIXct with the specified time zone.
 #'   \item Convert non-numeric columns to numeric: Converts all columns except DateTime to numeric if they are not already.
 #' }
 #'
@@ -28,7 +28,9 @@ formASRcont <- function(contdat, tz = 'Etc/GMT+5') {
       dplyr::mutate(
         DateTime = lubridate::parse_date_time(
           DateTime,
-          orders = c('ymd IMSp', 'ymd HMS', 'ymd HM'),
+          orders = c('ymd IMSp', 'mdy IMSp', 'dmy IMSp',
+                     'ymd HMS',  'mdy HMS',  'dmy HMS',
+                     'ymd HM',   'mdy HM',   'dmy HM'),
           tz = tz
         )
       )
@@ -47,7 +49,11 @@ formASRcont <- function(contdat, tz = 'Etc/GMT+5') {
       ) |>
       tidyr::unite('DateTime', Date, Time, sep = ' ', remove = TRUE) |>
       dplyr::mutate(
-        DateTime = lubridate::ymd_hms(DateTime, tz = tz)
+        DateTime = lubridate::parse_date_time(
+          DateTime,
+          orders = c('ymd HMS', 'mdy HMS', 'dmy HMS'),
+          tz = tz
+        )
       )
   }
 

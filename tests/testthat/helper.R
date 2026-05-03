@@ -79,6 +79,12 @@ tst <- list(
     system.file('extdata/ExampleCont2.xlsx', package = 'AquaSensR'),
     runchk = F
   ),
+  # CSV paths
+  contpthcsv  = system.file('extdata/ExampleCont1.csv', package = 'AquaSensR'),
+  contpthcsv2 = system.file('extdata/ExampleCont2.csv', package = 'AquaSensR'),
+  # TXT paths
+  contpthtxt  = system.file('extdata/ExampleCont1.txt', package = 'AquaSensR'),
+  contpthtxt2 = system.file('extdata/ExampleCont2.txt', package = 'AquaSensR'),
   # data quality objectives
   dqopth = system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR'),
   dqodatchk = suppressWarnings(readxl::read_excel(

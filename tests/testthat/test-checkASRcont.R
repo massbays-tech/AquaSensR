@@ -90,6 +90,18 @@ test_that("checkASRcont errors when no parameter columns present", {
   )
 })
 
+test_that("checkASRcont accepts Date in MM/DD/YYYY (month-first) format", {
+  mdy_data <- tst$contdatchk
+  mdy_data$Date <- "8/14/2024"
+  expect_no_error(checkASRcont(mdy_data))
+})
+
+test_that("checkASRcont accepts Date in DD/MM/YYYY (day-first) format", {
+  dmy_data <- tst$contdatchk
+  dmy_data$Date <- "14/08/2024"
+  expect_no_error(checkASRcont(dmy_data))
+})
+
 test_that("checkASRcont errors on invalid date format", {
   bad_data <- tst$contdatchk
   bad_data$Date[1] <- "invalid-date"
@@ -163,6 +175,18 @@ test_that("checkASRcont errors on invalid DateTime format", {
     "\tChecking DateTime format...\n\tThe following rows have DateTime values that are not in a recognizable format: 1",
     fixed = TRUE
   )
+})
+
+test_that("checkASRcont accepts DateTime in MM/DD/YYYY HH:MM:SS (month-first, 24-hour) format", {
+  mdy_dt_data <- tst$contdatchk2
+  mdy_dt_data$DateTime <- "08/14/2024 13:56:33"
+  expect_no_error(checkASRcont(mdy_dt_data))
+})
+
+test_that("checkASRcont accepts DateTime in MM/DD/YYYY H:MM:SS PM (month-first, 12-hour) format", {
+  mdy_dt_data <- tst$contdatchk2
+  mdy_dt_data$DateTime <- "08/14/2024 1:56:33 PM"
+  expect_no_error(checkASRcont(mdy_dt_data))
 })
 
 test_that("checkASRcont errors when DateTime column missing (combined format)", {
