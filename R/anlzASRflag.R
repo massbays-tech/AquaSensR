@@ -146,6 +146,7 @@ anlzASRflag <- function(flag, overlay = NULL) {
     p,
     xaxis = list(title = ""),
     yaxis = list(title = ylab),
+    showlegend = TRUE,
     legend = list(
       title = list(text = "<b>Check \u2013 Severity</b>"),
       tracegroupgap = 4
