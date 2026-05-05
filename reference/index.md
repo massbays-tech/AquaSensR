@@ -49,6 +49,8 @@ Additional miscellaneous functions used internally by other functions.
 
 - [`utilASRimportcont()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRimportcont.md)
   : Import continuous monitoring data from an Excel file
+- [`utilASRopencheck()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRopencheck.md)
+  : Check if an Excel file is open and execute a read function
 
 ## Supplementary datasets
 
