@@ -46,6 +46,7 @@ reference:
     Additional miscellaneous functions used internally by other functions.
   contents: 
   - utilASRimportcont
+  - utilASRopencheck
 - title: Supplementary datasets
   desc: >
     Supplementary datasets for the read, quality control, and analysis functions.
