@@ -112,7 +112,7 @@ paramsASR
 
 ### Checks performed
 
-The `readASRcont()` function imports the data and runs a series of checks using the `checkASRcont()` function.  The checks evaluate the following and stops with an informative error if any check fails:
+The `readASRcont()` function imports the data and runs a series of checks using the `checkASRcont()` function.  Most checks stop with an informative error if they fail, except the check for missing values which produces a warning since these may occur in continuous data.  The checks evaluate the following:
 
 1. **Column names**: all columns are either `Date`, `Time`, `DateTime`, or a recognised parameter from `paramsASR`.
 2. **Required columns present**: either `Date` and `Time` (Format 1) or `DateTime` (Format 2).
@@ -120,7 +120,7 @@ The `readASRcont()` function imports the data and runs a series of checks using 
 4. **Date format** *(Format 1 only)*: all values in `Date` are parseable by `lubridate::parse_date_time()` in year-first, month-first, or day-first formats.
 5. **Time format** *(Format 1 only)*: all values in `Time` are parseable by `lubridate::parse_date_time()` in 24-hour, 12-hour AM/PM, or Excel-native formats.
 6. **DateTime format** *(Format 2 only)*: all values in `DateTime` are parseable by `lubridate::parse_date_time()` with year-first, month-first, or day-first date order combined with 24-hour or 12-hour AM/PM time.
-7. **No missing values**: no `NA` in any column.
+7. **Missing values**: `NA` values in parameter columns produce a warning listing the affected columns and row numbers.  Missing values in `DateTime`, `Date`, or `Time` columns remain an error.
 8. **Numeric parameter columns**: all parameter columns contain numeric values.
 
 ### Example: triggering an error
@@ -129,7 +129,6 @@ Adding an unrecognised column causes `checkASRcont()` to stop immediately. The f
 
 ```{r}
 #| error: true
-
 nms <- names(readxl::read_excel(contpth, n_max = 0))
 col_types <- ifelse(nms %in% c("Date", "Time", "DateTime"), "text", "guess")
 contdat_raw <- suppressWarnings(

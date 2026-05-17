@@ -10,7 +10,7 @@ checkASRcont(contdat)
 \item{contdat}{input data frame for results}
 }
 \value{
-\code{contdat} is returned as is if no errors are found, otherwise an informative error message is returned prompting the user to make the required correction to the raw data before proceeding.
+\code{contdat} is returned as is if no errors are found.  An informative error is raised for structural problems (unrecognised column names, missing required columns, unparseable date/time values, or non-numeric parameter values).  Missing values in parameter columns produce a warning instead of an error.
 }
 \description{
 Check continuous monitoring data
@@ -32,7 +32,7 @@ The following checks are made:
 \item Date format (separate columns only): Should be parseable by \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} using year-first (\code{"2024-06-01"}), month-first (\code{"06/01/2024"}), or day-first (\code{"01/06/2024"}) formats
 \item Time format (separate columns only): Should be parseable by \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} using 24-hour (\code{"16:30:33"}), 12-hour AM/PM (\code{"4:30:33 PM"}), or Excel-prefixed (\code{"1899-12-31 16:30:33"}) formats
 \item DateTime format (combined column only): Should be parseable by \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} using year-first, month-first, or day-first date order combined with 24-hour or 12-hour AM/PM time (e.g. \code{"2024-06-01 16:30:33"}, \code{"06/01/2024 16:30:33"}, or \code{"2024-06-01 4:30:33 PM"})
-\item Missing values: No missing values in any columns
+\item Missing values: Missing values in parameter columns produce a warning rather than an error, since cleaned data files may legitimately contain \code{NA} values.  Missing values in \code{DateTime}, \code{Date}, or \code{Time} columns still cause an error.
 \item Parameter columns should be numeric: All parameter columns should be numeric values
 }
 }

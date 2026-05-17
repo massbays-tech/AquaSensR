@@ -124,7 +124,7 @@ test_that("checkASRcont errors on invalid time format", {
   )
 })
 
-test_that("checkASRcont errors on missing values", {
+test_that("checkASRcont warns on missing values", {
   bad_data <- tst$contdatchk
   param_name <- 'Water_Temp_C'
   bad_data[[param_name]][3] <- NA
@@ -135,7 +135,7 @@ test_that("checkASRcont errors on missing values", {
     "Water_Temp_C (3)"
   )
 
-  expect_error(
+  expect_warning(
     checkASRcont(bad_data),
     expected_msg,
     fixed = TRUE
@@ -152,7 +152,7 @@ test_that("checkASRcont errors on missing values", {
     "Water_Temp_C (1, 3)"
   )
 
-  expect_error(
+  expect_warning(
     checkASRcont(bad_data),
     expected_msg,
     fixed = TRUE
