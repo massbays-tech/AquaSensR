@@ -191,8 +191,9 @@ The
 [`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
 function imports the data and runs a series of checks using the
 [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md)
-function. The checks evaluate the following and stops with an
-informative error if any check fails:
+function. Most checks stop with an informative error if they fail,
+except the check for missing values which produces a warning since these
+may occur in continuous data. The checks evaluate the following:
 
 1.  **Column names**: all columns are either `Date`, `Time`, `DateTime`,
     or a recognised parameter from `paramsASR`.
@@ -213,7 +214,9 @@ informative error if any check fails:
     [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
     with year-first, month-first, or day-first date order combined with
     24-hour or 12-hour AM/PM time.
-7.  **No missing values**: no `NA` in any column.
+7.  **Missing values**: `NA` values in parameter columns produce a
+    warning listing the affected columns and row numbers. Missing values
+    in `DateTime`, `Date`, or `Time` columns remain an error.
 8.  **Numeric parameter columns**: all parameter columns contain numeric
     values.
 

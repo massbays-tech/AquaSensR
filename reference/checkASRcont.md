@@ -16,9 +16,11 @@ checkASRcont(contdat)
 
 ## Value
 
-`contdat` is returned as is if no errors are found, otherwise an
-informative error message is returned prompting the user to make the
-required correction to the raw data before proceeding.
+`contdat` is returned as is if no errors are found. An informative error
+is raised for structural problems (unrecognised column names, missing
+required columns, unparseable date/time values, or non-numeric parameter
+values). Missing values in parameter columns produce a warning instead
+of an error.
 
 ## Details
 
@@ -64,7 +66,10 @@ The following checks are made:
   24-hour or 12-hour AM/PM time (e.g. `"2024-06-01 16:30:33"`,
   `"06/01/2024 16:30:33"`, or `"2024-06-01 4:30:33 PM"`)
 
-- Missing values: No missing values in any columns
+- Missing values: Missing values in parameter columns produce a warning
+  rather than an error, since cleaned data files may legitimately
+  contain `NA` values. Missing values in `DateTime`, `Date`, or `Time`
+  columns still cause an error.
 
 - Parameter columns should be numeric: All parameter columns should be
   numeric values

@@ -399,7 +399,7 @@
 </div>
 </section><section class="level3"><h3 id="checks-performed">Checks performed<a class="anchor" aria-label="anchor" href="#checks-performed"></a>
 </h3>
-<p>The <code><a href="../reference/readASRcont.html">readASRcont()</a></code> function imports the data and runs a series of checks using the <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> function. The checks evaluate the following and stops with an informative error if any check fails:</p>
+<p>The <code><a href="../reference/readASRcont.html">readASRcont()</a></code> function imports the data and runs a series of checks using the <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> function. Most checks stop with an informative error if they fail, except the check for missing values which produces a warning since these may occur in continuous data. The checks evaluate the following:</p>
 <ol type="1">
 <li>
 <strong>Column names</strong>: all columns are either <code>Date</code>, <code>Time</code>, <code>DateTime</code>, or a recognised parameter from <code>paramsASR</code>.</li>
@@ -414,7 +414,7 @@
 <li>
 <strong>DateTime format</strong> <em>(Format 2 only)</em>: all values in <code>DateTime</code> are parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> with year-first, month-first, or day-first date order combined with 24-hour or 12-hour AM/PM time.</li>
 <li>
-<strong>No missing values</strong>: no <code>NA</code> in any column.</li>
+<strong>Missing values</strong>: <code>NA</code> values in parameter columns produce a warning listing the affected columns and row numbers. Missing values in <code>DateTime</code>, <code>Date</code>, or <code>Time</code> columns remain an error.</li>
 <li>
 <strong>Numeric parameter columns</strong>: all parameter columns contain numeric values.</li>
 </ol></section><section class="level3"><h3 id="example-triggering-an-error">Example: triggering an error<a class="anchor" aria-label="anchor" href="#example-triggering-an-error"></a>

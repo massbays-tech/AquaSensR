@@ -58,7 +58,7 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>contdat</code> is returned as is if no errors are found, otherwise an informative error message is returned prompting the user to make the required correction to the raw data before proceeding.</p>
+    <p><code>contdat</code> is returned as is if no errors are found.  An informative error is raised for structural problems (unrecognised column names, missing required columns, unparseable date/time values, or non-numeric parameter values).  Missing values in parameter columns produce a warning instead of an error.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -71,7 +71,7 @@
 <li><p>Date format (separate columns only): Should be parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> using year-first (<code>"2024-06-01"</code>), month-first (<code>"06/01/2024"</code>), or day-first (<code>"01/06/2024"</code>) formats</p></li>
 <li><p>Time format (separate columns only): Should be parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> using 24-hour (<code>"16:30:33"</code>), 12-hour AM/PM (<code>"4:30:33 PM"</code>), or Excel-prefixed (<code>"1899-12-31 16:30:33"</code>) formats</p></li>
 <li><p>DateTime format (combined column only): Should be parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> using year-first, month-first, or day-first date order combined with 24-hour or 12-hour AM/PM time (e.g. <code>"2024-06-01 16:30:33"</code>, <code>"06/01/2024 16:30:33"</code>, or <code>"2024-06-01 4:30:33 PM"</code>)</p></li>
-<li><p>Missing values: No missing values in any columns</p></li>
+<li><p>Missing values: Missing values in parameter columns produce a warning rather than an error, since cleaned data files may legitimately contain <code>NA</code> values.  Missing values in <code>DateTime</code>, <code>Date</code>, or <code>Time</code> columns still cause an error.</p></li>
 <li><p>Parameter columns should be numeric: All parameter columns should be numeric values</p></li>
 </ul></div>
 
