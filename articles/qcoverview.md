@@ -429,11 +429,12 @@ independent.
 ### Return value
 
 [`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
-returns a named list with two elements:
+returns a named list with three elements:
 
 | Element | Description |
 |----|----|
 | `contdat` | The original data frame sorted by `DateTime`, with all removed observations replaced by `NA`. |
+| `dqodat` | The DQO thresholds data frame reflecting any edits made in the DQO Settings panel. If no edits were made the values are identical to the input. |
 | `removed` | A stacked data frame of every removed observation, with columns `Parameter`, `DateTime`, and all four flag columns. |
 
 ``` r
@@ -441,9 +442,19 @@ returns a named list with two elements:
 # Access the cleaned continuous data
 head(cleaned$contdat)
 
-# Review what was removed and it's flags
+# Inspect the final DQO thresholds used
+cleaned$dqodat
+
+# Review what was removed and its flags
 head(cleaned$removed)
 ```
 
 Removed rows in `contdat` are set to `NA` rather than dropped so the
 time series remains regular and aligned across all parameters.
+
+As a convenience, `contdat` and `dqodat` in the calling environment are
+automatically updated when the app closes. `contdat` is replaced with
+the cleaned data and `dqodat` is replaced with the final DQO thresholds,
+so both are immediately available for downstream analysis without manual
+re-assignment. This happens whether or not any changes were made in the
+app.

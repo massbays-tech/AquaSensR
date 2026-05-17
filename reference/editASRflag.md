@@ -31,7 +31,7 @@ editASRflag(cont, dqo)
 
 ## Value
 
-A list with two elements, invisibly returned after the app closes:
+A list with three elements, invisibly returned after the app closes:
 
 - `contdat`:
 
@@ -40,11 +40,23 @@ A list with two elements, invisibly returned after the app closes:
   Rows in which every parameter was removed are retained with only
   `DateTime` populated.
 
+- `dqodat`:
+
+  A data frame with the same structure as the input `dqo`, reflecting
+  any threshold edits made in the DQO Settings panel. If no edits were
+  made the values are identical to the input.
+
 - `removed`:
 
   A data frame of all removed observations across all parameters, with
   columns `Parameter`, `DateTime`, `gross_flag`, `spike_flag`,
   `roc_flag`, and `flat_flag`.
+
+As a side effect, `contdat` and `dqodat` in the calling environment are
+automatically updated when the app closes: `contdat` is replaced with
+the cleaned data ready for downstream analysis, and `dqodat` is replaced
+with the final DQO thresholds so the workspace reflects what the app
+used. This happens whether or not any edits were made.
 
 ## Details
 
