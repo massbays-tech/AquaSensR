@@ -12,17 +12,26 @@ editASRflag(cont, dqo)
 \item{dqo}{\code{dqodat} data frame returned by \code{\link{readASRdqo}}}
 }
 \value{
-A list with two elements, invisibly returned after the app closes:
+A list with three elements, invisibly returned after the app closes:
 \describe{
 \item{\code{contdat}}{A data frame with the same structure as the input
 \code{contdat} (sorted by \code{DateTime}), where values removed by
 the user are replaced with \code{NA}.  Rows in which every parameter
 was removed are retained with only \code{DateTime} populated.}
+\item{\code{dqodat}}{A data frame with the same structure as the input
+\code{dqo}, reflecting any threshold edits made in the DQO Settings
+panel.  If no edits were made the values are identical to the input.}
 \item{\code{removed}}{A data frame of all removed observations across
 all parameters, with columns \code{Parameter}, \code{DateTime},
 \code{gross_flag}, \code{spike_flag}, \code{roc_flag}, and
 \code{flat_flag}.}
 }
+As a side effect, \code{contdat} and \code{dqodat} in the calling
+environment are automatically updated when the app closes: \code{contdat}
+is replaced with the cleaned data ready for downstream analysis, and
+\code{dqodat} is replaced with the final DQO thresholds so the workspace
+reflects what the app used.  This happens whether or not any edits were
+made.
 }
 \description{
 Opens a Shiny application displaying the QC flag plot from

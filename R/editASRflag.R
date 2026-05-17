@@ -13,17 +13,26 @@
 #' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
 #' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}}
 #'
-#' @return A list with two elements, invisibly returned after the app closes:
+#' @return A list with three elements, invisibly returned after the app closes:
 #'   \describe{
 #'     \item{\code{contdat}}{A data frame with the same structure as the input
 #'       \code{contdat} (sorted by \code{DateTime}), where values removed by
 #'       the user are replaced with \code{NA}.  Rows in which every parameter
 #'       was removed are retained with only \code{DateTime} populated.}
+#'     \item{\code{dqodat}}{A data frame with the same structure as the input
+#'       \code{dqo}, reflecting any threshold edits made in the DQO Settings
+#'       panel.  If no edits were made the values are identical to the input.}
 #'     \item{\code{removed}}{A data frame of all removed observations across
 #'       all parameters, with columns \code{Parameter}, \code{DateTime},
 #'       \code{gross_flag}, \code{spike_flag}, \code{roc_flag}, and
 #'       \code{flat_flag}.}
 #'   }
+#'   As a side effect, \code{contdat} and \code{dqodat} in the calling
+#'   environment are automatically updated when the app closes: \code{contdat}
+#'   is replaced with the cleaned data ready for downstream analysis, and
+#'   \code{dqodat} is replaced with the final DQO thresholds so the workspace
+#'   reflects what the app used.  This happens whether or not any edits were
+#'   made.
 #'
 #' @details
 #' QC flags are computed internally via \code{\link{utilASRflagall}}.
@@ -101,7 +110,10 @@
 #'
 #' @export
 editASRflag <- function(cont, dqo) {
-  shiny::runApp(editASRflag_app(cont, dqo))
+  result <- shiny::runApp(editASRflag_app(cont, dqo))
+  assign("contdat", result$contdat, envir = parent.frame())
+  assign("dqodat", result$dqodat, envir = parent.frame())
+  result
 }
 
 # Builds the shinyApp object without running it.  Separated from editASRflag()
@@ -966,7 +978,8 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         returnValue = editASRflag_result(
           cont,
           base_flagdat_list(),
-          remaining_list()
+          remaining_list(),
+          working_dqo()
         )
       )
     })
@@ -1004,7 +1017,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 # Computes the editASRflag return value from the final reactive state.
 # Separated so tests can verify the output logic without triggering stopApp.
 # Not exported.
-editASRflag_result <- function(cont, flagdat_list, remaining_list) {
+editASRflag_result <- function(cont, flagdat_list, remaining_list, dqo) {
   params <- names(flagdat_list)
 
   # cont sorted by DateTime, with removed values replaced by NA.
@@ -1059,5 +1072,5 @@ editASRflag_result <- function(cont, flagdat_list, remaining_list) {
     ]
   }
 
-  list(contdat = out_cont, removed = out_removed)
+  list(contdat = out_cont, dqodat = dqo, removed = out_removed)
 }

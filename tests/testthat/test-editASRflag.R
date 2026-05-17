@@ -211,10 +211,11 @@ test_that("editASRflag_result with no removals returns sorted contdat and empty 
   result <- AquaSensR:::editASRflag_result(
     tst$contdat,
     edit_flagdat_list,
-    edit_flagdat_list # remaining == full → nothing removed
+    edit_flagdat_list, # remaining == full → nothing removed
+    tst$dqodat
   )
 
-  expect_named(result, c("contdat", "removed"))
+  expect_named(result, c("contdat", "dqodat", "removed"))
 
   expected_cont <- tst$contdat[order(tst$contdat$DateTime), ]
   expect_equal(result$contdat, expected_cont, ignore_attr = TRUE)
@@ -232,6 +233,7 @@ test_that("editASRflag_result with no removals returns sorted contdat and empty 
       "flat_flag"
     )
   )
+  expect_equal(result$dqodat, tst$dqodat)
 })
 
 test_that("editASRflag_result with one removal sets NA and records removed row", {
@@ -244,10 +246,11 @@ test_that("editASRflag_result with one removal sets NA and records removed row",
   result <- AquaSensR:::editASRflag_result(
     tst$contdat,
     edit_flagdat_list,
-    remaining_list
+    remaining_list,
+    tst$dqodat
   )
 
-  expect_named(result, c("contdat", "removed"))
+  expect_named(result, c("contdat", "dqodat", "removed"))
   expect_equal(nrow(result$removed), 1L)
   expect_equal(result$removed$Parameter[1L], edit_first_param)
   expect_true(is.na(result$contdat[1L, edit_first_param]))
@@ -270,7 +273,8 @@ test_that("editASRflag_result with removals across multiple parameters records a
   result <- AquaSensR:::editASRflag_result(
     tst$contdat,
     edit_flagdat_list,
-    remaining_list
+    remaining_list,
+    tst$dqodat
   )
 
   expect_equal(nrow(result$removed), 2L)
