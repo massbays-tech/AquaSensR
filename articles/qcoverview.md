@@ -404,6 +404,7 @@ the edge to the right).
 | **Linked Removal** | Propagate every removal to one or more additional parameters simultaneously. Undo restores all linked parameters in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch. Linked parameters are restored together. |
 | **Start Over** | Restore all removed points for the current parameter only. |
+| **Export Progress** | Save the current cleaned data and DQO thresholds as Excel files in a ZIP archive. If any points have been removed, a removed-observations file is included. |
 | **Done / Close** | Stop the app and return the cleaned data. |
 
 ### DQO Settings panel

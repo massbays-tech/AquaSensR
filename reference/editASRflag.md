@@ -101,6 +101,10 @@ to remove the selected area if present after removal.
 - **Start Over**: restores all removed points for the current parameter
   and resets to the most recently applied DQO thresholds.
 
+- **Export Progress**: saves the current cleaned data and DQO thresholds
+  as Excel files in a ZIP archive. If any points have been removed, a
+  removed-observations file is included as well.
+
 - **Done / Close**: stops the app and returns the filtered datasets for
   all parameters to the R session.
 
