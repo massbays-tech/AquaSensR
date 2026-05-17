@@ -81,6 +81,9 @@ point or batch of points.  If the removal was linked, all affected
 parameters are restored together.
 \item \strong{Start Over}: restores all removed points for the current
 parameter and resets to the most recently applied DQO thresholds.
+\item \strong{Export Progress}: saves the current cleaned data and DQO
+thresholds as Excel files in a ZIP archive.  If any points have been
+removed, a removed-observations file is included as well.
 \item \strong{Done / Close}: stops the app and returns the filtered
 datasets for all parameters to the R session.
 }

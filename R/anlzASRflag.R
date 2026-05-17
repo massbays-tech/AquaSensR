@@ -72,10 +72,11 @@ anlzASRflag <- function(flag, overlay = NULL) {
   # Invisible markers (opacity = 0) are added alongside the line so that
   # plotly's box/lasso selection and click events can target individual data
   # points. Without them, line-only traces are not selectable.
+  flagdat_line <- flagdat[!is.na(flagdat[[param]]), , drop = FALSE]
   p <- plotly::plot_ly(
-    data = flagdat,
+    data = flagdat_line,
     x = ~DateTime,
-    y = flagdat[[param]],
+    y = flagdat_line[[param]],
     customdata = ~.rowid,
     type = "scatter",
     mode = "lines+markers",

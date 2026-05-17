@@ -54,7 +54,9 @@ Imports:
   plotly,
   readxl,
   shiny,
-  tidyr
+  tidyr,
+  writexl,
+  zip
 License: CC0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

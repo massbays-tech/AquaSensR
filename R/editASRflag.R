@@ -71,6 +71,9 @@
 #'       parameters are restored together.
 #'     \item \strong{Start Over}: restores all removed points for the current
 #'       parameter and resets to the most recently applied DQO thresholds.
+#'     \item \strong{Export Progress}: saves the current cleaned data and DQO
+#'       thresholds as Excel files in a ZIP archive.  If any points have been
+#'       removed, a removed-observations file is included as well.
 #'     \item \strong{Done / Close}: stops the app and returns the filtered
 #'       datasets for all parameters to the R session.
 #'   }
@@ -247,6 +250,10 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
               " restores all removed points for the current parameter."
             ),
             shiny::tags$li(
+              shiny::tags$b("Export Progress:"),
+              " saves the current cleaned data and DQO thresholds as Excel files in a ZIP archive. If any points have been removed, a removed-observations file is included as well."
+            ),
+            shiny::tags$li(
               shiny::tags$b("Done / Close:"),
               " stops the app and returns the cleaned data."
             )
@@ -262,6 +269,12 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         "reset",
         "Start Over",
         style = "width: 100%; background-color: #ff6633; border-color: #ff6633; color: #fff;"
+      ),
+      shiny::downloadButton(
+        "export_progress",
+        "Export Progress",
+        icon = NULL,
+        style = "width: 100%; display: block; background-color: #3BAD99; border-color: #3BAD99; color: #fff;"
       ),
       shiny::actionButton(
         "done",
@@ -983,6 +996,47 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         )
       )
     })
+
+    # ---- Export Progress: zip of Excel files --------------------------------
+    output$export_progress <- shiny::downloadHandler(
+      filename = function() {
+        paste0("AquaSensR_export_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".zip")
+      },
+      content = function(file) {
+        res <- editASRflag_result(
+          cont,
+          base_flagdat_list(),
+          remaining_list(),
+          working_dqo()
+        )
+        fmt_dt <- function(df) {
+          if ("DateTime" %in% names(df) && inherits(df$DateTime, "POSIXct")) {
+            df$DateTime <- format(df$DateTime)
+          }
+          df
+        }
+
+        tmp_dir <- tempfile()
+        dir.create(tmp_dir)
+        files_to_zip <- character(0)
+
+        cont_path <- file.path(tmp_dir, "contdat.xlsx")
+        writexl::write_xlsx(fmt_dt(res$contdat), cont_path)
+        files_to_zip <- c(files_to_zip, cont_path)
+
+        dqo_path <- file.path(tmp_dir, "dqodat.xlsx")
+        writexl::write_xlsx(fmt_dt(res$dqodat), dqo_path)
+        files_to_zip <- c(files_to_zip, dqo_path)
+
+        if (nrow(res$removed) > 0L) {
+          removed_path <- file.path(tmp_dir, "removed.xlsx")
+          writexl::write_xlsx(fmt_dt(res$removed), removed_path)
+          files_to_zip <- c(files_to_zip, removed_path)
+        }
+
+        zip::zip(file, files = files_to_zip, mode = "cherry-pick")
+      }
+    )
 
     # ---- Removed points count and table (current parameter) ----------------
     removed_points <- shiny::reactive({
