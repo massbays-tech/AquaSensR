@@ -262,14 +262,14 @@ Editing thresholds and clicking **Apply** re-computes flags for the current para
 | `removed` | A stacked data frame of every removed observation, with columns `Parameter`, `DateTime`, and all four flag columns. |
 
 ```r
-# Access the cleaned continuous data
-head(cleaned$contdat)
+# View the cleaned continuous data
+View(cleaned$contdat)
 
 # Inspect the final DQO thresholds used
 cleaned$dqodat
 
-# Review what was removed and its flags
-head(cleaned$removed)
+# View what was removed and its flags
+View(cleaned$removed)
 ```
 
 Removed rows in `contdat` are set to `NA` rather than dropped so the time series remains regular and aligned across all parameters.
