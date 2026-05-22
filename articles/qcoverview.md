@@ -440,14 +440,14 @@ returns a named list with three elements:
 
 ``` r
 
-# Access the cleaned continuous data
-head(cleaned$contdat)
+# View the cleaned continuous data
+View(cleaned$contdat)
 
 # Inspect the final DQO thresholds used
 cleaned$dqodat
 
-# Review what was removed and its flags
-head(cleaned$removed)
+# View what was removed and its flags
+View(cleaned$removed)
 ```
 
 Removed rows in `contdat` are set to `NA` rather than dropped so the
