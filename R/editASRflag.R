@@ -302,6 +302,16 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         DT::DTOutput("removed_table")
       )
     ),
+    shiny::tags$head(shiny::tags$script(shiny::HTML(
+      'document.addEventListener("click", function(e) {
+         var el = document.getElementById("flagPlot");
+         if (!el) return;
+         var btn = e.target.closest("[data-title]");
+         if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
+         e.stopPropagation();
+         Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
+       }, true);'
+    ))),
     shiny::p(
       "Zoom and pan normally with the plot toolbar visible on the top right when the pointer is over the plot.",
       "To remove points: click individual points directly, or use the",
@@ -535,7 +545,6 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     base_flagdat_list <- shiny::reactiveVal(flagdat_list)
 
     plot_ranges <- shiny::reactiveVal(list(x = NULL, y = NULL))
-    home_reset <- shiny::reactiveVal(0L)
 
     # Pull one threshold value from a DQO data frame.
     dqo_val <- function(wd, p, flag_type, col) {
@@ -736,7 +745,6 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         if (!is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])) {
           pr$x <- NULL
           pr$y <- NULL
-          home_reset(home_reset() + 1L)
         }
 
         plot_ranges(pr)
@@ -784,7 +792,6 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     # ---- Plot ---------------------------------------------------------------
     output$flagPlot <- plotly::renderPlotly({
-      home_reset()
       ovl_param <- input$overlay_param
       ovl <- if (
         !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
