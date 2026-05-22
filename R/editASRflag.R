@@ -534,6 +534,9 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     # "Start Over" and "Done" use this so they stay consistent after DQO edits.
     base_flagdat_list <- shiny::reactiveVal(flagdat_list)
 
+    plot_ranges <- shiny::reactiveVal(list(x = NULL, y = NULL))
+    home_reset <- shiny::reactiveVal(0L)
+
     # Pull one threshold value from a DQO data frame.
     dqo_val <- function(wd, p, flag_type, col) {
       v <- wd[wd$Parameter == p & wd$Flag == flag_type, col, drop = TRUE]
@@ -677,10 +680,8 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       stats::setNames(lapply(params, function(p) list()), params)
     )
 
-    # Track zoom/pan range; reset when the user switches parameters.
-    x_range <- shiny::reactiveVal(NULL)
     shiny::observeEvent(input$param_select, {
-      x_range(NULL)
+      plot_ranges(list(x = NULL, y = NULL))
       others <- params[params != input$param_select]
       other_choices <- stats::setNames(others, param_labels[others])
       shiny::updateSelectInput(
@@ -723,14 +724,22 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     shiny::observeEvent(
       plotly::event_data("plotly_relayout", session = session),
       {
-        rl <- plotly::event_data("plotly_relayout", session = session)
-        if (
-          !is.null(rl[["xaxis.range[0]"]]) && !is.null(rl[["xaxis.range[1]"]])
-        ) {
-          x_range(c(rl[["xaxis.range[0]"]], rl[["xaxis.range[1]"]]))
-        } else if (!is.null(rl[["xaxis.autorange"]])) {
-          x_range(NULL)
+        ev <- plotly::event_data("plotly_relayout", session = session)
+        pr <- plot_ranges()
+
+        if (!is.null(ev[["xaxis.range[0]"]]) && !is.null(ev[["xaxis.range[1]"]])) {
+          pr$x <- c(ev[["xaxis.range[0]"]], ev[["xaxis.range[1]"]])
         }
+        if (!is.null(ev[["yaxis.range[0]"]]) && !is.null(ev[["yaxis.range[1]"]])) {
+          pr$y <- c(ev[["yaxis.range[0]"]], ev[["yaxis.range[1]"]])
+        }
+        if (!is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])) {
+          pr$x <- NULL
+          pr$y <- NULL
+          home_reset(home_reset() + 1L)
+        }
+
+        plot_ranges(pr)
       }
     )
 
@@ -775,7 +784,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     # ---- Plot ---------------------------------------------------------------
     output$flagPlot <- plotly::renderPlotly({
-      rng <- shiny::isolate(x_range())
+      home_reset()
       ovl_param <- input$overlay_param
       ovl <- if (
         !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
@@ -795,11 +804,12 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       }
       p <- anlzASRflag(cur_remaining(), overlay = ovl)
       p <- plotly::event_register(p, "plotly_relayout")
-      if (!is.null(rng)) {
-        p <- plotly::layout(
-          p,
-          xaxis = list(autorange = FALSE, range = as.list(rng))
-        )
+      rng <- shiny::isolate(plot_ranges())
+      if (!is.null(rng$x)) {
+        p <- plotly::layout(p, xaxis = list(autorange = FALSE, range = as.list(rng$x)))
+      }
+      if (!is.null(rng$y)) {
+        p <- plotly::layout(p, yaxis = list(autorange = FALSE, range = as.list(rng$y)))
       }
       p
     })
