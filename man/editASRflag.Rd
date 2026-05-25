@@ -40,8 +40,8 @@ the user to interactively select and remove data points. Points are removed
 by clicking or drawing a selection using the box or lasso tool on the plot.
 A running table of removed points (including their flag assignments) is shown
 in the sidebar and is specific to the currently displayed parameter.
-Individual removal batches can be undone, or the current parameter's session
-can be fully reset. Clicking \strong{Done / Close} stops the app and returns
+Individual removal batches can be undone, or all parameters can be fully
+reset. Clicking \strong{Done / Close} stops the app and returns
 the filtered datasets for all parameters to the R session.
 }
 \details{
@@ -69,18 +69,16 @@ switching.
 \item \strong{Overlay}: optional drop-down to display a second parameter
 as a gray line on a right-side y-axis, useful for spotting co-occurring
 changes across parameters.
-\item \strong{Linked Removal}: optional multi-select to choose one or
-more additional parameters that will receive the same point removals as
-the currently displayed parameter.  Any timestamps removed from the
-current parameter are simultaneously removed from all linked parameters.
-Undo restores the current parameter and all linked parameters together
-as a single operation, regardless of which parameter is active
-when undo is clicked.  Start Over affects the current parameter only.
+\item \strong{Linked Removal}: optional checkbox.  When checked, any
+timestamps removed from the current parameter are simultaneously removed
+from all other parameters.  Undo restores the current parameter and all
+other parameters together as a single operation, regardless of which
+parameter is active when undo is clicked.
 \item \strong{Undo Last Removal}: restores the most recently removed
 point or batch of points.  If the removal was linked, all affected
 parameters are restored together.
-\item \strong{Start Over}: restores all removed points for the current
-parameter and resets to the most recently applied DQO thresholds.
+\item \strong{Start Over}: restores all removed points for every
+parameter and resets all DQO thresholds to their original values.
 \item \strong{Export Progress}: saves the current cleaned data and DQO
 thresholds as Excel files in a ZIP archive.  If any points have been
 removed, a removed-observations file is included as well.

@@ -237,9 +237,9 @@ After a box or lasso selection, double-click the plot background to clear the se
 |---------|--------|
 | **Parameter** | Switch between parameters.  Prev/Next buttons cycle through all parameters. |
 | **Overlay** | Display a second parameter as a gray line on a right-side axis. |
-| **Linked Removal** | Propagate every removal to one or more additional parameters simultaneously.  Undo restores all linked parameters in the same batch. |
+| **Linked Removal** | When checked, propagate every removal to all other parameters simultaneously.  Undo restores all parameters together in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch.  Linked parameters are restored together. |
-| **Start Over** | Restore all removed points for the current parameter only. |
+| **Start Over** | Restore all removed points for every parameter and reset all DQO thresholds to their original values. |
 | **Export Progress** | Save the current cleaned data and DQO thresholds as Excel files in a ZIP archive.  If any points have been removed, a removed-observations file is included. |
 | **Done / Close** | Stop the app and return the cleaned data. |
 

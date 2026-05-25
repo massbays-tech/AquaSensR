@@ -6,8 +6,8 @@
 #' by clicking or drawing a selection using the box or lasso tool on the plot.
 #' A running table of removed points (including their flag assignments) is shown
 #' in the sidebar and is specific to the currently displayed parameter.
-#' Individual removal batches can be undone, or the current parameter's session
-#' can be fully reset. Clicking \strong{Done / Close} stops the app and returns
+#' Individual removal batches can be undone, or all parameters can be fully
+#' reset. Clicking \strong{Done / Close} stops the app and returns
 #' the filtered datasets for all parameters to the R session.
 #'
 #' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
@@ -59,18 +59,16 @@
 #'     \item \strong{Overlay}: optional drop-down to display a second parameter
 #'       as a gray line on a right-side y-axis, useful for spotting co-occurring
 #'       changes across parameters.
-#'     \item \strong{Linked Removal}: optional multi-select to choose one or
-#'       more additional parameters that will receive the same point removals as
-#'       the currently displayed parameter.  Any timestamps removed from the
-#'       current parameter are simultaneously removed from all linked parameters.
-#'       Undo restores the current parameter and all linked parameters together
-#'       as a single operation, regardless of which parameter is active
-#'       when undo is clicked.  Start Over affects the current parameter only.
+#'     \item \strong{Linked Removal}: optional checkbox.  When checked, any
+#'       timestamps removed from the current parameter are simultaneously removed
+#'       from all other parameters.  Undo restores the current parameter and all
+#'       other parameters together as a single operation, regardless of which
+#'       parameter is active when undo is clicked.
 #'     \item \strong{Undo Last Removal}: restores the most recently removed
 #'       point or batch of points.  If the removal was linked, all affected
 #'       parameters are restored together.
-#'     \item \strong{Start Over}: restores all removed points for the current
-#'       parameter and resets to the most recently applied DQO thresholds.
+#'     \item \strong{Start Over}: restores all removed points for every
+#'       parameter and resets all DQO thresholds to their original values.
 #'     \item \strong{Export Progress}: saves the current cleaned data and DQO
 #'       thresholds as Excel files in a ZIP archive.  If any points have been
 #'       removed, a removed-observations file is included as well.
@@ -218,16 +216,13 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
             style = "color: #6c757d; cursor: pointer;"
           ),
           title = "Linked Removal",
-          "Select one or more parameters to receive the same point removals as the current parameter. Undo restores all linked parameters in the same batch together. Start Over affects the current parameter only."
+          "When checked, any points removed from the current parameter are simultaneously removed from all other parameters at the same timestamps. Undo restores all affected parameters together as a single operation."
         )
       ),
-      shiny::selectizeInput(
-        "link_params",
-        label = NULL,
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE,
-        options = list(placeholder = "None")
+      shiny::checkboxInput(
+        "link_all",
+        "Link all parameters",
+        value = FALSE
       ),
       shiny::hr(),
       shiny::div(
@@ -247,7 +242,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
             ),
             shiny::tags$li(
               shiny::tags$b("Start Over:"),
-              " restores all removed points for the current parameter."
+              " restores all removed points for every parameter and resets all DQO thresholds to their original values."
             ),
             shiny::tags$li(
               shiny::tags$b("Export Progress:"),
@@ -668,12 +663,6 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         choices = c("None" = "", other_choices),
         selected = ""
       )
-      shiny::updateSelectizeInput(
-        session,
-        "link_params",
-        choices = other_choices,
-        selected = NULL
-      )
       update_dqo_inputs(working_dqo(), input$param_select)
     }) |>
       shiny::bindEvent(TRUE, once = TRUE)
@@ -698,12 +687,6 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         "overlay_param",
         choices = c("None" = "", other_choices),
         selected = ""
-      )
-      shiny::updateSelectizeInput(
-        session,
-        "link_params",
-        choices = other_choices,
-        selected = intersect(input$link_params, others)
       )
       update_dqo_inputs(working_dqo(), input$param_select)
     })
@@ -770,8 +753,11 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     # Remove matching DateTimes from each linked parameter's remaining data and
     # add a history entry with the same group_id so undo restores them together.
     apply_linked_removals <- function(datetimes, gid) {
-      lp <- input$link_params
-      if (length(lp) == 0L || is.null(lp)) {
+      if (!isTRUE(input$link_all)) {
+        return()
+      }
+      lp <- params[params != input$param_select]
+      if (length(lp) == 0L) {
         return()
       }
       rl <- remaining_list()
@@ -962,10 +948,10 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       reflag_param(wd, p)
     })
 
-    # ---- Start over (current parameter only) --------------------------------
+    # ---- Start over (all parameters, original DQO) --------------------------
     shiny::observeEvent(input$reset, {
       shiny::showModal(shiny::modalDialog(
-        "This will restore all removed points for the current parameter. Proceed?",
+        "This will restore all removed points for every parameter and reset all DQO thresholds to their original values. Proceed?",
         title = "Start Over",
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
@@ -981,8 +967,13 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     shiny::observeEvent(input$reset_confirm, {
       shiny::removeModal()
-      update_remaining(base_flagdat_list()[[input$param_select]])
-      update_history(list())
+      remaining_list(flagdat_list)
+      removed_history_list(
+        stats::setNames(lapply(params, function(p) list()), params)
+      )
+      working_dqo(dqo)
+      base_flagdat_list(flagdat_list)
+      update_dqo_inputs(dqo, input$param_select)
     })
 
     # ---- Done: confirm then return results to the R session -----------------

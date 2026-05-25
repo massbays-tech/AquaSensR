@@ -151,7 +151,7 @@ test_that("undo is per-batch: two clicks require two undos to fully restore", {
 # Reset
 # ---------------------------------------------------------------------------
 
-test_that("reset restores all removed points after confirmation", {
+test_that("reset restores all removed points for current param after confirmation", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
@@ -165,6 +165,31 @@ test_that("reset restores all removed points after confirmation", {
       expect_equal(output$removed_count, "Removed Points: 2")
 
       session$setInputs(reset_confirm = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("reset restores removed points for all parameters, not just current", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      # Remove a point from the first parameter
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Remove a different rowid from the second parameter (rowid 2 so the
+      # input value changes and the observer re-fires in testServer)
+      session$setInputs(param_select = edit_second_param)
+      session$setInputs(`plotly_click-A` = '{"customdata":2}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      session$setInputs(reset = 1L)
+      session$setInputs(reset_confirm = 1L)
+      expect_equal(output$removed_count, "Removed Points: 0")
+
+      session$setInputs(param_select = edit_first_param)
       expect_equal(output$removed_count, "Removed Points: 0")
     })
   )
@@ -579,7 +604,7 @@ test_that("reset_dqo with no prior removals results in zero removed points", {
   )
 })
 
-test_that("start_over after apply_dqo resets to DQO-adjusted baseline not original", {
+test_that("start_over after apply_dqo resets removals to zero", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
@@ -620,35 +645,35 @@ test_that("start_over after apply_dqo resets to DQO-adjusted baseline not origin
 # Linked removal
 # ---------------------------------------------------------------------------
 
-test_that("linked removal also removes matching DateTimes from linked param", {
+test_that("linked removal also removes matching DateTimes from all other params", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
       session$setInputs(
         param_select = edit_first_param,
-        link_params  = edit_second_param
+        link_all     = TRUE
       )
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
 
-      # Switch to linked param and verify the same DateTime was also removed
+      # Switch to second param and verify the same DateTime was also removed
       session$setInputs(param_select = edit_second_param)
       expect_equal(output$removed_count, "Removed Points: 1")
     })
   )
 })
 
-test_that("undo from primary param also restores linked param", {
+test_that("undo from primary param also restores all linked params", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
       session$setInputs(
         param_select = edit_first_param,
-        link_params  = edit_second_param
+        link_all     = TRUE
       )
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
 
-      # Undo from the primary param restores both
+      # Undo from the primary param restores all params
       session$setInputs(undo = 1L)
       expect_equal(output$removed_count, "Removed Points: 0")
 
@@ -664,11 +689,11 @@ test_that("undo from linked param also restores primary param", {
     shiny::testServer(app, {
       session$setInputs(
         param_select = edit_first_param,
-        link_params  = edit_second_param
+        link_all     = TRUE
       )
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
 
-      # Switch to the linked param and undo from there
+      # Switch to the second param and undo from there
       session$setInputs(param_select = edit_second_param)
       expect_equal(output$removed_count, "Removed Points: 1")
       session$setInputs(undo = 1L)
@@ -685,17 +710,17 @@ test_that("solo removal after linked removal only undoes solo batch on first und
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
-      # Linked removal: rowid 1 removed from both params
+      # Linked removal: rowid 1 removed from all params
       session$setInputs(
         param_select = edit_first_param,
-        link_params  = edit_second_param
+        link_all     = TRUE
       )
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
 
       # Solo removal on second param only: rowid 2
       session$setInputs(
         param_select = edit_second_param,
-        link_params  = character(0)
+        link_all     = FALSE
       )
       session$setInputs(`plotly_click-A` = '{"customdata":2}')
       expect_equal(output$removed_count, "Removed Points: 2")
