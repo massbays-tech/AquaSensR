@@ -452,10 +452,3 @@ View(cleaned$removed)
 
 Removed rows in `contdat` are set to `NA` rather than dropped so the
 time series remains regular and aligned across all parameters.
-
-As a convenience, `contdat` and `dqodat` in the calling environment are
-automatically updated when the app closes. `contdat` is replaced with
-the cleaned data and `dqodat` is replaced with the final DQO thresholds,
-so both are immediately available for downstream analysis without manual
-re-assignment. This happens whether or not any changes were made in the
-app.

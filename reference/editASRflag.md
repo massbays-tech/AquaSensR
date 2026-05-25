@@ -52,12 +52,6 @@ A list with three elements, invisibly returned after the app closes:
   columns `Parameter`, `DateTime`, `gross_flag`, `spike_flag`,
   `roc_flag`, and `flat_flag`.
 
-As a side effect, `contdat` and `dqodat` in the calling environment are
-automatically updated when the app closes: `contdat` is replaced with
-the cleaned data ready for downstream analysis, and `dqodat` is replaced
-with the final DQO thresholds so the workspace reflects what the app
-used. This happens whether or not any edits were made.
-
 ## Details
 
 QC flags are computed internally via
