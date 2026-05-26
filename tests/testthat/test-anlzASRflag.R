@@ -57,6 +57,29 @@ test_that("anlzASRflag with overlay param not in paramsASR falls back to column 
 })
 
 # ---------------------------------------------------------------------------
+# Timezone alignment
+# ---------------------------------------------------------------------------
+
+test_that("anlzASRflag stops when overlay DateTime timezone differs from flag timezone", {
+  cd <- flag_make_cd(rep(20, flag_n_obs))
+  md <- flag_make_md()
+  fd <- utilASRflag(cd, md, "Water_Temp_C")
+  # flag_times is Etc/GMT+5; re-express in UTC to produce a mismatch.
+  ovl_times <- lubridate::with_tz(flag_times, "UTC")
+  ovl <- data.frame(DateTime = ovl_times, Sal_ppt = seq_len(flag_n_obs) * 0.1)
+  expect_error(anlzASRflag(fd, overlay = ovl), "timezone")
+})
+
+test_that("anlzASRflag with overlay of the same parameter returns a plotly object", {
+  # Exercises the matches = 'y' branch added for same-parameter overlays.
+  cd  <- flag_make_cd(rep(20, flag_n_obs))
+  md  <- flag_make_md()
+  fd  <- utilASRflag(cd, md, "Water_Temp_C")
+  ovl <- data.frame(DateTime = flag_times, Water_Temp_C = rep(20, flag_n_obs))
+  expect_s3_class(anlzASRflag(fd, overlay = ovl), "plotly")
+})
+
+# ---------------------------------------------------------------------------
 # No console noise
 # ---------------------------------------------------------------------------
 

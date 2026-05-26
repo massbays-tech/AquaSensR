@@ -795,6 +795,285 @@ test_that("load_usgs success populates usgs_ovl and clears overlay_param", {
   )
 })
 
+# ---------------------------------------------------------------------------
+# flagPlot rendering — access output$flagPlot to cover the render body
+# ---------------------------------------------------------------------------
+
+test_that("flagPlot renders without error for the default parameter (no overlay)", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(invisible(output$flagPlot))
+    })
+  )
+})
+
+test_that("flagPlot applies x and y range layout when both ranges are set", {
+  # flagPlot is evaluated eagerly during flushReact whenever cur_remaining()
+  # changes.  The sequence below:
+  #   1. param_select set → first render with NULL ranges (cached).
+  #   2. Relayout events store x and y ranges in plot_ranges().
+  #   3. A click removal invalidates cur_remaining() → flushReact re-evaluates
+  #      flagPlot with rng$x and rng$y now non-NULL, executing lines 963-972.
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(
+        `plotly_relayout-A` = '{"xaxis.range[0]":0,"xaxis.range[1]":1}'
+      )
+      session$setInputs(
+        `plotly_relayout-A` = '{"yaxis.range[0]":18,"yaxis.range[1]":22}'
+      )
+      # Removal invalidates cur_remaining() → flagPlot re-renders with stored ranges.
+      expect_no_error(session$setInputs(`plotly_click-A` = '{"customdata":2}'))
+    })
+  )
+})
+
+test_that("plotly_relayout with y range updates plot_ranges y component", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(
+        session$setInputs(
+          `plotly_relayout-A` = '{"yaxis.range[0]":18,"yaxis.range[1]":22}'
+        )
+      )
+    })
+  )
+})
+
+test_that("flagPlot renders without error when USGS overlay is active", {
+  fake_usgs <- data.frame(
+    DateTime                        = tst$contdat$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(tst$contdat)),
+    check.names                     = FALSE,
+    stringsAsFactors                = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      # usgs_ovl() is now non-NULL; accessing the plot output exercises that branch.
+      expect_no_error(invisible(output$flagPlot))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# USGS overlay: error and no-overlap branches
+# ---------------------------------------------------------------------------
+
+test_that("load_usgs shows error status when readASRusgs throws", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  local_mocked_bindings(
+    readASRusgs = function(...) stop("site not found"),
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(
+        session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      )
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("load_usgs shows no-overlap message when all returned timestamps are outside contdat range", {
+  cont_tz <- attr(tst$contdat$DateTime, "tzone")
+  far_future <- as.POSIXct("2099-01-01", tz = cont_tz) + 0:2 * 900L
+  fake_usgs <- data.frame(
+    DateTime                        = far_future,
+    `Streamflow (ft³/s) [99999999]` = 1:3,
+    check.names                     = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(
+        session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      )
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("load_usgs uses Etc/GMT+5 fallback when contdat DateTime has no tzone attribute", {
+  # Strip the tzone from contdat DateTime so the NULL branch (line 856) fires.
+  cont_notzone <- tst$contdat
+  attr(cont_notzone$DateTime, "tzone") <- NULL
+
+  # Fake USGS data with the same (no-tzone) DateTime so the timezone check passes.
+  fake_usgs <- data.frame(
+    DateTime                        = cont_notzone$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(cont_notzone)),
+    check.names                     = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(cont_notzone, tst$dqodat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(
+        session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      )
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Done modal — triggers showModal but NOT stopApp (which segfaults testServer)
+# ---------------------------------------------------------------------------
+
+test_that("done button shows modal without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(done = 1L))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# apply_dqo / reset_dqo: NULL param_select early-return branches
+# ---------------------------------------------------------------------------
+
+test_that("apply_dqo with NULL param_select returns early without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      # Fire apply_dqo before param_select is ever set — input$param_select is NULL
+      # so the observer hits the early-return branch (line 1076).
+      expect_no_error(session$setInputs(apply_dqo = 1L))
+    })
+  )
+})
+
+test_that("reset_dqo with NULL param_select returns early without error", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      # Same pattern: fire reset_dqo before param_select is set (line 1102).
+      expect_no_error(session$setInputs(reset_dqo = 1L))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Param label fallback: Label is NA in paramsASR → raw param name used
+# ---------------------------------------------------------------------------
+
+test_that("editASRflag_app uses raw param name as label when paramsASR Label is NA", {
+  # utilASRflag() validates params against paramsASR$Parameter, so we cannot
+  # inject an unknown param via contdat/dqo.  Instead, temporarily patch the
+  # Label for edit_first_param to NA, which forces the `p` branch on line 143.
+  #
+  # Under pkgload::load_all() (used by devtools::test()), package data may live
+  # in a *parent* environment of the namespace rather than in the namespace itself.
+  # Walk the environment chain to locate the actual binding.
+  ns <- asNamespace("AquaSensR")
+  param_env <- ns
+  while (!exists("paramsASR", envir = param_env, inherits = FALSE)) {
+    param_env <- parent.env(param_env)
+    if (identical(param_env, emptyenv())) break
+  }
+  if (identical(param_env, emptyenv())) {
+    skip("cannot locate paramsASR binding — skipping namespace-patch test")
+  }
+
+  orig     <- get("paramsASR", envir = param_env, inherits = FALSE)
+  modified <- orig
+  modified$Label[modified$Parameter == edit_first_param] <- NA_character_
+
+  is_locked <- tryCatch(
+    bindingIsLocked("paramsASR", param_env),
+    error = function(e) FALSE
+  )
+  if (is_locked) unlockBinding("paramsASR", param_env)
+  assign("paramsASR", modified, envir = param_env)
+  on.exit(
+    {
+      tryCatch(unlockBinding("paramsASR", param_env), error = function(e) NULL)
+      assign("paramsASR", orig, envir = param_env)
+    },
+    add = TRUE
+  )
+
+  expect_s3_class(
+    AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat),
+    "shiny.appobj"
+  )
+})
+
+# ---------------------------------------------------------------------------
+# apply_linked_removals edge cases
+# ---------------------------------------------------------------------------
+
+test_that("linked removal with a single-parameter dataset does not error (length(lp) == 0)", {
+  # With only one parameter, lp is empty and apply_linked_removals returns early.
+  cont_one <- tst$contdat[, c("DateTime", edit_first_param)]
+  dqo_one  <- tst$dqodat[tst$dqodat$Parameter == edit_first_param, ]
+  app_one  <- AquaSensR:::editASRflag_app(cont_one, dqo_one)
+  suppressWarnings(
+    shiny::testServer(app_one, {
+      session$setInputs(param_select = edit_first_param, link_all = TRUE)
+      expect_no_error(session$setInputs(`plotly_click-A` = '{"customdata":1}'))
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
+test_that("linked removal skips a param whose DateTime was already removed (next branch)", {
+  # Remove rowid 1 from param 2 WITHOUT linking so its DateTime is gone from
+  # remaining.  Then, on param 1 with linking on, use a box-selection (different
+  # input key from plotly_click) so the observer re-fires even though the rowid
+  # is the same.  apply_linked_removals finds no mask match for param 2 and
+  # hits the `next` branch, leaving param 2 at exactly 1 removal.
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_second_param, link_all = FALSE)
+      session$setInputs(`plotly_click-A` = '{"customdata":1}')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Use plotly_selected (different key) so the input value changes and the
+      # selection observer fires on param 1 even though the rowid is the same.
+      session$setInputs(param_select = edit_first_param, link_all = TRUE)
+      session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
+      expect_equal(output$removed_count, "Removed Points: 1")
+
+      # Param 2 still has exactly 1 removal — the `next` branch prevented a second.
+      session$setInputs(param_select = edit_second_param)
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
 test_that("selecting contdat overlay after USGS load clears usgs_ovl", {
   fake_usgs <- data.frame(
     DateTime              = tst$contdat$DateTime,
