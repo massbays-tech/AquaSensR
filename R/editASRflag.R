@@ -1,4 +1,4 @@
-#' Interactive editor for continuous monitoring data
+﻿#' Interactive editor for continuous monitoring data
 #'
 #' Opens a Shiny application displaying the QC flag plot from
 #' \code{\link{anlzASRflag}} for each parameter in \code{contdat} and allows
@@ -53,6 +53,12 @@
 #'     \item \strong{Overlay}: optional drop-down to display a second parameter
 #'       as a gray line on a right-side y-axis, useful for spotting co-occurring
 #'       changes across parameters.
+#'     \item \strong{USGS Overlay}: enter a USGS site number and select a
+#'       parameter type, then click \strong{Load} to fetch continuous data
+#'       from NWIS and display it on the secondary y-axis.  Loading USGS data
+#'       clears any contdat overlay and selecting a contdat overlay clears the
+#'       USGS data.  Site numbers can be found at the NWIS Mapper
+#'       (\url{https://apps.usgs.gov/nwismapper}).
 #'     \item \strong{Linked Removal}: optional checkbox.  When checked, any
 #'       timestamps removed from the current parameter are simultaneously removed
 #'       from all other parameters.  Undo restores the current parameter and all
@@ -198,6 +204,56 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         selected = "",
         options = list(allowEmptyOption = TRUE, placeholder = "None")
       ),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("USGS Overlay", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "USGS Overlay",
+          shiny::tags$span(
+            "Fetch a USGS time series for the secondary axis.",
+            "Enter a site number (find yours at the ",
+            shiny::tags$a(
+              "NWIS Mapper",
+              href = "https://apps.usgs.gov/nwismapper",
+              target = "_blank"
+            ),
+            ") and click Load.",
+            "Loading USGS data clears any contdat overlay and",
+            "selecting a contdat overlay clears the USGS data."
+          )
+        )
+      ),
+      shiny::selectInput(
+        "usgs_pcode",
+        label = NULL,
+        choices = c(
+          "Streamflow (ft\u00b3/s)" = "00060",
+          "Gage height (ft)" = "00065",
+          "Precipitation (in)" = "00045"
+        ),
+        selected = "00060"
+      ),
+      shiny::div(
+        style = "display: flex; gap: 4px; align-items: flex-start;",
+        shiny::div(
+          style = "flex: 1;",
+          shiny::textInput(
+            "usgs_site",
+            label = NULL,
+            placeholder = "e.g., 01099500"
+          )
+        ),
+        shiny::actionButton(
+          "load_usgs",
+          "Load",
+          style = "background-color: #5b7fa6; border-color: #5b7fa6; color: #fff; margin-top: 0;"
+        )
+      ),
+      shiny::uiOutput("usgs_status"),
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4("Linked Removal", style = "margin: 0;"),
@@ -532,6 +588,13 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     plot_ranges <- shiny::reactiveVal(list(x = NULL, y = NULL))
 
+    # USGS overlay data (NULL or a 2-col data frame from readASRusgs()).
+    usgs_ovl <- shiny::reactiveVal(NULL)
+
+    # Status message for the USGS overlay section.
+    # list(text = <character>, ok = <logical>)
+    usgs_status_msg <- shiny::reactiveVal(list(text = "", ok = TRUE))
+
     # Pull one threshold value from a DQO data frame.
     dqo_val <- function(wd, p, flag_type, col) {
       v <- wd[wd$Parameter == p & wd$Flag == flag_type, col, drop = TRUE]
@@ -710,13 +773,19 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         ev <- plotly::event_data("plotly_relayout", session = session)
         pr <- plot_ranges()
 
-        if (!is.null(ev[["xaxis.range[0]"]]) && !is.null(ev[["xaxis.range[1]"]])) {
+        if (
+          !is.null(ev[["xaxis.range[0]"]]) && !is.null(ev[["xaxis.range[1]"]])
+        ) {
           pr$x <- c(ev[["xaxis.range[0]"]], ev[["xaxis.range[1]"]])
         }
-        if (!is.null(ev[["yaxis.range[0]"]]) && !is.null(ev[["yaxis.range[1]"]])) {
+        if (
+          !is.null(ev[["yaxis.range[0]"]]) && !is.null(ev[["yaxis.range[1]"]])
+        ) {
           pr$y <- c(ev[["yaxis.range[0]"]], ev[["yaxis.range[1]"]])
         }
-        if (!is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])) {
+        if (
+          !is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])
+        ) {
           pr$x <- NULL
           pr$y <- NULL
         }
@@ -767,33 +836,139 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       removed_history_list(hl)
     }
 
+    # ---- USGS overlay load --------------------------------------------------
+    shiny::observeEvent(input$load_usgs, {
+      site <- trimws(if (is.null(input$usgs_site)) "" else input$usgs_site)
+      if (!nzchar(site)) {
+        usgs_ovl(NULL)
+        usgs_status_msg(list(
+          text = "\u2717 Please enter a site number.",
+          ok = FALSE
+        ))
+        return()
+      }
+      # Express dates in UTC so the API interval covers the full monitoring
+      # period regardless of the contdat timezone.  Add one calendar day to
+      # end so that same-day ranges (e.g. "2024-08-14"/"2024-08-14") are not
+      # treated as a zero-duration point by the OGC API.
+      start <- format(lubridate::with_tz(min(cont$DateTime), "UTC"), "%Y-%m-%d")
+      end <- format(
+        lubridate::with_tz(max(cont$DateTime), "UTC") + lubridate::days(1),
+        "%Y-%m-%d"
+      )
+      result <- tryCatch(
+        readASRusgs(site, input$usgs_pcode, start, end),
+        error = function(e) e
+      )
+      if (inherits(result, "error")) {
+        usgs_ovl(NULL)
+        usgs_status_msg(list(
+          text = paste0("\u2717 ", conditionMessage(result)),
+          ok = FALSE
+        ))
+      } else {
+        # Align USGS timestamps (UTC) to the same timezone as contdat so the
+        # overlay x-axis positions match the primary trace exactly.
+        cont_tz <- attr(cont$DateTime, "tzone")
+        if (is.null(cont_tz) || !nzchar(cont_tz)) {
+          cont_tz <- "UTC"
+        }
+        result$DateTime <- lubridate::with_tz(result$DateTime, cont_tz)
+        # Clip to the exact datetime range of the contdat monitoring period.
+        dt_min <- min(cont$DateTime)
+        dt_max <- max(cont$DateTime)
+        result <- result[
+          result$DateTime >= dt_min & result$DateTime <= dt_max,
+          ,
+          drop = FALSE
+        ]
+        if (nrow(result) == 0L) {
+          usgs_ovl(NULL)
+          usgs_status_msg(list(
+            text = paste0("\u2717 No data overlap with monitoring period."),
+            ok = FALSE
+          ))
+          return()
+        }
+        usgs_ovl(result)
+        nm <- attr(result, "site_name")
+        nm <- if (is.null(nm)) site else nm
+        usgs_status_msg(list(
+          text = paste0("\u2713 ", nm),
+          ok = TRUE
+        ))
+        shiny::updateSelectizeInput(session, "overlay_param", selected = "")
+      }
+    })
+
+    # Clear USGS overlay when a contdat overlay is selected.
+    shiny::observeEvent(
+      input$overlay_param,
+      {
+        if (!is.null(input$overlay_param) && nzchar(input$overlay_param)) {
+          usgs_ovl(NULL)
+          usgs_status_msg(list(text = "", ok = TRUE))
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    # ---- USGS status message output -----------------------------------------
+    output$usgs_status <- shiny::renderUI({
+      msg <- usgs_status_msg()
+      if (!nzchar(msg$text)) {
+        return(NULL)
+      }
+      color <- if (msg$ok) "#2a7d2e" else "#cc3300"
+      shiny::p(
+        msg$text,
+        style = paste0(
+          "color: ",
+          color,
+          "; font-size: 0.85em; margin: 2px 0 8px 0;",
+          " word-break: break-word;"
+        )
+      )
+    })
+
     # ---- Plot ---------------------------------------------------------------
     output$flagPlot <- plotly::renderPlotly({
-      ovl_param <- input$overlay_param
-      ovl <- if (
-        !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
-      ) {
-        # Use remaining data for the overlay param if it is a linked parameter
-        # so that linked removals are reflected in the overlay line.
-        if (ovl_param %in% names(remaining_list())) {
-          remaining_list()[[ovl_param]][,
-            c("DateTime", ovl_param),
-            drop = FALSE
-          ]
-        } else {
-          cont[, c("DateTime", ovl_param), drop = FALSE]
-        }
+      # USGS overlay takes priority over the contdat overlay selector.
+      ovl <- if (!is.null(usgs_ovl())) {
+        usgs_ovl()
       } else {
-        NULL
+        ovl_param <- input$overlay_param
+        if (
+          !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
+        ) {
+          # Use remaining data for the overlay param if it is a linked parameter
+          # so that linked removals are reflected in the overlay line.
+          if (ovl_param %in% names(remaining_list())) {
+            remaining_list()[[ovl_param]][,
+              c("DateTime", ovl_param),
+              drop = FALSE
+            ]
+          } else {
+            cont[, c("DateTime", ovl_param), drop = FALSE]
+          }
+        } else {
+          NULL
+        }
       }
       p <- anlzASRflag(cur_remaining(), overlay = ovl)
       p <- plotly::event_register(p, "plotly_relayout")
       rng <- shiny::isolate(plot_ranges())
       if (!is.null(rng$x)) {
-        p <- plotly::layout(p, xaxis = list(autorange = FALSE, range = as.list(rng$x)))
+        p <- plotly::layout(
+          p,
+          xaxis = list(autorange = FALSE, range = as.list(rng$x))
+        )
       }
       if (!is.null(rng$y)) {
-        p <- plotly::layout(p, yaxis = list(autorange = FALSE, range = as.list(rng$y)))
+        p <- plotly::layout(
+          p,
+          yaxis = list(autorange = FALSE, range = as.list(rng$y))
+        )
       }
       p
     })

@@ -158,17 +158,21 @@ anlzASRflag <- function(flag, overlay = NULL) {
 
   if (!is.null(overlay)) {
     ovl_param <- setdiff(names(overlay), "DateTime")[1L]
-    ovl_ylab <- paramsASR[paramsASR$Parameter == ovl_param, "Label"] |>
-      as.character()
+    ovl_ylab <- as.character(paramsASR$Label[paramsASR$Parameter == ovl_param])
     if (length(ovl_ylab) == 0L || is.na(ovl_ylab[1L])) {
       ovl_ylab <- ovl_param
     }
 
+    # Sort once; use a direct vector for y (consistent with every other trace
+    # in this function) so plotly never has to formula-evaluate a column name
+    # that may contain special characters (e.g. ft³/s, brackets).
+    ovl_sorted <- overlay[order(overlay$DateTime), , drop = FALSE]
+
     p <- plotly::add_trace(
       p,
-      data = overlay[order(overlay$DateTime), ],
+      data = ovl_sorted,
       x = ~DateTime,
-      y = overlay[[ovl_param]][order(overlay$DateTime)],
+      y = ovl_sorted[[ovl_param]],
       inherit = FALSE,
       type = "scatter",
       mode = "lines",
@@ -178,7 +182,7 @@ anlzASRflag <- function(flag, overlay = NULL) {
       showlegend = TRUE,
       hovertemplate = paste0(
         "<b>",
-        ovl_param,
+        ovl_ylab,
         "</b>: %{y}<br>",
         "<b>DateTime</b>: %{x}",
         "<extra></extra>"

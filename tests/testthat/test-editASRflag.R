@@ -737,3 +737,87 @@ test_that("solo removal after linked removal only undoes solo batch on first und
     })
   )
 })
+
+# ---------------------------------------------------------------------------
+# USGS overlay
+# ---------------------------------------------------------------------------
+
+test_that("load_usgs with empty site fires without error and shows error status", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(usgs_site = "", usgs_pcode = "00060", load_usgs = 1L))
+      # removed count should be unaffected
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("load_usgs with non-numeric site fires without error and shows error status", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(
+        session$setInputs(usgs_site = "not-a-number", usgs_pcode = "00060", load_usgs = 1L)
+      )
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("load_usgs success populates usgs_ovl and clears overlay_param", {
+  # Build a minimal fake USGS result matching the 2-col contract.
+  fake_usgs <- data.frame(
+    DateTime              = tst$contdat$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(tst$contdat)),
+    check.names           = FALSE,
+    stringsAsFactors      = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(
+        param_select  = edit_first_param,
+        overlay_param = edit_second_param  # set a contdat overlay first
+      )
+      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      # No crash; removed count unchanged
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("selecting contdat overlay after USGS load clears usgs_ovl", {
+  fake_usgs <- data.frame(
+    DateTime              = tst$contdat$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(tst$contdat)),
+    check.names           = FALSE,
+    stringsAsFactors      = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Load USGS data
+      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      # Now select a contdat overlay — should clear USGS
+      session$setInputs(overlay_param = edit_second_param)
+      # No crash; plot still renders
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})

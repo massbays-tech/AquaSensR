@@ -44,10 +44,11 @@ Description: Methods for quality control and exploratory analysis of continuous
   for the Water Quality Exchange Network 
   <https://www.epa.gov/waterdata/water-quality-data-upload-wqx> and reporting 
   of quality control to state agencies.
-Depends: 
+Depends:
   R (>= 4.1.0)
 Imports:
   bslib,
+  dataRetrieval,
   dplyr,
   DT,
   lubridate,
