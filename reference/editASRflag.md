@@ -80,6 +80,13 @@ to remove the selected area if present after removal.
   gray line on a right-side y-axis, useful for spotting co-occurring
   changes across parameters.
 
+- **USGS Overlay**: enter a USGS site number and select a parameter
+  type, then click **Load** to fetch continuous data from NWIS and
+  display it on the secondary y-axis. Loading USGS data clears any
+  contdat overlay and selecting a contdat overlay clears the USGS data.
+  Site numbers can be found at the NWIS Mapper
+  (<https://apps.usgs.gov/nwismapper>).
+
 - **Linked Removal**: optional checkbox. When checked, any timestamps
   removed from the current parameter are simultaneously removed from all
   other parameters. Undo restores the current parameter and all other
