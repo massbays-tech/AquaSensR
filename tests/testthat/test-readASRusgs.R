@@ -53,8 +53,8 @@ test_that("readASRusgs returns a valid 2-column data frame for a known site", {
   expect_true(is.numeric(result[[2L]]))
   expect_true(nrow(result) > 0L)
 
-  # DateTime should be in UTC.
-  expect_equal(attr(result$DateTime, "tzone"), "UTC")
+  # DateTime should be in the default timezone (Etc/GMT+5).
+  expect_equal(attr(result$DateTime, "tzone"), "Etc/GMT+5")
 
   # Second column name should contain site number.
   expect_true(grepl("01646500", names(result)[2L]))

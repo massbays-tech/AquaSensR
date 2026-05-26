@@ -4,7 +4,7 @@
 \alias{readASRusgs}
 \title{Retrieve USGS time series data for overlay in editASRflag}
 \usage{
-readASRusgs(site, pcode, start, end)
+readASRusgs(site, pcode, start, end, tz = "Etc/GMT+5")
 }
 \arguments{
 \item{site}{Character. USGS site number (typically 8 digits,
@@ -20,14 +20,22 @@ e.g. \code{"01099500"}).  Find site numbers using the NWIS Mapper at
 
 \item{start, end}{Date range as \code{Date} objects or \code{"YYYY-MM-DD"}
 character strings.}
+
+\item{tz}{Character. Time zone to which the returned \code{DateTime} column
+is converted.  Defaults to \code{'Etc/GMT+5'} (Eastern Standard Time, no
+daylight saving), matching the default in \code{\link{readASRcont}} and
+\code{\link{formASRcont}}.  Pass the same value you used in
+\code{readASRcont()} so the overlay aligns correctly with the primary
+time series in \code{\link{anlzASRflag}} and \code{\link{editASRflag}}.
+See \code{OlsonNames()} for valid strings.}
 }
 \value{
-A two-column data frame with columns \code{DateTime} (POSIXct, UTC)
-and a second column whose name is a human-readable label combining the
-parameter description and site number (e.g.
-\code{"Streamflow (ft\u00b3/s) [01099500]"}).  The data frame carries a
-\code{"site_name"} attribute containing the station name, used by
-\code{\link{editASRflag}} for the status message.
+A two-column data frame with columns \code{DateTime}
+(POSIXct, in the timezone given by \code{tz}) and a second column whose
+name is a human-readable label combining the parameter description and
+site number (e.g. \code{"Streamflow (ft\u00b3/s) [01099500]"}).  The
+data frame carries a \code{"site_name"} attribute containing the station
+name, used by \code{\link{editASRflag}} for the status message.
 }
 \description{
 Downloads unit-value (continuous) data from the USGS Water Data API
@@ -39,8 +47,10 @@ is a two-column data frame compatible with the \code{overlay} argument of
 \details{
 Data are fetched via \code{dataRetrieval::read_waterdata_continuous()},
 which targets the modern USGS Water Data API
-(\url{https://api.waterdata.usgs.gov}).  The \code{DateTime} column is
-returned in UTC by the API so no timezone conversion is needed.
+(\url{https://api.waterdata.usgs.gov}).  The API returns timestamps in UTC and
+\code{readASRusgs()} re-expresses them in \code{tz} via
+\code{lubridate::with_tz()} so the result aligns with \code{contdat}
+without shifting the underlying moments in time.
 
 The station name shown in the \code{\link{editASRflag}} status line is
 retrieved with a second lightweight call to

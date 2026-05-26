@@ -707,14 +707,12 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       removed_history_list(hl)
     }
 
-    # Populate overlay and link_params choices on startup.
+    # Populate overlay choices on startup (all parameters available, none pre-selected).
     shiny::observe({
-      others <- params[params != input$param_select]
-      other_choices <- stats::setNames(others, param_labels[others])
       shiny::updateSelectInput(
         session,
         "overlay_param",
-        choices = c("None" = "", other_choices),
+        choices = c("None" = "", param_choices),
         selected = ""
       )
       update_dqo_inputs(working_dqo(), input$param_select)
@@ -734,13 +732,15 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     shiny::observeEvent(input$param_select, {
       plot_ranges(list(x = NULL, y = NULL))
-      others <- params[params != input$param_select]
-      other_choices <- stats::setNames(others, param_labels[others])
+      # Preserve the current overlay selection when switching parameters.
+      # All parameters (including the newly selected one) remain available as
+      # overlay options so the user does not lose their overlay on a switch.
+      cur_ovl <- if (is.null(input$overlay_param)) "" else input$overlay_param
       shiny::updateSelectInput(
         session,
         "overlay_param",
-        choices = c("None" = "", other_choices),
-        selected = ""
+        choices = c("None" = "", param_choices),
+        selected = cur_ovl
       )
       update_dqo_inputs(working_dqo(), input$param_select)
     })
@@ -847,6 +847,10 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         ))
         return()
       }
+      # Inherit the contdat timezone so readASRusgs() returns timestamps that
+      # align with the primary trace without any additional conversion.
+      cont_tz <- attr(cont$DateTime, "tzone")
+      if (is.null(cont_tz) || !nzchar(cont_tz)) cont_tz <- "Etc/GMT+5"
       # Express dates in UTC so the API interval covers the full monitoring
       # period regardless of the contdat timezone.  Add one calendar day to
       # end so that same-day ranges (e.g. "2024-08-14"/"2024-08-14") are not
@@ -857,7 +861,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         "%Y-%m-%d"
       )
       result <- tryCatch(
-        readASRusgs(site, input$usgs_pcode, start, end),
+        readASRusgs(site, input$usgs_pcode, start, end, tz = cont_tz),
         error = function(e) e
       )
       if (inherits(result, "error")) {
@@ -867,13 +871,6 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
           ok = FALSE
         ))
       } else {
-        # Align USGS timestamps (UTC) to the same timezone as contdat so the
-        # overlay x-axis positions match the primary trace exactly.
-        cont_tz <- attr(cont$DateTime, "tzone")
-        if (is.null(cont_tz) || !nzchar(cont_tz)) {
-          cont_tz <- "UTC"
-        }
-        result$DateTime <- lubridate::with_tz(result$DateTime, cont_tz)
         # Clip to the exact datetime range of the contdat monitoring period.
         dt_min <- min(cont$DateTime)
         dt_max <- max(cont$DateTime)
@@ -908,6 +905,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         if (!is.null(input$overlay_param) && nzchar(input$overlay_param)) {
           usgs_ovl(NULL)
           usgs_status_msg(list(text = "", ok = TRUE))
+          shiny::updateTextInput(session, "usgs_site", value = "")
         }
       },
       ignoreInit = TRUE

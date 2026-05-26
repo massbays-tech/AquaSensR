@@ -157,6 +157,25 @@ anlzASRflag <- function(flag, overlay = NULL) {
   )
 
   if (!is.null(overlay)) {
+    # error if the overlay and flag timezones differ — mismatched zones shift
+    # x-axis positions and produce a misaligned overlay line.
+    norm_tz <- function(tz) if (is.null(tz) || !nzchar(tz)) "UTC" else tz
+    flag_tz <- norm_tz(attr(flagdat$DateTime, "tzone"))
+    ovl_tz <- norm_tz(attr(overlay$DateTime, "tzone"))
+    if (!identical(flag_tz, ovl_tz)) {
+      stop(
+        "Overlay DateTime timezone ('",
+        ovl_tz,
+        "') differs from the flag ",
+        "data timezone ('",
+        flag_tz,
+        "'). Pass tz = '",
+        flag_tz,
+        "' to readASRusgs() to align the axes.",
+        call. = FALSE
+      )
+    }
+
     ovl_param <- setdiff(names(overlay), "DateTime")[1L]
     ovl_ylab <- as.character(paramsASR$Label[paramsASR$Parameter == ovl_param])
     if (length(ovl_ylab) == 0L || is.na(ovl_ylab[1L])) {
@@ -195,10 +214,18 @@ anlzASRflag <- function(flag, overlay = NULL) {
       yaxis2 = list(
         overlaying = "y",
         side = "right",
-        title = list(text = ovl_ylab, standoff = 15, font = list(color = "#91bbd6")),
+        title = list(
+          text = ovl_ylab,
+          standoff = 15,
+          font = list(color = "#91bbd6")
+        ),
         tickfont = list(color = "#91bbd6"),
         showgrid = FALSE,
-        automargin = TRUE
+        automargin = TRUE,
+        # Lock y2 to the same scale as y when both axes show the same parameter
+        # so that the tick marks align exactly.  For different parameters the
+        # attribute is omitted and each axis scales independently.
+        matches = if (identical(ovl_param, param)) "y" else NULL
       )
     )
   }

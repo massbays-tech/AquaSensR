@@ -17,19 +17,28 @@
 #'   }
 #' @param start,end Date range as \code{Date} objects or \code{"YYYY-MM-DD"}
 #'   character strings.
+#' @param tz Character. Time zone to which the returned \code{DateTime} column
+#'   is converted.  Defaults to \code{'Etc/GMT+5'} (Eastern Standard Time, no
+#'   daylight saving), matching the default in \code{\link{readASRcont}} and
+#'   \code{\link{formASRcont}}.  Pass the same value you used in
+#'   \code{readASRcont()} so the overlay aligns correctly with the primary
+#'   time series in \code{\link{anlzASRflag}} and \code{\link{editASRflag}}.
+#'   See \code{OlsonNames()} for valid strings.
 #'
-#' @return A two-column data frame with columns \code{DateTime} (POSIXct, UTC)
-#'   and a second column whose name is a human-readable label combining the
-#'   parameter description and site number (e.g.
-#'   \code{"Streamflow (ft\u00b3/s) [01099500]"}).  The data frame carries a
-#'   \code{"site_name"} attribute containing the station name, used by
-#'   \code{\link{editASRflag}} for the status message.
+#' @return A two-column data frame with columns \code{DateTime}
+#'   (POSIXct, in the timezone given by \code{tz}) and a second column whose
+#'   name is a human-readable label combining the parameter description and
+#'   site number (e.g. \code{"Streamflow (ft\u00b3/s) [01099500]"}).  The
+#'   data frame carries a \code{"site_name"} attribute containing the station
+#'   name, used by \code{\link{editASRflag}} for the status message.
 #'
 #' @details
 #' Data are fetched via \code{dataRetrieval::read_waterdata_continuous()},
 #' which targets the modern USGS Water Data API
-#' (\url{https://api.waterdata.usgs.gov}).  The \code{DateTime} column is
-#' returned in UTC by the API so no timezone conversion is needed.
+#' (\url{https://api.waterdata.usgs.gov}).  The API returns timestamps in UTC and
+#' \code{readASRusgs()} re-expresses them in \code{tz} via
+#' \code{lubridate::with_tz()} so the result aligns with \code{contdat}
+#' without shifting the underlying moments in time.
 #'
 #' The station name shown in the \code{\link{editASRflag}} status line is
 #' retrieved with a second lightweight call to
@@ -48,7 +57,7 @@
 #' }
 #'
 #' @export
-readASRusgs <- function(site, pcode, start, end) {
+readASRusgs <- function(site, pcode, start, end, tz = "Etc/GMT+5") {
   site <- trimws(as.character(site))
   pcode <- trimws(as.character(pcode))
 
@@ -101,6 +110,9 @@ readASRusgs <- function(site, pcode, start, end) {
     stringsAsFactors = FALSE
   )
   names(out)[2L] <- col_name
+
+  # Convert UTC timestamps to the requested timezone.
+  out$DateTime <- lubridate::with_tz(out$DateTime, tz)
 
   # Attach station name for the editASRflag status message.
   # A lightweight monitoring-location lookup is used; falls back to site number.
