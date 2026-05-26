@@ -352,7 +352,10 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
          if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
          e.stopPropagation();
          Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
-       }, true);'
+       }, true);
+       Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+         window.close();
+       });'
     ))),
     shiny::p(
       "Zoom and pan normally with the plot toolbar visible on the top right when the pointer is over the plot.",
@@ -1159,6 +1162,11 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     shiny::observeEvent(input$done_confirm, {
       shiny::removeModal()
+      # Ask the browser to close the tab.  This works in RStudio's viewer pane
+      # and Electron/webview contexts; standard browser tabs opened by the OS
+      # block window.close() for security reasons, so it silently does nothing
+      # there — the app still disconnects when stopApp() terminates the server.
+      session$sendCustomMessage("closeWindow", list())
       shiny::stopApp(
         returnValue = editASRflag_result(
           cont,
