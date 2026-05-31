@@ -11,3 +11,5 @@
   checks](https://massbays-tech.github.io/AquaSensR/articles/inputs.md):
 - [Quality control
   overview](https://massbays-tech.github.io/AquaSensR/articles/qcoverview.md):
+- [Drift
+  correction](https://massbays-tech.github.io/AquaSensR/articles/driftcorrection.md):

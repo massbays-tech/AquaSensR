@@ -5,6 +5,7 @@
 <url><loc>https://massbays-tech.github.io/AquaSensR/LICENSE.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/RESOURCES.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/articles/AquaSensR.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/articles/driftcorrection.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/articles/index.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/articles/inputs.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/articles/qcoverview.html</loc></url>
@@ -14,6 +15,7 @@
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/anlzASRflag.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/checkASRdqo.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/editASRdrift.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/editASRflag.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/formASRcont.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/formASRdqo.html</loc></url>
@@ -22,6 +24,7 @@
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/readASRcont.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/readASRusgs.html</loc></url>
+<url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRdrift.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflag.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagall.html</loc></url>
 <url><loc>https://massbays-tech.github.io/AquaSensR/reference/utilASRflagflatline.html</loc></url>

@@ -97,6 +97,15 @@ data quality objectives.
 - [`utilASRflagupdate()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflagupdate.md)
   : Update QC flag severity
 
+## Drift correction
+
+Functions for correcting instrument drift in continuous monitoring data.
+
+- [`editASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/editASRdrift.md)
+  : Interactive drift correction editor
+- [`utilASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRdrift.md)
+  : Apply linear drift correction to a continuous monitoring parameter
+
 ## Utility functions
 
 Additional miscellaneous functions used internally by other functions.
@@ -127,3 +136,5 @@ functions.
   checks](https://massbays-tech.github.io/AquaSensR/articles/inputs.md):
 - [Quality control
   overview](https://massbays-tech.github.io/AquaSensR/articles/qcoverview.md):
+- [Drift
+  correction](https://massbays-tech.github.io/AquaSensR/articles/driftcorrection.md):
