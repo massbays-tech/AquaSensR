@@ -21,6 +21,7 @@
 #' Always verify the correct time zone for your data.  If your data are in a different time zone than Etc/GMT+5 (default), specify the correct time zone in the \code{tz} argument.
 #'
 #' @returns A formatted continuous monitoring data frame that can be used for downstream analysis
+#' @importFrom utils read.csv
 #' @export
 #'
 #' @examples

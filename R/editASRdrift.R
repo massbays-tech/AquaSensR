@@ -111,12 +111,12 @@ editASRdrift_app <- function(cont) {
         style = "display: flex; gap: 4px; margin-bottom: 3px;",
         shiny::actionButton(
           "param_prev",
-          "← Prev",
+          "\u2190 Prev",
           style = "flex: 1; background-color: #ebebeb;"
         ),
         shiny::actionButton(
           "param_next",
-          "Next →",
+          "Next \u2192",
           style = "flex: 1; background-color: #ebebeb;"
         )
       ),
@@ -570,3 +570,4 @@ editASRdrift_result <- function(working_cont, corrections_log) {
     corrections = corrections_log
   )
 }
+
