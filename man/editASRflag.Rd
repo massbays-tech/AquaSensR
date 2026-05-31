@@ -61,7 +61,7 @@ remove the selected area if present after removal.
 parameters.  Edits to each parameter are preserved independently when
 switching.
 \item \strong{Overlay}: optional drop-down to display a second parameter
-as a gray line on a right-side y-axis, useful for spotting co-occurring
+from \code{condtat} on a right-side y-axis, useful for spotting co-occurring
 changes across parameters.
 \item \strong{USGS Overlay}: enter a USGS site number and select a
 parameter type, then click \strong{Load} to fetch continuous data

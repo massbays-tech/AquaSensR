@@ -51,7 +51,7 @@
 #'       parameters.  Edits to each parameter are preserved independently when
 #'       switching.
 #'     \item \strong{Overlay}: optional drop-down to display a second parameter
-#'       as a gray line on a right-side y-axis, useful for spotting co-occurring
+#'      from \code{condtat} on a right-side y-axis, useful for spotting co-occurring
 #'       changes across parameters.
 #'     \item \strong{USGS Overlay}: enter a USGS site number and select a
 #'       parameter type, then click \strong{Load} to fetch continuous data
@@ -853,7 +853,9 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       # Inherit the contdat timezone so readASRusgs() returns timestamps that
       # align with the primary trace without any additional conversion.
       cont_tz <- attr(cont$DateTime, "tzone")
-      if (is.null(cont_tz) || !nzchar(cont_tz)) cont_tz <- "Etc/GMT+5"
+      if (is.null(cont_tz) || !nzchar(cont_tz)) {
+        cont_tz <- "Etc/GMT+5"
+      }
       # Express dates in UTC so the API interval covers the full monitoring
       # period regardless of the contdat timezone.  Add one calendar day to
       # end so that same-day ranges (e.g. "2024-08-14"/"2024-08-14") are not

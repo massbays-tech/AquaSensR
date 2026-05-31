@@ -209,7 +209,7 @@ anlzASRflag(flagdat, overlay = overlay_df)
 
 ## `editASRflag()` to review and clean data interactively
 
-`editASRflag()` opens a Shiny application that lets you inspect the flag plot for every parameter and selectively remove observations before exporting the cleaned data back to R.  The app uses `utilASRflag()` and `anlzASRflag()` under the hood to generate the flags and plots, but adds interactive selection tools and linked parameter removal to facilitate data cleaning.
+`editASRflag()` opens a Shiny application that lets you inspect the flag plot for every parameter and selectively remove observations before exporting the cleaned data back to R.  The app uses `utilASRflag()` and `anlzASRflag()` under the hood to generate the flags and plots, but adds interactive selection tools to facilitate data cleaning.
 
 The app can be opened by providing `contdat` and `dqodat` as arguments to `editASRflag()`.  The app lets you interactively evaluate your data until you click **Done / Close**, at which point the cleaned data are returned to your R session.
 
@@ -219,7 +219,7 @@ cleaned <- editASRflag(contdat, dqodat)
 
 ### Interface overview
 
-![The main editASRflag interface. The left sidebar contains parameter selection, overlay option, linked-removal controls, and the removed-points table. The flag plot for the selected parameter is in the center. The DQO Settings panel (right, not shown here) is accessed by clicking the toggle on the right edge of the plot area.](figures/editASRflag_main.png){fig-alt="Screenshot of the editASRflag Shiny app showing the flag plot and left sidebar." width="100%"}
+![The main editASRflag interface. The left sidebar contains parameter selection, overlay options, linked-removal controls, and the removed-points table. The flag plot for the selected parameter is in the center. The DQO Settings panel (right, not shown here) is accessed by clicking the toggle on the right edge of the plot area.](figures/editASRflag_main.png){fig-alt="Screenshot of the editASRflag Shiny app showing the flag plot and left sidebar." width="100%"}
 
 ### Selecting and removing points
 
@@ -236,7 +236,7 @@ After a box or lasso selection, double-click the plot background to clear the se
 | Control | Action |
 |---------|--------|
 | **Parameter** | Switch between parameters.  Prev/Next buttons cycle through all parameters. |
-| **Overlay** | Display a second parameter as a gray line on a right-side axis. |
+| **Overlay** | Display a second parameter from `contdat` on a right-side axis. |
 | **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis.  Loading USGS data clears any contdat overlay. Selecting a contdat overlay clears the USGS data.  Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
 | **Linked Removal** | When checked, propagate every removal to all other parameters simultaneously.  Undo restores all parameters together in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch.  Linked parameters are restored together. |
