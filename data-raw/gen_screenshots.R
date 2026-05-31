@@ -40,3 +40,14 @@ appshot(
   zoom = 1.5
 )
 message("Wrote editASRflag_dqo.png")
+
+# ---- Screenshot 3: editASRdrift main view ------------------------------------
+appshot(
+  AquaSensR:::editASRdrift_app(contdat),
+  file = file.path(outdir, "editASRdrift_main.png"),
+  delay = 5,
+  vwidth = 1400,
+  vheight = 820,
+  zoom = 1.5
+)
+message("Wrote editASRdrift_main.png")

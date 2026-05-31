@@ -22,9 +22,10 @@ articles:
   - AquaSensR
 - title: Articles
   navbar: ~
-  contents: 
+  contents:
   - inputs
   - qcoverview
+  - driftcorrection
 
 reference:
 - title: Read, check, and format data
@@ -41,6 +42,12 @@ reference:
   - anlzASRflag
   - editASRflag
   - starts_with('utilASRflag')
+- title: Drift correction
+  desc: >
+    Functions for correcting instrument drift in continuous monitoring data.
+  contents:
+  - editASRdrift
+  - utilASRdrift
 - title: Utility functions
   desc: >
     Additional miscellaneous functions used internally by other functions.

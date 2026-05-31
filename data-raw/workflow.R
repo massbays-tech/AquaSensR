@@ -50,3 +50,23 @@ anlzASRflag(flagdat)
 # 5. Edit flags in interactive Shiny app
 #' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
 cleaned <- editASRflag(contdat, dqodat)
+
+# ------------------------------------------------------------------------------
+# 6. Drift correction
+# ------------------------------------------------------------------------------
+# Apply a single drift correction to one parameter programmatically.
+# cal_ref is the true value from an independent sonde at deployment end;
+# cal_check is inferred automatically from the sensor data at drift_end_time.
+t1 <- min(contdat$DateTime)
+t2 <- max(contdat$DateTime)
+corrected <- utilASRdrift(contdat, param = "Water_Temp_C", cal_ref = 26, t1, t2)
+
+# Confirm the start value is unchanged and the end value equals cal_ref
+corrected$Water_Temp_C[corrected$DateTime == t1] # should equal original
+corrected$Water_Temp_C[corrected$DateTime == t2] # should equal 26
+
+# ------------------------------------------------------------------------------
+# 7. Interactive drift correction app
+# Interactive drift correction app — works parameter by parameter,
+# returns list(contdat, corrections) on close
+drift_result <- editASRdrift(contdat)
