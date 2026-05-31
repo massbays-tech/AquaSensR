@@ -351,8 +351,7 @@ cleaned data back to R. The app uses
 and
 [`anlzASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/anlzASRflag.md)
 under the hood to generate the flags and plots, but adds interactive
-selection tools and linked parameter removal to facilitate data
-cleaning.
+selection tools to facilitate data cleaning.
 
 The app can be opened by providing `contdat` and `dqodat` as arguments
 to
@@ -372,7 +371,7 @@ cleaned <- editASRflag(contdat, dqodat)
 sidebar.](figures/editASRflag_main.png)
 
 The main editASRflag interface. The left sidebar contains parameter
-selection, overlay option, linked-removal controls, and the
+selection, overlay options, linked-removal controls, and the
 removed-points table. The flag plot for the selected parameter is in the
 center. The DQO Settings panel (right, not shown here) is accessed by
 clicking the toggle on the right edge of the plot area.
@@ -400,7 +399,7 @@ the edge to the right).
 | Control | Action |
 |----|----|
 | **Parameter** | Switch between parameters. Prev/Next buttons cycle through all parameters. |
-| **Overlay** | Display a second parameter as a gray line on a right-side axis. |
+| **Overlay** | Display a second parameter from `contdat` on a right-side axis. |
 | **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis. Loading USGS data clears any contdat overlay. Selecting a contdat overlay clears the USGS data. Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
 | **Linked Removal** | When checked, propagate every removal to all other parameters simultaneously. Undo restores all parameters together in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch. Linked parameters are restored together. |

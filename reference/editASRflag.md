@@ -76,8 +76,8 @@ to remove the selected area if present after removal.
 - **Parameter**: drop-down selector to switch between parameters. Edits
   to each parameter are preserved independently when switching.
 
-- **Overlay**: optional drop-down to display a second parameter as a
-  gray line on a right-side y-axis, useful for spotting co-occurring
+- **Overlay**: optional drop-down to display a second parameter from
+  `condtat` on a right-side y-axis, useful for spotting co-occurring
   changes across parameters.
 
 - **USGS Overlay**: enter a USGS site number and select a parameter
