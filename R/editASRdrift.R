@@ -77,7 +77,7 @@ editASRdrift_app <- function(cont) {
   param_labels <- vapply(
     params,
     function(p) {
-      lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
+      lbl <- paramsASR$Label[paramsASR$Parameter == p]
       if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
     },
     character(1L)
@@ -487,7 +487,7 @@ editASRdrift_app <- function(cont) {
       dat    <- working_cont()
       pts    <- selected_points()
 
-      lbl     <- paramsASR[paramsASR$Parameter == p_name, "Label"]
+      lbl     <- paramsASR$Label[paramsASR$Parameter == p_name]
       y_label <- if (length(lbl) == 0L || is.na(lbl[1L])) p_name else as.character(lbl[1L])
 
       p <- plotly::plot_ly(dat, x = ~DateTime) |>
