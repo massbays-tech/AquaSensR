@@ -12,14 +12,14 @@
 #'   independent calibrated instrument at the end of the deployment period
 #' @param drift_start_time start of the drift window (POSIXct or coercible)
 #' @param drift_end_time end of the drift window (POSIXct or coercible)
-#' @param plot logical, if \code{TRUE} a plotly plot is displayed showing the
+#' @param plot logical; if \code{FALSE} (default) the corrected data frame is
+#'   returned.  If \code{TRUE} a plotly object is returned instead, showing the
 #'   corrected time series (blue), the original values within the drift window
 #'   (gray), and the reference value at the end of the window (red circle).
-#'   Defaults to \code{FALSE}.
 #'
-#' @return A copy of \code{cont} with corrected values for \code{param} in the
-#'   drift window.  Values outside the window are unchanged.  When
-#'   \code{plot = TRUE} a plotly plot is also displayed as a side effect.
+#' @return If \code{plot = FALSE}, a copy of \code{cont} with corrected values
+#'   for \code{param} in the drift window (values outside the window are
+#'   unchanged).  If \code{plot = TRUE}, a \code{plotly} object.
 #'
 #' @details
 #' The \code{cal_check} value (what the deployed sensor was actually reading at
@@ -87,61 +87,59 @@ utilASRdrift <- function(
   out <- cont
   out[[param]][in_window] <- window_vals + (cal_ref - cal_check) * fraction
 
-  if (plot) {
-    lbl <- paramsASR$Label[paramsASR$Parameter == param]
-    y_label <- if (length(lbl) == 0L || is.na(lbl[1L])) {
-      param
-    } else {
-      as.character(lbl[1L])
-    }
-
-    y_rng_data <- range(
-      c(out[[param]], window_vals, cal_ref),
-      na.rm = TRUE
-    )
-    y_span <- diff(y_rng_data)
-    y_pad <- if (y_span > 0) {
-      y_span * 0.05
-    } else {
-      max(abs(y_rng_data[1L]) * 0.05, 0.1)
-    }
-    y_rng <- c(y_rng_data[1L] - y_pad, y_rng_data[2L] + y_pad)
-
-    p <- plotly::plot_ly(out, x = ~DateTime) |>
-      plotly::add_trace(
-        y = out[[param]],
-        name = y_label,
-        type = "scatter",
-        mode = "lines",
-        line = list(color = "#1f77b4")
-      ) |>
-      plotly::add_trace(
-        x = cont$DateTime[in_window],
-        y = window_vals,
-        name = "Original",
-        type = "scatter",
-        mode = "lines",
-        line = list(color = "#999999", width = 1)
-      ) |>
-      plotly::add_trace(
-        x = drift_end_time,
-        y = cal_ref,
-        name = "Reference",
-        type = "scatter",
-        mode = "markers",
-        marker = list(color = "#e41a1c", size = 8, symbol = "circle")
-      ) |>
-      plotly::layout(
-        xaxis = list(title = ""),
-        yaxis = list(
-          title = y_label,
-          autorange = FALSE,
-          range = as.list(y_rng)
-        )
-      )
-
-    print(p)
+  if (!plot) {
+    return(out)
   }
 
-  out
+  lbl <- paramsASR$Label[paramsASR$Parameter == param]
+  y_label <- if (length(lbl) == 0L || is.na(lbl[1L])) {
+    param
+  } else {
+    as.character(lbl[1L])
+  }
+
+  y_rng_data <- range(
+    c(out[[param]], window_vals, cal_ref),
+    na.rm = TRUE
+  )
+  y_span <- diff(y_rng_data)
+  y_pad <- if (y_span > 0) {
+    y_span * 0.05
+  } else {
+    max(abs(y_rng_data[1L]) * 0.05, 0.1)
+  }
+  y_rng <- c(y_rng_data[1L] - y_pad, y_rng_data[2L] + y_pad)
+
+  plotly::plot_ly(out, x = ~DateTime) |>
+    plotly::add_trace(
+      y = out[[param]],
+      name = y_label,
+      type = "scatter",
+      mode = "lines",
+      line = list(color = "#1f77b4")
+    ) |>
+    plotly::add_trace(
+      x = cont$DateTime[in_window],
+      y = window_vals,
+      name = "Original",
+      type = "scatter",
+      mode = "lines",
+      line = list(color = "#999999", width = 1)
+    ) |>
+    plotly::add_trace(
+      x = drift_end_time,
+      y = cal_ref,
+      name = "Reference",
+      type = "scatter",
+      mode = "markers",
+      marker = list(color = "#e41a1c", size = 8, symbol = "circle")
+    ) |>
+    plotly::layout(
+      xaxis = list(title = ""),
+      yaxis = list(
+        title = y_label,
+        autorange = FALSE,
+        range = as.list(y_rng)
+      )
+    )
 }

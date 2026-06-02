@@ -25,15 +25,15 @@ independent calibrated instrument at the end of the deployment period}
 
 \item{drift_end_time}{end of the drift window (POSIXct or coercible)}
 
-\item{plot}{logical; if \code{TRUE} a plotly plot is displayed showing the
+\item{plot}{logical; if \code{FALSE} (default) the corrected data frame is
+returned.  If \code{TRUE} a plotly object is returned instead, showing the
 corrected time series (blue), the original values within the drift window
-(gray), and the reference value at the end of the window (red circle).
-Defaults to \code{FALSE}.}
+(gray), and the reference value at the end of the window (red circle).}
 }
 \value{
-A copy of \code{cont} with corrected values for \code{param} in the
-drift window.  Values outside the window are unchanged.  When
-\code{plot = TRUE} a plotly plot is also displayed as a side effect.
+If \code{plot = FALSE}, a copy of \code{cont} with corrected values
+for \code{param} in the drift window (values outside the window are
+unchanged).  If \code{plot = TRUE}, a \code{plotly} object.
 }
 \description{
 Corrects for instrument drift over a specified window using a

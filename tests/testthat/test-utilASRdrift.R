@@ -76,11 +76,9 @@ test_that("zero drift when cal_ref equals cal_check leaves values unchanged", {
   expect_equal(res$Water_Temp_C, cont$Water_Temp_C)
 })
 
-test_that("plot = TRUE returns same corrected values as plot = FALSE", {
-  cont     <- make_drift_cont(10)
-  expected <- utilASRdrift(cont, "Water_Temp_C", cal_ref = 23.5,
-                           cont$DateTime[1], cont$DateTime[10])
-  result   <- utilASRdrift(cont, "Water_Temp_C", cal_ref = 23.5,
-                           cont$DateTime[1], cont$DateTime[10], plot = TRUE)
-  expect_equal(result$Water_Temp_C, expected$Water_Temp_C)
+test_that("plot = TRUE returns a plotly object", {
+  cont   <- make_drift_cont(10)
+  result <- utilASRdrift(cont, "Water_Temp_C", cal_ref = 23.5,
+                         cont$DateTime[1], cont$DateTime[10], plot = TRUE)
+  expect_s3_class(result, "plotly")
 })

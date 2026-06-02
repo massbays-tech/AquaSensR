@@ -65,6 +65,17 @@ corrected <- utilASRdrift(contdat, param = "Water_Temp_C", cal_ref = 26, t1, t2)
 corrected$Water_Temp_C[corrected$DateTime == t1] # should equal original
 corrected$Water_Temp_C[corrected$DateTime == t2] # should equal 26
 
+# view optional plot
+corrected <- utilASRdrift(
+  contdat,
+  param = "Water_Temp_C",
+  cal_ref = 26,
+  t1,
+  t2,
+  plot = TRUE
+)
+
+
 # ------------------------------------------------------------------------------
 # 7. Interactive drift correction app
 # Interactive drift correction app — works parameter by parameter,
