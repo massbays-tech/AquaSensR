@@ -182,7 +182,11 @@ current parameter’s time series.
 4.  Enter the **Reference value** (the reading from the independent
     calibrated instrument at the end of the deployment).
 5.  Click **Apply Correction**. The plot updates immediately to show the
-    corrected time series.
+    corrected time series. The original (pre-correction) values for the
+    window are retained as a solid gray line for visual comparison, and
+    a red circle marks the supplied reference value at the end of the
+    window. These elements are for display only and are not included in
+    the returned data.
 
 A third click resets the selection so you can start over without
 applying a correction.
