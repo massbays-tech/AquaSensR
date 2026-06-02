@@ -4,7 +4,14 @@
 \alias{utilASRdrift}
 \title{Apply linear drift correction to a continuous monitoring parameter}
 \usage{
-utilASRdrift(cont, param, cal_ref, drift_start_time, drift_end_time)
+utilASRdrift(
+  cont,
+  param,
+  cal_ref,
+  drift_start_time,
+  drift_end_time,
+  plot = FALSE
+)
 }
 \arguments{
 \item{cont}{\code{contdat} data frame returned by \code{\link{readASRcont}}}
@@ -17,10 +24,16 @@ independent calibrated instrument at the end of the deployment period}
 \item{drift_start_time}{start of the drift window (POSIXct or coercible)}
 
 \item{drift_end_time}{end of the drift window (POSIXct or coercible)}
+
+\item{plot}{logical; if \code{TRUE} a plotly plot is displayed showing the
+corrected time series (blue), the original values within the drift window
+(gray), and the reference value at the end of the window (red circle).
+Defaults to \code{FALSE}.}
 }
 \value{
 A copy of \code{cont} with corrected values for \code{param} in the
-drift window.  Values outside the window are unchanged.
+drift window.  Values outside the window are unchanged.  When
+\code{plot = TRUE} a plotly plot is also displayed as a side effect.
 }
 \description{
 Corrects for instrument drift over a specified window using a
