@@ -42,6 +42,12 @@ window) is inferred automatically from the data.  The correction is
 distributed linearly across the window: zero at the start, full correction
 at the end.  See \code{\link{utilASRdrift}} for the algorithm.
 
+After a correction is applied, the plot retains the original (pre-correction)
+values for the window as a solid gray line so the adjustment can be
+assessed visually.  A red circle marks the supplied reference value at the
+end of the window.  These elements are display-only and are not included in
+the returned data.
+
 Multiple corrections can be applied per parameter (e.g., one per
 deployment period), and each can be individually undone.
 }

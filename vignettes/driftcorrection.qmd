@@ -135,7 +135,7 @@ The app has a left sidebar for controls and a main plot area showing the current
 2. **Click once** on the plot to mark the start of the drift window. A red dashed vertical line appears.
 3. **Click again** to mark the end. A purple dashed vertical line appears and the reference value input becomes visible in the sidebar.
 4. Enter the **Reference value** (the reading from the independent calibrated instrument at the end of the deployment).
-5. Click **Apply Correction**. The plot updates immediately to show the corrected time series.
+5. Click **Apply Correction**. The plot updates immediately to show the corrected time series. The original (pre-correction) values for the window are retained as a solid gray line for visual comparison, and a red circle marks the supplied reference value at the end of the window. These elements are for display only and are not included in the returned data.
 
 A third click resets the selection so you can start over without applying a correction.
 

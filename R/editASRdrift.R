@@ -33,6 +33,12 @@
 #'   distributed linearly across the window: zero at the start, full correction
 #'   at the end.  See \code{\link{utilASRdrift}} for the algorithm.
 #'
+#'   After a correction is applied, the plot retains the original (pre-correction)
+#'   values for the window as a solid gray line so the adjustment can be
+#'   assessed visually.  A red circle marks the supplied reference value at the
+#'   end of the window.  These elements are display-only and are not included in
+#'   the returned data.
+#'
 #'   Multiple corrections can be applied per parameter (e.g., one per
 #'   deployment period), and each can be individually undone.
 #' }
@@ -68,11 +74,12 @@ editASRdrift <- function(cont) {
 # so tests can call shiny::testServer() on the server function directly.
 # Not exported.
 editASRdrift_app <- function(cont) {
-
   params <- setdiff(names(cont), "DateTime")
 
   tz <- attr(cont$DateTime, "tzone")
-  if (is.null(tz) || !nzchar(tz)) tz <- "UTC"
+  if (is.null(tz) || !nzchar(tz)) {
+    tz <- "UTC"
+  }
 
   param_labels <- vapply(
     params,
@@ -96,7 +103,10 @@ editASRdrift_app <- function(cont) {
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4("Parameter", style = "margin: 0;"),
         bslib::popover(
-          shiny::icon("circle-info", style = "color: #6c757d; cursor: pointer;"),
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
           title = "Parameter",
           "Select the parameter to review and correct. Use Prev and Next to cycle through all available parameters. Corrections are tracked independently for each parameter."
         )
@@ -125,7 +135,10 @@ editASRdrift_app <- function(cont) {
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4("Drift Period", style = "margin: 0;"),
         bslib::popover(
-          shiny::icon("circle-info", style = "color: #6c757d; cursor: pointer;"),
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
           title = "Drift Period",
           "Click the plot once to set the start of the drift window, then click again to set the end. A third click resets the selection. Once two times are selected, enter the reference value and click Apply Correction."
         )
@@ -137,7 +150,10 @@ editASRdrift_app <- function(cont) {
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4("Controls", style = "margin: 0;"),
         bslib::popover(
-          shiny::icon("circle-info", style = "color: #6c757d; cursor: pointer;"),
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
           title = "Controls",
           shiny::tags$ul(
             style = "padding-left: 1.2em; margin: 0;",
@@ -184,9 +200,15 @@ editASRdrift_app <- function(cont) {
       shiny::hr(),
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
-        shiny::h4(shiny::textOutput("corrections_count", inline = TRUE), style = "margin: 0;"),
+        shiny::h4(
+          shiny::textOutput("corrections_count", inline = TRUE),
+          style = "margin: 0;"
+        ),
         bslib::popover(
-          shiny::icon("circle-info", style = "color: #6c757d; cursor: pointer;"),
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
           title = "Corrections Log",
           "All corrections applied during this session across all parameters, in order. Each row shows the parameter, drift window, reference value, inferred sensor check value, and total drift applied."
         )
@@ -210,7 +232,7 @@ editASRdrift_app <- function(cont) {
        });'
     ))),
     shiny::p(
-      "Click the plot twice to select the start and end of the drift period.",
+      "Click the line twice to select the start and end of the drift period.",
       "A third click resets the selection.",
       "Zoom and pan with the toolbar (visible when the pointer is over the plot) to inspect the data."
     ),
@@ -221,27 +243,29 @@ editASRdrift_app <- function(cont) {
   # Server
   # -------------------------------------------------------------------------
   server <- function(input, output, session) {
-
-    working_cont    <- shiny::reactiveVal(cont)
+    working_cont <- shiny::reactiveVal(cont)
     selected_points <- shiny::reactiveVal(list())
-    plot_ranges     <- shiny::reactiveVal(list(x = NULL, y = NULL))
+    plot_ranges <- shiny::reactiveVal(list(x = NULL, y = NULL))
 
     correction_history_list <- shiny::reactiveVal(
       stats::setNames(lapply(params, function(p) list()), params)
     )
 
     empty_log <- data.frame(
-      Parameter     = character(0),
-      drift_start   = as.POSIXct(character(0), tz = tz),
-      drift_end     = as.POSIXct(character(0), tz = tz),
-      cal_ref       = numeric(0),
-      cal_check     = numeric(0),
+      Parameter = character(0),
+      drift_start = as.POSIXct(character(0), tz = tz),
+      drift_end = as.POSIXct(character(0), tz = tz),
+      cal_ref = numeric(0),
+      cal_check = numeric(0),
       drift_applied = numeric(0),
       stringsAsFactors = FALSE
     )
     corrections_log <- shiny::reactiveVal(empty_log)
+    original_segments <- shiny::reactiveVal(list())
 
-    cur_history <- shiny::reactive(correction_history_list()[[input$param_select]])
+    cur_history <- shiny::reactive(correction_history_list()[[
+      input$param_select
+    ]])
 
     update_history <- function(new_hist) {
       hl <- correction_history_list()
@@ -258,14 +282,22 @@ editASRdrift_app <- function(cont) {
     shiny::observeEvent(input$param_prev, {
       idx <- match(input$param_select, params)
       if (idx > 1L) {
-        shiny::updateSelectInput(session, "param_select", selected = params[idx - 1L])
+        shiny::updateSelectInput(
+          session,
+          "param_select",
+          selected = params[idx - 1L]
+        )
       }
     })
 
     shiny::observeEvent(input$param_next, {
       idx <- match(input$param_select, params)
       if (idx < length(params)) {
-        shiny::updateSelectInput(session, "param_select", selected = params[idx + 1L])
+        shiny::updateSelectInput(
+          session,
+          "param_select",
+          selected = params[idx + 1L]
+        )
       }
     })
 
@@ -275,13 +307,19 @@ editASRdrift_app <- function(cont) {
       {
         ev <- plotly::event_data("plotly_relayout", session = session)
         pr <- plot_ranges()
-        if (!is.null(ev[["xaxis.range[0]"]]) && !is.null(ev[["xaxis.range[1]"]])) {
+        if (
+          !is.null(ev[["xaxis.range[0]"]]) && !is.null(ev[["xaxis.range[1]"]])
+        ) {
           pr$x <- c(ev[["xaxis.range[0]"]], ev[["xaxis.range[1]"]])
         }
-        if (!is.null(ev[["yaxis.range[0]"]]) && !is.null(ev[["yaxis.range[1]"]])) {
+        if (
+          !is.null(ev[["yaxis.range[0]"]]) && !is.null(ev[["yaxis.range[1]"]])
+        ) {
           pr$y <- c(ev[["yaxis.range[0]"]], ev[["yaxis.range[1]"]])
         }
-        if (!is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])) {
+        if (
+          !is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])
+        ) {
           pr$x <- NULL
           pr$y <- NULL
         }
@@ -294,7 +332,9 @@ editASRdrift_app <- function(cont) {
       plotly::event_data("plotly_click", session = session),
       {
         click <- plotly::event_data("plotly_click", session = session)
-        if (is.null(click)) return()
+        if (is.null(click)) {
+          return()
+        }
 
         current_pts <- selected_points()
         if (length(current_pts) >= 2L) {
@@ -305,7 +345,9 @@ editASRdrift_app <- function(cont) {
         # Snap click x to the nearest DateTime in the data
         click_ts <- as.POSIXct(click$x, origin = "1970-01-01", tz = tz)
         dat <- working_cont()
-        nearest <- dat$DateTime[which.min(abs(as.numeric(dat$DateTime) - as.numeric(click_ts)))]
+        nearest <- dat$DateTime[which.min(abs(
+          as.numeric(dat$DateTime) - as.numeric(click_ts)
+        ))]
         selected_points(c(current_pts, list(nearest)))
       }
     )
@@ -313,9 +355,15 @@ editASRdrift_app <- function(cont) {
     # ---- Selected period display --------------------------------------------
     output$selected_period <- shiny::renderText({
       pts <- selected_points()
-      if (length(pts) == 0L) return("Click plot to select start of drift period.")
+      if (length(pts) == 0L) {
+        return("Click plot to select start of drift period.")
+      }
       if (length(pts) == 1L) {
-        return(paste0("Start: ", format(pts[[1L]]), "\nClick again to select end."))
+        return(paste0(
+          "Start: ",
+          format(pts[[1L]]),
+          "\nClick again to select end."
+        ))
       }
       paste0("Start: ", format(pts[[1L]]), "\nEnd:   ", format(pts[[2L]]))
     })
@@ -344,20 +392,38 @@ editASRdrift_app <- function(cont) {
     # ---- Apply drift correction ---------------------------------------------
     shiny::observeEvent(input$apply_correction, {
       pts <- selected_points()
-      if (length(pts) < 2L) return()
-      if (is.null(input$cal_ref) || is.na(input$cal_ref)) return()
+      if (length(pts) < 2L) {
+        return()
+      }
+      if (is.null(input$cal_ref) || is.na(input$cal_ref)) {
+        return()
+      }
 
-      p           <- input$param_select
-      t1          <- min(pts[[1L]], pts[[2L]])
-      t2          <- max(pts[[1L]], pts[[2L]])
+      p <- input$param_select
+      t1 <- min(pts[[1L]], pts[[2L]])
+      t2 <- max(pts[[1L]], pts[[2L]])
       cal_ref_val <- input$cal_ref
 
-      dat       <- working_cont()
+      dat <- working_cont()
       in_window <- dat$DateTime >= t1 & dat$DateTime <= t2
-      if (!any(in_window)) return()
+      if (!any(in_window)) {
+        return()
+      }
 
-      window_vals   <- dat[[p]][in_window]
+      window_vals <- dat[[p]][in_window]
       cal_check_val <- window_vals[length(window_vals)]
+
+      # Store original window values and reference point for visual comparison
+      original_segments(c(
+        original_segments(),
+        list(list(
+          param = p,
+          x = dat$DateTime[in_window],
+          y = window_vals,
+          t2 = t2,
+          cal_ref = cal_ref_val
+        ))
+      ))
 
       # Save pre-correction values for undo
       update_history(c(cur_history(), list(list(pre_values = dat[[p]]))))
@@ -365,11 +431,11 @@ editASRdrift_app <- function(cont) {
       working_cont(utilASRdrift(dat, p, cal_ref_val, t1, t2))
 
       new_row <- data.frame(
-        Parameter     = p,
-        drift_start   = t1,
-        drift_end     = t2,
-        cal_ref       = cal_ref_val,
-        cal_check     = cal_check_val,
+        Parameter = p,
+        drift_start = t1,
+        drift_end = t2,
+        cal_ref = cal_ref_val,
+        cal_check = cal_check_val,
         drift_applied = round(cal_ref_val - cal_check_val, 4L),
         stringsAsFactors = FALSE
       )
@@ -381,20 +447,28 @@ editASRdrift_app <- function(cont) {
     # ---- Undo last correction (current parameter) ---------------------------
     shiny::observeEvent(input$undo, {
       hist <- cur_history()
-      if (length(hist) == 0L) return()
+      if (length(hist) == 0L) {
+        return()
+      }
 
       last_entry <- hist[[length(hist)]]
       update_history(hist[-length(hist)])
 
-      p    <- input$param_select
-      dat  <- working_cont()
+      p <- input$param_select
+      dat <- working_cont()
       dat[[p]] <- last_entry$pre_values
       working_cont(dat)
 
-      log        <- corrections_log()
+      log <- corrections_log()
       param_rows <- which(log$Parameter == p)
       if (length(param_rows) > 0L) {
         corrections_log(log[-param_rows[length(param_rows)], , drop = FALSE])
+      }
+
+      segs <- original_segments()
+      p_segs <- which(vapply(segs, function(s) s$param == p, logical(1L)))
+      if (length(p_segs) > 0L) {
+        original_segments(segs[-p_segs[length(p_segs)]])
       }
     })
 
@@ -422,6 +496,7 @@ editASRdrift_app <- function(cont) {
         stats::setNames(lapply(params, function(p) list()), params)
       )
       corrections_log(empty_log)
+      original_segments(list())
       selected_points(list())
     })
 
@@ -453,7 +528,11 @@ editASRdrift_app <- function(cont) {
     # ---- Export Progress ----------------------------------------------------
     output$export_progress <- shiny::downloadHandler(
       filename = function() {
-        paste0("AquaSensR_drift_export_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".zip")
+        paste0(
+          "AquaSensR_drift_export_",
+          format(Sys.time(), "%Y%m%d_%H%M%S"),
+          ".zip"
+        )
       },
       content = function(file) {
         res <- editASRdrift_result(working_cont(), corrections_log())
@@ -484,56 +563,103 @@ editASRdrift_app <- function(cont) {
     # ---- Plot ---------------------------------------------------------------
     output$driftPlot <- plotly::renderPlotly({
       p_name <- input$param_select
-      dat    <- working_cont()
-      pts    <- selected_points()
+      dat <- working_cont()
+      pts <- selected_points()
 
-      lbl     <- paramsASR$Label[paramsASR$Parameter == p_name]
-      y_label <- if (length(lbl) == 0L || is.na(lbl[1L])) p_name else as.character(lbl[1L])
+      lbl <- paramsASR$Label[paramsASR$Parameter == p_name]
+      y_label <- if (length(lbl) == 0L || is.na(lbl[1L])) {
+        p_name
+      } else {
+        as.character(lbl[1L])
+      }
 
       p <- plotly::plot_ly(dat, x = ~DateTime) |>
         plotly::add_trace(
-          y         = dat[[p_name]],
-          name      = y_label,
-          type      = "scatter",
-          mode      = "lines",
-          line      = list(color = "#1f77b4")
+          y = dat[[p_name]],
+          name = y_label,
+          type = "scatter",
+          mode = "lines",
+          line = list(color = "#1f77b4")
         ) |>
         plotly::layout(
-          xaxis     = list(title = ""),
-          yaxis     = list(title = y_label),
+          xaxis = list(title = ""),
+          yaxis = list(title = y_label),
           clickmode = "event"
         )
+
+      # Overlay pre-correction traces for each corrected window
+      cur_segs <- Filter(
+        function(s) s$param == p_name,
+        original_segments()
+      )
+      for (i in seq_along(cur_segs)) {
+        p <- p |>
+          plotly::add_trace(
+            x = cur_segs[[i]]$x,
+            y = cur_segs[[i]]$y,
+            name = "Original",
+            type = "scatter",
+            mode = "lines",
+            line = list(color = "#999999", width = 1),
+            legendgroup = "original",
+            showlegend = i == 1L
+          ) |>
+          plotly::add_trace(
+            x = cur_segs[[i]]$t2,
+            y = cur_segs[[i]]$cal_ref,
+            name = "Reference",
+            type = "scatter",
+            mode = "markers",
+            marker = list(color = "#e41a1c", size = 8, symbol = "circle"),
+            legendgroup = "cal_ref",
+            showlegend = i == 1L
+          )
+      }
 
       # Add vertical markers for selected period endpoints.
       # Y range is locked to the data range to prevent the segments from
       # expanding the axis beyond the actual data.
       if (length(pts) > 0L) {
         y_vals <- dat[[p_name]]
-        y_rng  <- range(y_vals, na.rm = TRUE)
-        rng_y  <- shiny::isolate(plot_ranges()$y)
-        if (!is.null(rng_y)) y_rng <- rng_y
+        y_rng <- range(y_vals, na.rm = TRUE)
+        rng_y <- shiny::isolate(plot_ranges()$y)
+        if (!is.null(rng_y)) {
+          y_rng <- rng_y
+        }
 
         line_colors <- c("#e41a1c", "#984ea3")
         for (i in seq_along(pts)) {
-          p <- p |> plotly::add_segments(
-            x         = pts[[i]], xend = pts[[i]],
-            y         = y_rng[1L], yend = y_rng[2L],
-            line      = list(color = line_colors[i], dash = "dash", width = 1.5),
-            showlegend = FALSE,
-            hoverinfo = "none"
-          )
+          p <- p |>
+            plotly::add_segments(
+              x = pts[[i]],
+              xend = pts[[i]],
+              y = y_rng[1L],
+              yend = y_rng[2L],
+              line = list(color = line_colors[i], dash = "dash", width = 1.5),
+              showlegend = FALSE,
+              hoverinfo = "none"
+            )
         }
-        p <- plotly::layout(p, yaxis = list(autorange = FALSE, range = as.list(y_rng)))
+        p <- plotly::layout(
+          p,
+          yaxis = list(autorange = FALSE, range = as.list(y_rng))
+        )
       }
 
       p <- plotly::event_register(p, "plotly_relayout")
 
       rng <- shiny::isolate(plot_ranges())
       if (!is.null(rng$x)) {
-        p <- plotly::layout(p, xaxis = list(autorange = FALSE, range = as.list(rng$x)))
+        p <- plotly::layout(
+          p,
+          xaxis = list(autorange = FALSE, range = as.list(rng$x))
+        )
       }
       if (!is.null(rng$y) && length(pts) == 0L) {
-        p <- plotly::layout(p, yaxis = list(autorange = FALSE, range = as.list(rng$y)))
+        p <- plotly::layout(
+          p,
+          yaxis = list(autorange = FALSE, range = as.list(rng$y))
+        )
       }
 
       p
@@ -552,11 +678,10 @@ editASRdrift_app <- function(cont) {
       }
       DT::datatable(
         display,
-        options  = list(dom = "t", paging = FALSE, scrollX = TRUE),
+        options = list(dom = "t", paging = FALSE, scrollX = TRUE),
         rownames = FALSE
       )
     })
-
   }
 
   shiny::shinyApp(ui, server)
@@ -566,8 +691,7 @@ editASRdrift_app <- function(cont) {
 # Not exported.
 editASRdrift_result <- function(working_cont, corrections_log) {
   list(
-    contdat     = working_cont[order(working_cont$DateTime), ],
+    contdat = working_cont[order(working_cont$DateTime), ],
     corrections = corrections_log
   )
 }
-
