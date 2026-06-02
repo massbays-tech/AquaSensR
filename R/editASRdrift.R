@@ -573,6 +573,20 @@ editASRdrift_app <- function(cont) {
         as.character(lbl[1L])
       }
 
+      # Compute y range once so the axis is stable whether or not selection
+      # markers are present.  A ~5% pad matches Plotly's default autorange
+      # margin, preventing a visual jump on the first click.
+      rng <- shiny::isolate(plot_ranges())
+      y_vals <- dat[[p_name]]
+      y_rng_data <- range(y_vals, na.rm = TRUE)
+      y_span <- diff(y_rng_data)
+      y_pad <- if (y_span > 0) y_span * 0.05 else max(abs(y_rng_data[1L]) * 0.05, 0.1)
+      y_rng <- if (!is.null(rng$y)) {
+        rng$y
+      } else {
+        c(y_rng_data[1L] - y_pad, y_rng_data[2L] + y_pad)
+      }
+
       p <- plotly::plot_ly(dat, x = ~DateTime) |>
         plotly::add_trace(
           y = dat[[p_name]],
@@ -617,16 +631,7 @@ editASRdrift_app <- function(cont) {
       }
 
       # Add vertical markers for selected period endpoints.
-      # Y range is locked to the data range to prevent the segments from
-      # expanding the axis beyond the actual data.
       if (length(pts) > 0L) {
-        y_vals <- dat[[p_name]]
-        y_rng <- range(y_vals, na.rm = TRUE)
-        rng_y <- shiny::isolate(plot_ranges()$y)
-        if (!is.null(rng_y)) {
-          y_rng <- rng_y
-        }
-
         line_colors <- c("#e41a1c", "#984ea3")
         for (i in seq_along(pts)) {
           p <- p |>
@@ -640,27 +645,20 @@ editASRdrift_app <- function(cont) {
               hoverinfo = "none"
             )
         }
-        p <- plotly::layout(
-          p,
-          yaxis = list(autorange = FALSE, range = as.list(y_rng))
-        )
       }
 
       p <- plotly::event_register(p, "plotly_relayout")
 
-      rng <- shiny::isolate(plot_ranges())
       if (!is.null(rng$x)) {
         p <- plotly::layout(
           p,
           xaxis = list(autorange = FALSE, range = as.list(rng$x))
         )
       }
-      if (!is.null(rng$y) && length(pts) == 0L) {
-        p <- plotly::layout(
-          p,
-          yaxis = list(autorange = FALSE, range = as.list(rng$y))
-        )
-      }
+      p <- plotly::layout(
+        p,
+        yaxis = list(autorange = FALSE, range = as.list(y_rng))
+      )
 
       p
     })
