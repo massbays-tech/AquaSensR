@@ -45,16 +45,16 @@ utilASRdrift(
 
 - plot:
 
-  logical; if `TRUE` a plotly plot is displayed showing the corrected
-  time series (blue), the original values within the drift window
-  (gray), and the reference value at the end of the window (red circle).
-  Defaults to `FALSE`.
+  logical; if `FALSE` (default) the corrected data frame is returned. If
+  `TRUE` a plotly object is returned instead, showing the corrected time
+  series (blue), the original values within the drift window (gray), and
+  the reference value at the end of the window (red circle).
 
 ## Value
 
-A copy of `cont` with corrected values for `param` in the drift window.
-Values outside the window are unchanged. When `plot = TRUE` a plotly
-plot is also displayed as a side effect.
+If `plot = FALSE`, a copy of `cont` with corrected values for `param` in
+the drift window (values outside the window are unchanged). If
+`plot = TRUE`, a `plotly` object.
 
 ## Details
 

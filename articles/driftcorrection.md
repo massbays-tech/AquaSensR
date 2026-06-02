@@ -111,33 +111,17 @@ corrected$Water_Temp_C[corrected$DateTime == t2]
 #> [1] 24
 ```
 
-### Output
-
-[`utilASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRdrift.md)
-returns a copy of `cont` with the corrected values replacing the
-originals in the drift window. All other columns and all rows outside
-the window are unchanged.
-
 ### Visualising the correction
 
-Pass `plot = TRUE` to display a plotly chart alongside the corrected
-data. The plot shows the full corrected time series (blue), the original
-sensor values within the drift window (gray), and the supplied reference
-value at the end of the window (red circle).
+Pass `plot = TRUE` to return a plotly chart instead of the corrected
+data frame. The plot shows the full corrected time series (blue), the
+original sensor values within the drift window (gray), and the supplied
+reference value at the end of the window (red circle).
 
 ``` r
 
-corrected <- utilASRdrift(
-  contdat,
-  "Water_Temp_C",
-  cal_ref = 24.0,
-  drift_start_time = t1,
-  drift_end_time = t2,
-  plot = TRUE
-)
+utilASRdrift(contdat, "Water_Temp_C", cal_ref = 24.0, t1, t2, plot = TRUE)
 ```
-
-The corrected data frame is still returned as before.
 
 ### Multiple deployment periods
 

@@ -94,17 +94,17 @@ independent calibrated instrument at the end of the deployment period</p></dd>
 
 
 <dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
-<dd><p>logical; if <code>TRUE</code> a plotly plot is displayed showing the
+<dd><p>logical; if <code>FALSE</code> (default) the corrected data frame is
+returned.  If <code>TRUE</code> a plotly object is returned instead, showing the
 corrected time series (blue), the original values within the drift window
-(gray), and the reference value at the end of the window (red circle).
-Defaults to <code>FALSE</code>.</p></dd>
+(gray), and the reference value at the end of the window (red circle).</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A copy of <code>cont</code> with corrected values for <code>param</code> in the
-drift window.  Values outside the window are unchanged.  When
-<code>plot = TRUE</code> a plotly plot is also displayed as a side effect.</p>
+    <p>If <code>plot = FALSE</code>, a copy of <code>cont</code> with corrected values
+for <code>param</code> in the drift window (values outside the window are
+unchanged).  If <code>plot = TRUE</code>, a <code>plotly</code> object.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
