@@ -9,7 +9,14 @@ zero and grows linearly to `cal_ref - cal_check` at the end, where
 ## Usage
 
 ``` r
-utilASRdrift(cont, param, cal_ref, drift_start_time, drift_end_time)
+utilASRdrift(
+  cont,
+  param,
+  cal_ref,
+  drift_start_time,
+  drift_end_time,
+  plot = FALSE
+)
 ```
 
 ## Arguments
@@ -36,10 +43,18 @@ utilASRdrift(cont, param, cal_ref, drift_start_time, drift_end_time)
 
   end of the drift window (POSIXct or coercible)
 
+- plot:
+
+  logical; if `TRUE` a plotly plot is displayed showing the corrected
+  time series (blue), the original values within the drift window
+  (gray), and the reference value at the end of the window (red circle).
+  Defaults to `FALSE`.
+
 ## Value
 
 A copy of `cont` with corrected values for `param` in the drift window.
-Values outside the window are unchanged.
+Values outside the window are unchanged. When `plot = TRUE` a plotly
+plot is also displayed as a side effect.
 
 ## Details
 

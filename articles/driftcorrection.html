@@ -201,10 +201,25 @@
 </section><section class="level3"><h3 id="output">Output<a class="anchor" aria-label="anchor" href="#output"></a>
 </h3>
 <p><code><a href="../reference/utilASRdrift.html">utilASRdrift()</a></code> returns a copy of <code>cont</code> with the corrected values replacing the originals in the drift window. All other columns and all rows outside the window are unchanged.</p>
+</section><section class="level3"><h3 id="visualising-the-correction">Visualising the correction<a class="anchor" aria-label="anchor" href="#visualising-the-correction"></a>
+</h3>
+<p>Pass <code>plot = TRUE</code> to display a plotly chart alongside the corrected data. The plot shows the full corrected time series (blue), the original sensor values within the drift window (gray), and the supplied reference value at the end of the window (red circle).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">corrected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/utilASRdrift.html">utilASRdrift</a></span><span class="op">(</span></span>
+<span>  <span class="va">contdat</span>,</span>
+<span>  <span class="st">"Water_Temp_C"</span>,</span>
+<span>  cal_ref <span class="op">=</span> <span class="fl">24.0</span>,</span>
+<span>  drift_start_time <span class="op">=</span> <span class="va">t1</span>,</span>
+<span>  drift_end_time <span class="op">=</span> <span class="va">t2</span>,</span>
+<span>  plot <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<p>The corrected data frame is still returned as before.</p>
 </section><section class="level3"><h3 id="multiple-deployment-periods">Multiple deployment periods<a class="anchor" aria-label="anchor" href="#multiple-deployment-periods"></a>
 </h3>
 <p>If a monitoring record spans more than one deployment (i.e., the sensor was retrieved, checked, and redeployed mid-record), apply corrections sequentially, one call per deployment period:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First deployment</span></span>
 <span><span class="va">corrected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/utilASRdrift.html">utilASRdrift</a></span><span class="op">(</span><span class="va">contdat</span>, <span class="st">"Water_Temp_C"</span>,</span>
 <span>                          cal_ref <span class="op">=</span> <span class="fl">24.0</span>,</span>
@@ -221,7 +236,7 @@
 <code>editASRdrift()</code> for interactive correction<a class="anchor" aria-label="anchor" href="#editasrdrift-for-interactive-correction"></a>
 </h2>
 <p><code><a href="../reference/editASRdrift.html">editASRdrift()</a></code> opens a Shiny application that walks through drift correction parameter by parameter. This is the recommended approach when working with real monitoring data, because it allows visual identification of the drift period and immediate confirmation that the correction looks right before moving on.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">drift_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/editASRdrift.html">editASRdrift</a></span><span class="op">(</span><span class="va">contdat</span><span class="op">)</span></span></code></pre></div>
 <section class="level3"><h3 id="interface-overview">Interface overview<a class="anchor" aria-label="anchor" href="#interface-overview"></a>
 </h3>
@@ -313,7 +328,7 @@
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Inspect the corrected time series</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drift_result</span><span class="op">$</span><span class="va">contdat</span><span class="op">)</span></span>
 <span></span>
