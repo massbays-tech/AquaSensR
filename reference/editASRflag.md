@@ -110,8 +110,10 @@ to remove the selected area if present after removal.
   batch of points. If the removal was linked, all affected parameters
   are restored together.
 
-- **Start Over**: restores all removed points for every parameter and
-  resets all DQO thresholds to their original values.
+- **Start Over**: undoes all removals and DQO edits made in the current
+  session, reverting every parameter to the state it was in when the app
+  opened. Any removals passed in via the `removed` argument are
+  preserved.
 
 - **Export Progress**: saves the current cleaned data and DQO thresholds
   as Excel files in a ZIP archive. If any points have been removed, a

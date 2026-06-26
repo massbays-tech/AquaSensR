@@ -412,11 +412,11 @@ The **USGS Overlay** feature uses
 internally to pull unit-value (continuous) data from the [NWIS
 API](https://waterservices.usgs.gov) over the same date range as
 `contdat`. Supported parameter types are streamflow (00060), gage height
-(00065), and precipitation (00045). The fetched time series is displayed
-on the secondary y-axis in the same position as a contdat overlay but is
-retrieved live when Load is clicked. Users without an internet
-connection or outside NWIS coverage can still use the contdat Overlay
-selector instead.
+(00065), precipitation (00045), and groundwater depth in feet below land
+surface (72019). The fetched time series is displayed on the secondary
+y-axis in the same position as a contdat overlay but is retrieved live
+when Load is clicked. Users without an internet connection or outside
+NWIS coverage can still use the contdat Overlay selector instead.
 
 ### DQO Settings panel
 

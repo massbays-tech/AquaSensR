@@ -37,6 +37,10 @@ readASRusgs(site, pcode, start, end, tz = "Etc/GMT+5")
 
   :   Precipitation (in)
 
+  `"72019"`
+
+  :   Groundwater depth (ft below land surface)
+
 - start, end:
 
   Date range as `Date` objects or `"YYYY-MM-DD"` character strings.
