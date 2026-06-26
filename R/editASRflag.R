@@ -282,7 +282,8 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
         choices = c(
           "Streamflow (ft\u00b3/s)" = "00060",
           "Gage height (ft)" = "00065",
-          "Precipitation (in)" = "00045"
+          "Precipitation (in)" = "00045",
+          "Groundwater depth (ft bls)" = "72019"
         ),
         selected = "00060"
       ),

@@ -16,6 +16,7 @@ e.g. \code{"01099500"}).  Find site numbers using the NWIS Mapper at
 \item{\code{"00060"}}{Discharge / streamflow (ft\eqn{^3}/s)}
 \item{\code{"00065"}}{Gage height (ft)}
 \item{\code{"00045"}}{Precipitation (in)}
+\item{\code{"72019"}}{Groundwater depth (ft below land surface)}
 }}
 
 \item{start, end}{Date range as \code{Date} objects or \code{"YYYY-MM-DD"}

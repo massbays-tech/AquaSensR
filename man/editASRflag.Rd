@@ -88,8 +88,10 @@ parameter is active when undo is clicked.
 \item \strong{Undo Last Removal}: restores the most recently removed
 point or batch of points.  If the removal was linked, all affected
 parameters are restored together.
-\item \strong{Start Over}: restores all removed points for every
-parameter and resets all DQO thresholds to their original values.
+\item \strong{Start Over}: undoes all removals and DQO edits made in
+the current session, reverting every parameter to the state it was in
+when the app opened.  Any removals passed in via the \code{removed}
+argument are preserved.
 \item \strong{Export Progress}: saves the current cleaned data and DQO
 thresholds as Excel files in a ZIP archive.  If any points have been
 removed, a removed-observations file is included as well.

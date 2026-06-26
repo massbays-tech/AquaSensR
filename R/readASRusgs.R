@@ -14,6 +14,7 @@
 #'     \item{\code{"00060"}}{Discharge / streamflow (ft\eqn{^3}/s)}
 #'     \item{\code{"00065"}}{Gage height (ft)}
 #'     \item{\code{"00045"}}{Precipitation (in)}
+#'     \item{\code{"72019"}}{Groundwater depth (ft below land surface)}
 #'   }
 #' @param start,end Date range as \code{Date} objects or \code{"YYYY-MM-DD"}
 #'   character strings.
@@ -72,7 +73,8 @@ readASRusgs <- function(site, pcode, start, end, tz = "Etc/GMT+5") {
   pcode_labels <- c(
     "00060" = "Streamflow (ft\u00b3/s)",
     "00045" = "Precipitation (in)",
-    "00065" = "Gage height (ft)"
+    "00065" = "Gage height (ft)",
+    "72019" = "Groundwater depth (ft bls)"
   )
 
   raw <- dataRetrieval::read_waterdata_continuous(
