@@ -7,8 +7,9 @@
 #' A running table of removed points (including their flag assignments) is shown
 #' in the sidebar and is specific to the currently displayed parameter.
 #' Individual removal batches can be undone, or all parameters can be fully
-#' reset. Clicking \strong{Done / Close} stops the app and returns
-#' the filtered datasets for all parameters to the R session.
+#' reset. Clicking \strong{Done / Close} stops the app; choose
+#' \strong{Close, save edits} to return the filtered data or
+#' \strong{Close, discard edits} to return the original unmodified data.
 #'
 #' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
 #' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}}
@@ -72,8 +73,10 @@
 #'     \item \strong{Export Progress}: saves the current cleaned data and DQO
 #'       thresholds as Excel files in a ZIP archive.  If any points have been
 #'       removed, a removed-observations file is included as well.
-#'     \item \strong{Done / Close}: stops the app and returns the filtered
-#'       datasets for all parameters to the R session.
+#'     \item \strong{Done / Close}: stops the app.  Choosing
+#'       \strong{Close, save edits} returns the filtered datasets for all
+#'       parameters; choosing \strong{Close, discard edits} returns the
+#'       original unmodified data.
 #'   }
 #' }
 #'
@@ -1148,18 +1151,37 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
       shiny::showModal(shiny::modalDialog(
-        "Are you sure you want to close the app?",
+        "Choose how to close the app.",
         title = "Done / Close",
-        footer = shiny::tagList(
+        footer = shiny::div(
+          style = "display: flex; gap: 4px; justify-content: flex-end;",
           shiny::modalButton("Cancel"),
           shiny::actionButton(
+            "done_discard",
+            "Close, discard edits",
+            style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
+          ),
+          shiny::actionButton(
             "done_confirm",
-            "Close",
+            "Close, save edits",
             style = "background-color: #037B71; border-color: #037B71; color: #fff;"
           )
         ),
         easyClose = TRUE
       ))
+    })
+
+    shiny::observeEvent(input$done_discard, {
+      shiny::removeModal()
+      session$sendCustomMessage("closeWindow", list())
+      shiny::stopApp(
+        returnValue = editASRflag_result(
+          cont,
+          flagdat_list,
+          flagdat_list,
+          dqo
+        )
+      )
     })
 
     shiny::observeEvent(input$done_confirm, {
