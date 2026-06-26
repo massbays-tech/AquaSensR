@@ -50,7 +50,7 @@ A list with three elements, invisibly returned after the app closes:
 - `removed`:
 
   A data frame of all removed observations across all parameters, with
-  columns `Parameter`, `DateTime`, `gross_flag`, `spike_flag`,
+  columns `Parameter`, `DateTime`, `Value`, `gross_flag`, `spike_flag`,
   `roc_flag`, and `flat_flag`.
 
 ## Details
