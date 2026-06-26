@@ -174,8 +174,8 @@ test_that("reset restores removed points for all parameters, not just current", 
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
-      # Remove a point from the first parameter
-      session$setInputs(param_select = edit_first_param)
+      # Remove a point from the first parameter (unlinked so params stay independent)
+      session$setInputs(param_select = edit_first_param, link_all = FALSE)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
 
@@ -216,8 +216,8 @@ test_that("removals are tracked independently per parameter", {
   app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
     shiny::testServer(app, {
-      # Remove a point on the first parameter
-      session$setInputs(param_select = edit_first_param)
+      # Disable linking so the removal stays on the first parameter only
+      session$setInputs(param_select = edit_first_param, link_all = FALSE)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
 

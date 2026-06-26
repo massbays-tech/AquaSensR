@@ -69,7 +69,7 @@ from NWIS and display it on the secondary y-axis.  Loading USGS data
 clears any contdat overlay and selecting a contdat overlay clears the
 USGS data.  Site numbers can be found at the NWIS Mapper
 (\url{https://apps.usgs.gov/nwismapper}).
-\item \strong{Linked Removal}: optional checkbox.  When checked, any
+\item \strong{Linked Removal}: optional checkbox.  When checked (default), any
 timestamps removed from the current parameter are simultaneously removed
 from all other parameters.  Undo restores the current parameter and all
 other parameters together as a single operation, regardless of which

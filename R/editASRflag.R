@@ -59,7 +59,7 @@
 #'       clears any contdat overlay and selecting a contdat overlay clears the
 #'       USGS data.  Site numbers can be found at the NWIS Mapper
 #'       (\url{https://apps.usgs.gov/nwismapper}).
-#'     \item \strong{Linked Removal}: optional checkbox.  When checked, any
+#'     \item \strong{Linked Removal}: optional checkbox.  When checked (default), any
 #'       timestamps removed from the current parameter are simultaneously removed
 #'       from all other parameters.  Undo restores the current parameter and all
 #'       other parameters together as a single operation, regardless of which
@@ -263,13 +263,13 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
             style = "color: #6c757d; cursor: pointer;"
           ),
           title = "Linked Removal",
-          "When checked, any points removed from the current parameter are simultaneously removed from all other parameters at the same timestamps. Undo restores all affected parameters together as a single operation."
+          "When checked (default), any points removed from the current parameter are simultaneously removed from all other parameters at the same timestamps. Undo restores all affected parameters together as a single operation."
         )
       ),
       shiny::checkboxInput(
         "link_all",
         "Link all parameters",
-        value = FALSE
+        value = TRUE
       ),
       shiny::hr(),
       shiny::div(
