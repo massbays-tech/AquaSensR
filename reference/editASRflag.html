@@ -73,7 +73,7 @@ reset. Clicking <strong>Done / Close</strong> stops the app; choose
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">editASRflag</span><span class="op">(</span><span class="va">cont</span>, <span class="va">dqo</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">editASRflag</span><span class="op">(</span><span class="va">cont</span>, <span class="va">dqo</span>, removed <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -81,11 +81,23 @@ reset. Clicking <strong>Done / Close</strong> stops the app; choose
 
 
 <dl><dt id="arg-cont">cont<a class="anchor" aria-label="anchor" href="#arg-cont"></a></dt>
-<dd><p><code>contdat</code> data frame returned by <code><a href="readASRcont.html">readASRcont</a></code></p></dd>
+<dd><p><code>contdat</code> data frame returned by <code><a href="readASRcont.html">readASRcont</a></code>,
+or the <code>contdat</code> element of a previous <code>editASRflag</code> result for
+iterative editing.</p></dd>
 
 
 <dt id="arg-dqo">dqo<a class="anchor" aria-label="anchor" href="#arg-dqo"></a></dt>
-<dd><p><code>dqodat</code> data frame returned by <code><a href="readASRdqo.html">readASRdqo</a></code></p></dd>
+<dd><p><code>dqodat</code> data frame returned by <code><a href="readASRdqo.html">readASRdqo</a></code>,
+or the <code>dqodat</code> element of a previous <code>editASRflag</code> result.</p></dd>
+
+
+<dt id="arg-removed">removed<a class="anchor" aria-label="anchor" href="#arg-removed"></a></dt>
+<dd><p>Optional data frame: the <code>removed</code> element returned by a
+previous call to <code>editASRflag</code>.  When supplied, previously removed
+observations are pre-populated in the app (shown in the removed-points
+table and excluded from the plot) and original values are restored before
+re-flagging so that QC checks are not affected by the gaps.  Passing all
+three elements of a prior result enables fully iterative editing.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -188,7 +200,12 @@ becomes the function return value.</p>
 <span class="r-in"><span><span class="va">dqopth</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleDQO.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">contdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">contpth</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dqodat</span>  <span class="op">&lt;-</span> <span class="fu"><a href="readASRdqo.html">readASRdqo</a></span><span class="op">(</span><span class="va">dqopth</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># First session</span></span></span>
 <span class="r-in"><span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu">editASRflag</span><span class="op">(</span><span class="va">contdat</span>, <span class="va">dqodat</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Second session: picks up where the first left off</span></span></span>
+<span class="r-in"><span><span class="va">cleaned2</span> <span class="op">&lt;-</span> <span class="fu">editASRflag</span><span class="op">(</span><span class="va">cleaned</span><span class="op">$</span><span class="va">contdat</span>, <span class="va">cleaned</span><span class="op">$</span><span class="va">dqodat</span>, <span class="va">cleaned</span><span class="op">$</span><span class="va">removed</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

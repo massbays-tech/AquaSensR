@@ -403,9 +403,9 @@ the edge to the right).
 | **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis. Loading USGS data clears any contdat overlay. Selecting a contdat overlay clears the USGS data. Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
 | **Linked Removal** | When checked (default), propagate every removal to all other parameters simultaneously. Undo restores all parameters together in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch. Linked parameters are restored together. |
-| **Start Over** | Restore all removed points for every parameter and reset all DQO thresholds to their original values. |
+| **Start Over** | Undo all removals and DQO edits made during the current session, reverting to the state the app was in when it opened. If prior removed points were supplied via the `removed` argument, those are retained. |
 | **Export Progress** | Save the current cleaned data and DQO thresholds as Excel files in a ZIP archive. If any points have been removed, a removed-observations file is included. |
-| **Done / Close** | Stop the app and return the cleaned data. Choosing **Close, save edits** returns the filtered datasets for all parameters; choosing **Close, discard edits** returns the original unmodified data. |
+| **Done / Close** | Stop the app. **Close, save edits** returns the filtered datasets for all parameters. **Close, discard edits** reverts any changes made in the current session and returns the data as it was when the app opened. |
 
 The **USGS Overlay** feature uses
 [`readASRusgs()`](https://massbays-tech.github.io/AquaSensR/reference/readASRusgs.md)
@@ -463,3 +463,40 @@ View(cleaned$removed)
 
 Removed rows in `contdat` are set to `NA` rather than dropped so the
 time series remains regular and aligned across all parameters.
+
+### Iterative editing
+
+Because the three return elements together fully describe the editing
+state, you can use them again to start where you left off:
+
+``` r
+
+# First session
+cleaned <- editASRflag(contdat, dqodat)
+
+# Second session: prior removals and DQO edits are pre-loaded
+cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
+```
+
+When the `removed` argument is supplied,
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
+restores the original values before re-computing QC flags, so the
+flagging is not affected by the `NA` gaps in the cleaned `contdat`. The
+previously removed observations appear immediately in the **Removed
+Points** table for each parameter.
+
+Within the second session, prior removals behave just like removals made
+interactively:
+
+- They are visible in the removed-points table from the moment the app
+  opens.
+- They can be undone using **Undo Last Removal** (all prior removals for
+  a parameter undo as a single batch).
+- **Start Over** reverts to the app-open state, meaning prior removals
+  are kept and only changes made in the current session are undone.
+- **Close, discard edits** likewise returns the data as it was at app
+  open, with prior removals intact.
+
+Any number of sessions can be chained this way. Each session’s output
+becomes the next session’s input, and the cumulative `removed` table
+grows with each round of cleaning.

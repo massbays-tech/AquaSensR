@@ -15,7 +15,7 @@ original unmodified data.
 ## Usage
 
 ``` r
-editASRflag(cont, dqo)
+editASRflag(cont, dqo, removed = NULL)
 ```
 
 ## Arguments
@@ -23,12 +23,24 @@ editASRflag(cont, dqo)
 - cont:
 
   `contdat` data frame returned by
-  [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
+  [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md),
+  or the `contdat` element of a previous `editASRflag` result for
+  iterative editing.
 
 - dqo:
 
   `dqodat` data frame returned by
-  [`readASRdqo`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
+  [`readASRdqo`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md),
+  or the `dqodat` element of a previous `editASRflag` result.
+
+- removed:
+
+  Optional data frame: the `removed` element returned by a previous call
+  to `editASRflag`. When supplied, previously removed observations are
+  pre-populated in the app (shown in the removed-points table and
+  excluded from the plot) and original values are restored before
+  re-flagging so that QC checks are not affected by the gaps. Passing
+  all three elements of a prior result enables fully iterative editing.
 
 ## Value
 
@@ -140,6 +152,11 @@ contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth  <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 contdat <- readASRcont(contpth)
 dqodat  <- readASRdqo(dqopth)
+
+# First session
 cleaned <- editASRflag(contdat, dqodat)
+
+# Second session: picks up where the first left off
+cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
 } # }
 ```
