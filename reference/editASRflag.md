@@ -87,11 +87,11 @@ to remove the selected area if present after removal.
   Site numbers can be found at the NWIS Mapper
   (<https://apps.usgs.gov/nwismapper>).
 
-- **Linked Removal**: optional checkbox. When checked, any timestamps
-  removed from the current parameter are simultaneously removed from all
-  other parameters. Undo restores the current parameter and all other
-  parameters together as a single operation, regardless of which
-  parameter is active when undo is clicked.
+- **Linked Removal**: optional checkbox. When checked (default), any
+  timestamps removed from the current parameter are simultaneously
+  removed from all other parameters. Undo restores the current parameter
+  and all other parameters together as a single operation, regardless of
+  which parameter is active when undo is clicked.
 
 - **Undo Last Removal**: restores the most recently removed point or
   batch of points. If the removal was linked, all affected parameters
