@@ -11,8 +11,17 @@
 #' \strong{Close, save edits} to return the filtered data or
 #' \strong{Close, discard edits} to return the original unmodified data.
 #'
-#' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
-#' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}}
+#' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}},
+#'   or the \code{contdat} element of a previous \code{editASRflag} result for
+#'   iterative editing.
+#' @param dqo \code{dqodat} data frame returned by \code{\link{readASRdqo}},
+#'   or the \code{dqodat} element of a previous \code{editASRflag} result.
+#' @param removed Optional data frame: the \code{removed} element returned by a
+#'   previous call to \code{editASRflag}.  When supplied, previously removed
+#'   observations are pre-populated in the app (shown in the removed-points
+#'   table and excluded from the plot) and original values are restored before
+#'   re-flagging so that QC checks are not affected by the gaps.  Passing all
+#'   three elements of a prior result enables fully iterative editing.
 #'
 #' @return A list with three elements, invisibly returned after the app closes:
 #'   \describe{
@@ -68,8 +77,10 @@
 #'     \item \strong{Undo Last Removal}: restores the most recently removed
 #'       point or batch of points.  If the removal was linked, all affected
 #'       parameters are restored together.
-#'     \item \strong{Start Over}: restores all removed points for every
-#'       parameter and resets all DQO thresholds to their original values.
+#'     \item \strong{Start Over}: undoes all removals and DQO edits made in
+#'       the current session, reverting every parameter to the state it was in
+#'       when the app opened.  Any removals passed in via the \code{removed}
+#'       argument are preserved.
 #'     \item \strong{Export Progress}: saves the current cleaned data and DQO
 #'       thresholds as Excel files in a ZIP archive.  If any points have been
 #'       removed, a removed-observations file is included as well.
@@ -109,12 +120,17 @@
 #' dqopth  <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 #' contdat <- readASRcont(contpth)
 #' dqodat  <- readASRdqo(dqopth)
+#'
+#' # First session
 #' cleaned <- editASRflag(contdat, dqodat)
+#'
+#' # Second session: picks up where the first left off
+#' cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
 #' }
 #'
 #' @export
-editASRflag <- function(cont, dqo) {
-  shiny::runApp(editASRflag_app(cont, dqo))
+editASRflag <- function(cont, dqo, removed = NULL) {
+  shiny::runApp(editASRflag_app(cont, dqo, removed = removed))
 }
 
 # Builds the shinyApp object without running it.  Separated from editASRflag()
@@ -123,11 +139,25 @@ editASRflag <- function(cont, dqo) {
 #
 # @param cont    contdat data frame (see editASRflag).
 # @param dqo     dqodat data frame (see editASRflag).
+# @param removed Optional removed data frame (see editASRflag).
 # @param dqo_sidebar_open Logical; if TRUE the DQO Settings right-sidebar is
 #   rendered in the open state on startup.  Default FALSE matches the normal
 #   interactive behaviour.  Set TRUE when generating vignette screenshots via
 #   webshot2 so the panel is visible in the initial render without JS clicks.
-editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
+editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE) {
+  # If prior removed observations are supplied, restore their original values
+  # into cont before flagging so QC checks are not affected by the gaps.
+  if (!is.null(removed) && nrow(removed) > 0L) {
+    cont <- cont[order(cont$DateTime), ]
+    for (p in unique(removed$Parameter)) {
+      if (!p %in% names(cont)) next
+      p_rows <- removed[removed$Parameter == p, , drop = FALSE]
+      idx <- match(p_rows$DateTime, cont$DateTime)
+      ok <- !is.na(idx)
+      cont[idx[ok], p] <- p_rows$Value[ok]
+    }
+  }
+
   # Compute flags for all parameters up front
   flagdat_list <- utilASRflagall(cont, dqo)
   params <- names(flagdat_list)
@@ -137,6 +167,22 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     fd$.rowid <- seq_len(nrow(fd))
     fd
   })
+
+  # Pre-populate initial removed state from prior removals.
+  # All prior removals share group_id 0L (new session removals start at 1L).
+  init_remaining <- flagdat_list
+  init_history <- stats::setNames(lapply(params, function(p) list()), params)
+  if (!is.null(removed) && nrow(removed) > 0L) {
+    for (p in params) {
+      p_rows <- removed[removed$Parameter == p, , drop = FALSE]
+      if (nrow(p_rows) == 0L) next
+      fd <- flagdat_list[[p]]
+      mask <- fd$DateTime %in% p_rows$DateTime
+      if (!any(mask)) next
+      init_remaining[[p]] <- fd[!mask, , drop = FALSE]
+      init_history[[p]] <- list(list(group_id = 0L, data = fd[mask, , drop = FALSE]))
+    }
+  }
 
   # Build display labels for the parameter selector
   param_labels <- vapply(
@@ -292,7 +338,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
             ),
             shiny::tags$li(
               shiny::tags$b("Start Over:"),
-              " restores all removed points for every parameter and resets all DQO thresholds to their original values."
+              " undoes all removals and DQO edits made in the current session, reverting to the state the app was in when it opened. Any removals loaded from a prior session are preserved."
             ),
             shiny::tags$li(
               shiny::tags$b("Export Progress:"),
@@ -726,15 +772,15 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
       shiny::bindEvent(TRUE, once = TRUE)
 
     # `remaining_list`: named list of working copies, one per parameter.
-    remaining_list <- shiny::reactiveVal(flagdat_list)
+    # Seeded with init_remaining so prior removals are pre-populated.
+    remaining_list <- shiny::reactiveVal(init_remaining)
 
     # `removed_history_list`: named list of per-parameter undo stacks.
     # Each element is a list of entries: list(group_id = <int>, data = <data frame>).
     # Entries with the same group_id were created by a single linked removal and
-    # are restored atomically by undo.
-    removed_history_list <- shiny::reactiveVal(
-      stats::setNames(lapply(params, function(p) list()), params)
-    )
+    # are restored atomically by undo.  Seeded with init_history so prior
+    # removals appear in the removed-points table immediately.
+    removed_history_list <- shiny::reactiveVal(init_history)
 
     shiny::observeEvent(input$param_select, {
       plot_ranges(list(x = NULL, y = NULL))
@@ -1123,7 +1169,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
     # ---- Start over (all parameters, original DQO) --------------------------
     shiny::observeEvent(input$reset, {
       shiny::showModal(shiny::modalDialog(
-        "This will restore all removed points for every parameter and reset all DQO thresholds to their original values. Proceed?",
+        "This will undo all removals and DQO edits made in the current session, reverting every parameter to the state it was in when the app opened. Proceed?",
         title = "Start Over",
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
@@ -1139,10 +1185,8 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
 
     shiny::observeEvent(input$reset_confirm, {
       shiny::removeModal()
-      remaining_list(flagdat_list)
-      removed_history_list(
-        stats::setNames(lapply(params, function(p) list()), params)
-      )
+      remaining_list(init_remaining)
+      removed_history_list(init_history)
       working_dqo(dqo)
       base_flagdat_list(flagdat_list)
       update_dqo_inputs(dqo, input$param_select)
@@ -1178,7 +1222,7 @@ editASRflag_app <- function(cont, dqo, dqo_sidebar_open = FALSE) {
         returnValue = editASRflag_result(
           cont,
           flagdat_list,
-          flagdat_list,
+          init_remaining,
           dqo
         )
       )

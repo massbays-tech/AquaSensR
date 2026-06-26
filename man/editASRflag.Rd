@@ -4,12 +4,22 @@
 \alias{editASRflag}
 \title{Interactive editor for continuous monitoring data}
 \usage{
-editASRflag(cont, dqo)
+editASRflag(cont, dqo, removed = NULL)
 }
 \arguments{
-\item{cont}{\code{contdat} data frame returned by \code{\link{readASRcont}}}
+\item{cont}{\code{contdat} data frame returned by \code{\link{readASRcont}},
+or the \code{contdat} element of a previous \code{editASRflag} result for
+iterative editing.}
 
-\item{dqo}{\code{dqodat} data frame returned by \code{\link{readASRdqo}}}
+\item{dqo}{\code{dqodat} data frame returned by \code{\link{readASRdqo}},
+or the \code{dqodat} element of a previous \code{editASRflag} result.}
+
+\item{removed}{Optional data frame: the \code{removed} element returned by a
+previous call to \code{editASRflag}.  When supplied, previously removed
+observations are pre-populated in the app (shown in the removed-points
+table and excluded from the plot) and original values are restored before
+re-flagging so that QC checks are not affected by the gaps.  Passing all
+three elements of a prior result enables fully iterative editing.}
 }
 \value{
 A list with three elements, invisibly returned after the app closes:
@@ -119,7 +129,12 @@ contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth  <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 contdat <- readASRcont(contpth)
 dqodat  <- readASRdqo(dqopth)
+
+# First session
 cleaned <- editASRflag(contdat, dqodat)
+
+# Second session: picks up where the first left off
+cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
 }
 
 }

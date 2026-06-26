@@ -1075,6 +1075,91 @@ test_that("linked removal skips a param whose DateTime was already removed (next
   )
 })
 
+# ---------------------------------------------------------------------------
+# Iterative editing: removed argument pre-populates the app state
+# ---------------------------------------------------------------------------
+
+test_that("editASRflag_app pre-populates removed count when removed argument is supplied", {
+  # Simulate a first session: remove rowid 1 from the first parameter.
+  prior_remaining <- edit_flagdat_list
+  prior_remaining[[edit_first_param]] <- edit_flagdat_list[[edit_first_param]][-1L, ]
+  prior_result <- AquaSensR:::editASRflag_result(
+    tst$contdat,
+    edit_flagdat_list,
+    prior_remaining,
+    tst$dqodat
+  )
+
+  # Second session: pass the cleaned contdat, dqodat, and removed.
+  app2 <- AquaSensR:::editASRflag_app(
+    prior_result$contdat,
+    prior_result$dqodat,
+    removed = prior_result$removed
+  )
+  suppressWarnings(
+    shiny::testServer(app2, {
+      session$setInputs(param_select = edit_first_param)
+      # The prior removal should be visible immediately without any new action.
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
+test_that("editASRflag_app with removed argument: new removal adds to pre-existing count", {
+  prior_remaining <- edit_flagdat_list
+  prior_remaining[[edit_first_param]] <- edit_flagdat_list[[edit_first_param]][-1L, ]
+  prior_result <- AquaSensR:::editASRflag_result(
+    tst$contdat,
+    edit_flagdat_list,
+    prior_remaining,
+    tst$dqodat
+  )
+
+  app2 <- AquaSensR:::editASRflag_app(
+    prior_result$contdat,
+    prior_result$dqodat,
+    removed = prior_result$removed
+  )
+  suppressWarnings(
+    shiny::testServer(app2, {
+      session$setInputs(param_select = edit_first_param, link_all = FALSE)
+      # rowid 1 was the prior removal; use rowid 2 to add a new one
+      session$setInputs(`plotly_click-A` = '{"customdata":2}')
+      expect_equal(output$removed_count, "Removed Points: 2")
+    })
+  )
+})
+
+test_that("start_over with removed argument restores to app-open state, not fully clean", {
+  prior_remaining <- edit_flagdat_list
+  prior_remaining[[edit_first_param]] <- edit_flagdat_list[[edit_first_param]][-1L, ]
+  prior_result <- AquaSensR:::editASRflag_result(
+    tst$contdat,
+    edit_flagdat_list,
+    prior_remaining,
+    tst$dqodat
+  )
+
+  app2 <- AquaSensR:::editASRflag_app(
+    prior_result$contdat,
+    prior_result$dqodat,
+    removed = prior_result$removed
+  )
+  suppressWarnings(
+    shiny::testServer(app2, {
+      session$setInputs(param_select = edit_first_param, link_all = FALSE)
+      # Add a new removal on top of the pre-existing one
+      session$setInputs(`plotly_click-A` = '{"customdata":2}')
+      expect_equal(output$removed_count, "Removed Points: 2")
+
+      # Start Over should revert to the app-open state (1 pre-existing removal)
+      session$setInputs(reset = 1L)
+      session$setInputs(reset_confirm = 1L)
+      expect_equal(output$removed_count, "Removed Points: 1")
+    })
+  )
+})
+
 test_that("selecting contdat overlay after USGS load clears usgs_ovl", {
   fake_usgs <- data.frame(
     DateTime              = tst$contdat$DateTime,
