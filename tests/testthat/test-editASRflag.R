@@ -252,6 +252,7 @@ test_that("editASRflag_result with no removals returns sorted contdat and empty 
     c(
       "Parameter",
       "DateTime",
+      "Value",
       "gross_flag",
       "spike_flag",
       "roc_flag",

@@ -262,7 +262,7 @@ Editing thresholds and clicking **Apply** re-computes flags for the current para
 |---------|-------------|
 | `contdat` | The original data frame sorted by `DateTime`, with all removed observations replaced by `NA`. |
 | `dqodat` | The DQO thresholds data frame reflecting any edits made in the DQO Settings panel.  If no edits were made the values are identical to the input. |
-| `removed` | A stacked data frame of every removed observation, with columns `Parameter`, `DateTime`, and all four flag columns. |
+| `removed` | A stacked data frame of every removed observation, with columns `Parameter`, `DateTime`, `Value`, `gross_flag`, `spike_flag`, `roc_flag`, and `flat_flag`. |
 
 ```r
 # View the cleaned continuous data

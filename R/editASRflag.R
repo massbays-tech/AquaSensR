@@ -25,8 +25,8 @@
 #'       panel.  If no edits were made the values are identical to the input.}
 #'     \item{\code{removed}}{A data frame of all removed observations across
 #'       all parameters, with columns \code{Parameter}, \code{DateTime},
-#'       \code{gross_flag}, \code{spike_flag}, \code{roc_flag}, and
-#'       \code{flat_flag}.}
+#'       \code{Value}, \code{gross_flag}, \code{spike_flag}, \code{roc_flag},
+#'       and \code{flat_flag}.}
 #'   }
 #'
 #' @details
@@ -1305,6 +1305,7 @@ editASRflag_result <- function(cont, flagdat_list, remaining_list, dqo) {
     data.frame(
       Parameter = p,
       DateTime = rows$DateTime,
+      Value = rows[[p]],
       gross_flag = rows$gross_flag,
       spike_flag = rows$spike_flag,
       roc_flag = rows$roc_flag,
@@ -1317,6 +1318,7 @@ editASRflag_result <- function(cont, flagdat_list, remaining_list, dqo) {
     out_removed <- data.frame(
       Parameter = character(0),
       DateTime = as.POSIXct(character(0)),
+      Value = numeric(0),
       gross_flag = character(0),
       spike_flag = character(0),
       roc_flag = character(0),

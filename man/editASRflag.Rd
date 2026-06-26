@@ -23,8 +23,8 @@ was removed are retained with only \code{DateTime} populated.}
 panel.  If no edits were made the values are identical to the input.}
 \item{\code{removed}}{A data frame of all removed observations across
 all parameters, with columns \code{Parameter}, \code{DateTime},
-\code{gross_flag}, \code{spike_flag}, \code{roc_flag}, and
-\code{flat_flag}.}
+\code{Value}, \code{gross_flag}, \code{spike_flag}, \code{roc_flag},
+and \code{flat_flag}.}
 }
 }
 \description{
