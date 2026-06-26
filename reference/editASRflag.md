@@ -8,8 +8,9 @@ a selection using the box or lasso tool on the plot. A running table of
 removed points (including their flag assignments) is shown in the
 sidebar and is specific to the currently displayed parameter. Individual
 removal batches can be undone, or all parameters can be fully reset.
-Clicking **Done / Close** stops the app and returns the filtered
-datasets for all parameters to the R session.
+Clicking **Done / Close** stops the app; choose **Close, save edits** to
+return the filtered data or **Close, discard edits** to return the
+original unmodified data.
 
 ## Usage
 
@@ -104,8 +105,9 @@ to remove the selected area if present after removal.
   as Excel files in a ZIP archive. If any points have been removed, a
   removed-observations file is included as well.
 
-- **Done / Close**: stops the app and returns the filtered datasets for
-  all parameters to the R session.
+- **Done / Close**: stops the app. Choosing **Close, save edits**
+  returns the filtered datasets for all parameters; choosing **Close,
+  discard edits** returns the original unmodified data.
 
 ### DQO Settings panel
 

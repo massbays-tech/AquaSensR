@@ -401,11 +401,11 @@ the edge to the right).
 | **Parameter** | Switch between parameters. Prev/Next buttons cycle through all parameters. |
 | **Overlay** | Display a second parameter from `contdat` on a right-side axis. |
 | **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis. Loading USGS data clears any contdat overlay. Selecting a contdat overlay clears the USGS data. Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
-| **Linked Removal** | When checked, propagate every removal to all other parameters simultaneously. Undo restores all parameters together in the same batch. |
+| **Linked Removal** | When checked (default), propagate every removal to all other parameters simultaneously. Undo restores all parameters together in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch. Linked parameters are restored together. |
 | **Start Over** | Restore all removed points for every parameter and reset all DQO thresholds to their original values. |
 | **Export Progress** | Save the current cleaned data and DQO thresholds as Excel files in a ZIP archive. If any points have been removed, a removed-observations file is included. |
-| **Done / Close** | Stop the app and return the cleaned data. |
+| **Done / Close** | Stop the app and return the cleaned data. Choosing **Close, save edits** returns the filtered datasets for all parameters; choosing **Close, discard edits** returns the original unmodified data. |
 
 The **USGS Overlay** feature uses
 [`readASRusgs()`](https://massbays-tech.github.io/AquaSensR/reference/readASRusgs.md)
