@@ -1,12 +1,12 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   AquaSensR: AquaSensR.html
   driftcorrection: driftcorrection.html
   inputs: inputs.html
   qcoverview: qcoverview.html
-last_built: 2026-06-26T17:19Z
+last_built: 2026-07-19T18:12Z
 urls:
   reference: https://massbays-tech.github.io/AquaSensR/reference
   article: https://massbays-tech.github.io/AquaSensR/articles

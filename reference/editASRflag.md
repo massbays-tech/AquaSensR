@@ -121,7 +121,11 @@ to remove the selected area if present after removal.
 
 - **Done / Close**: stops the app. Choosing **Close, save edits**
   returns the filtered datasets for all parameters; choosing **Close,
-  discard edits** returns the original unmodified data.
+  discard edits** returns the original unmodified data. Closing the
+  browser tab or window directly (without clicking **Done / Close**)
+  also saves edits, equivalent to **Close, save edits**. Refreshing the
+  page has the same effect and ends the session, since a refresh
+  disconnects the browser from the running app.
 
 ### DQO Settings panel
 
@@ -143,8 +147,9 @@ The app is constructed inline so that flag data are available directly
 to the server without file I/O.
 [`shiny::runApp()`](https://rdrr.io/pkg/shiny/man/runApp.html) blocks
 until [`shiny::stopApp()`](https://rdrr.io/pkg/shiny/man/stopApp.html)
-is called by the Done button; its return value becomes the function
-return value.
+is called, either by the Done button or by `session$onSessionEnded()`
+when the browser tab/window is closed or refreshed without using Done /
+Close; its return value becomes the function return value.
 
 ## Examples
 

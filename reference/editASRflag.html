@@ -171,7 +171,11 @@ removed, a removed-observations file is included as well.</p></li>
 <li><p><strong>Done / Close</strong>: stops the app.  Choosing
 <strong>Close, save edits</strong> returns the filtered datasets for all
 parameters; choosing <strong>Close, discard edits</strong> returns the
-original unmodified data.</p></li>
+original unmodified data.  Closing the browser tab or window
+directly (without clicking <strong>Done / Close</strong>) also saves edits,
+equivalent to <strong>Close, save edits</strong>.  Refreshing the page has
+the same effect and ends the session, since a refresh disconnects
+the browser from the running app.</p></li>
 </ul></div>
 
 <div class="section">
@@ -191,8 +195,10 @@ shows that parameter's current thresholds without affecting others.</p>
 
 <p>The app is constructed inline so that flag data are available directly to
 the server without file I/O. <code><a href="https://rdrr.io/pkg/shiny/man/runApp.html" class="external-link">shiny::runApp()</a></code> blocks until
-<code><a href="https://rdrr.io/pkg/shiny/man/stopApp.html" class="external-link">shiny::stopApp()</a></code> is called by the Done button; its return value
-becomes the function return value.</p>
+<code><a href="https://rdrr.io/pkg/shiny/man/stopApp.html" class="external-link">shiny::stopApp()</a></code> is called, either by the Done button or by
+<code>session$onSessionEnded()</code> when the browser tab/window is closed or
+refreshed without using Done / Close; its return value becomes the
+function return value.</p>
     </div>
 
     <div class="section level2">
@@ -221,7 +227,7 @@ becomes the function return value.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
