@@ -98,7 +98,11 @@ removed, a removed-observations file is included as well.
 \item \strong{Done / Close}: stops the app.  Choosing
 \strong{Close, save edits} returns the filtered datasets for all
 parameters; choosing \strong{Close, discard edits} returns the
-original unmodified data.
+original unmodified data.  Closing the browser tab or window
+directly (without clicking \strong{Done / Close}) also saves edits,
+equivalent to \strong{Close, save edits}.  Refreshing the page has
+the same effect and ends the session, since a refresh disconnects
+the browser from the running app.
 }
 }
 
@@ -122,8 +126,10 @@ shows that parameter's current thresholds without affecting others.
 
 The app is constructed inline so that flag data are available directly to
 the server without file I/O. \code{shiny::runApp()} blocks until
-\code{shiny::stopApp()} is called by the Done button; its return value
-becomes the function return value.
+\code{shiny::stopApp()} is called, either by the Done button or by
+\code{session$onSessionEnded()} when the browser tab/window is closed or
+refreshed without using Done / Close; its return value becomes the
+function return value.
 }
 \examples{
 \dontrun{

@@ -26,6 +26,13 @@
 #
 #  e. Plotly observers emit warnings about unregistered events (no rendered
 #     plot). Wrap testServer calls in suppressWarnings().
+#
+#  f. session$onSessionEnded() registers a stopApp() fallback for ungraceful
+#     browser closes. shiny::testServer() auto-invokes onSessionEnded when a
+#     test block exits (MockShinySession$close() -> endedCBs$invoke()), so
+#     without the `inherits(session, "MockShinySession")` guard, EVERY test in
+#     this file would hit the same stopApp()-segfaults-under-testServer issue
+#     described in note (d). Do not remove that guard.
 
 # First two parameters for fixture setup
 edit_first_param <- setdiff(names(tst$contdat), "DateTime")[1L]
@@ -956,6 +963,36 @@ test_that("done button shows modal without error", {
     shiny::testServer(app, {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(done = 1L))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# onSessionEnded — ungraceful close safety net
+# ---------------------------------------------------------------------------
+
+test_that("session$close() does not error when app closed without Done/Close", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # app_closing stays FALSE here, simulating an ungraceful close.
+      # Guarded by inherits(session, "MockShinySession"), so the real
+      # stopApp() (unsafe under testServer, see note (d)) must never be
+      # reached.
+      expect_no_error(session$close())
+    })
+  )
+})
+
+test_that("session$close() is a no-op once Done/Close has already fired", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Simulate done_confirm/done_discard having already set the guard.
+      session$env$app_closing <- TRUE
+      expect_no_error(session$close())
     })
   )
 })

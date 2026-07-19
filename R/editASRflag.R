@@ -87,7 +87,11 @@
 #'     \item \strong{Done / Close}: stops the app.  Choosing
 #'       \strong{Close, save edits} returns the filtered datasets for all
 #'       parameters; choosing \strong{Close, discard edits} returns the
-#'       original unmodified data.
+#'       original unmodified data.  Closing the browser tab or window
+#'       directly (without clicking \strong{Done / Close}) also saves edits,
+#'       equivalent to \strong{Close, save edits}.  Refreshing the page has
+#'       the same effect and ends the session, since a refresh disconnects
+#'       the browser from the running app.
 #'   }
 #' }
 #'
@@ -111,8 +115,10 @@
 #'
 #' The app is constructed inline so that flag data are available directly to
 #' the server without file I/O. \code{shiny::runApp()} blocks until
-#' \code{shiny::stopApp()} is called by the Done button; its return value
-#' becomes the function return value.
+#' \code{shiny::stopApp()} is called, either by the Done button or by
+#' \code{session$onSessionEnded()} when the browser tab/window is closed or
+#' refreshed without using Done / Close; its return value becomes the
+#' function return value.
 #'
 #' @examples
 #' \dontrun{
@@ -1193,6 +1199,30 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
       update_dqo_inputs(dqo, input$param_select)
     })
 
+    # ---- Ungraceful close safety net (browser tab/window closed without
+    # clicking Done/Close, or the page was refreshed) --------------------------
+    # onSessionEnded() fires on every disconnect. app_closing distinguishes a
+    # normal Done/Close (which already calls stopApp() itself) from anything
+    # else, so this never double-invokes stopApp(). Falls back to saving the
+    # current edit state, same as "Close, save edits".
+    app_closing <- FALSE
+
+    session$onSessionEnded(function() {
+      if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
+        return(invisible(NULL))
+      }
+      shiny::isolate(
+        shiny::stopApp(
+          returnValue = editASRflag_result(
+            cont,
+            base_flagdat_list(),
+            remaining_list(),
+            working_dqo()
+          )
+        )
+      )
+    })
+
     # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
       shiny::showModal(shiny::modalDialog(
@@ -1217,6 +1247,7 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
     })
 
     shiny::observeEvent(input$done_discard, {
+      app_closing <<- TRUE
       shiny::removeModal()
       session$sendCustomMessage("closeWindow", list())
       shiny::stopApp(
@@ -1230,6 +1261,7 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
     })
 
     shiny::observeEvent(input$done_confirm, {
+      app_closing <<- TRUE
       shiny::removeModal()
       # Ask the browser to close the tab.  This works in RStudio's viewer pane
       # and Electron/webview contexts; standard browser tabs opened by the OS
