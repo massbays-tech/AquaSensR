@@ -125,7 +125,12 @@ to remove the selected area if present after removal.
   browser tab or window directly (without clicking **Done / Close**)
   also saves edits, equivalent to **Close, save edits**. Refreshing the
   page has the same effect and ends the session, since a refresh
-  disconnects the browser from the running app.
+  disconnects the browser from the running app. If any points have been
+  removed or DQO thresholds edited in the current session, closing or
+  refreshing this way triggers the browser's own "leave site?"
+  confirmation as a warning. Dismissing that warning by declining it
+  keeps the session open. This warning does not appear when closing via
+  **Done / Close**, since that choice is already explicit.
 
 ### DQO Settings panel
 

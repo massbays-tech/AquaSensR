@@ -407,6 +407,13 @@ the edge to the right).
 | **Export Progress** | Save the current cleaned data and DQO thresholds as Excel files in a ZIP archive. If any points have been removed, a removed-observations file is included. |
 | **Done / Close** | Stop the app. **Close, save edits** returns the filtered datasets for all parameters. **Close, discard edits** reverts any changes made in the current session and returns the data as it was when the app opened. |
 
+Closing the browser tab or window directly, or refreshing the page, also
+stops the app and saves edits, the same as **Close, save edits**. If
+edits have been made in the current session, the browser may show its
+own generic warning before closing (its wording cannot be customized by
+the app). This can be safely dismissed since the edits will still be
+saved.
+
 The **USGS Overlay** feature uses
 [`readASRusgs()`](https://massbays-tech.github.io/AquaSensR/reference/readASRusgs.md)
 internally to pull unit-value (continuous) data from the [NWIS
