@@ -149,6 +149,7 @@ the units used in your data.
 | E. coli (#/100ml)            | E_coli\_#\_100ml     | \#/100ml  |
 | E. coli (CFU/100ml)          | E_coli_CFU_100ml     | CFU/100ml |
 | Discharge (cfs)              | Discharge_cfs        | cfs       |
+| Flow (cfs)                   | Flow_cfs             | cfs       |
 | Nitrate (μg/l)               | Nitrate_ug_l         | ug/l      |
 | PAR (μmol/m2/s)              | PAR_umol_m2_s        | umol/m2/s |
 | pH                           | pH_SU                | None      |
@@ -169,7 +170,7 @@ which is included in the package and used for the checks.
 ``` r
 
 paramsASR
-#> # A tibble: 36 × 6
+#> # A tibble: 37 × 6
 #>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
 #>    <chr>             <chr>     <chr> <chr> <chr>           <chr>                
 #>  1 Air Temp          Air_Temp… deg C Air … Temperature, a… deg C                
@@ -182,7 +183,7 @@ paramsASR
 #>  8 Chlorophyll       Pheophyt… RFU   Pheo… Pheophytin a    RFU                  
 #>  9 CO2               pCO2_ppm  ppm   pCO2… Partial Pressu… ppm                  
 #> 10 Conductivity      Conducti… uS/cm Cond… Conductivity    uS/cm                
-#> # ℹ 26 more rows
+#> # ℹ 27 more rows
 ```
 
 ### Checks performed

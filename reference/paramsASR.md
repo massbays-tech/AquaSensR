@@ -22,7 +22,7 @@ corresponding WQX names is also included.
 
 ``` r
 paramsASR
-#> # A tibble: 36 × 6
+#> # A tibble: 37 × 6
 #>    `Parameter Group` Parameter uom   Label `WQX Parameter` `WQX Unit of measure`
 #>    <chr>             <chr>     <chr> <chr> <chr>           <chr>                
 #>  1 Air Temp          Air_Temp… deg C Air … Temperature, a… deg C                
@@ -35,5 +35,5 @@ paramsASR
 #>  8 Chlorophyll       Pheophyt… RFU   Pheo… Pheophytin a    RFU                  
 #>  9 CO2               pCO2_ppm  ppm   pCO2… Partial Pressu… ppm                  
 #> 10 Conductivity      Conducti… uS/cm Cond… Conductivity    uS/cm                
-#> # ℹ 26 more rows
+#> # ℹ 27 more rows
 ```

@@ -8,16 +8,22 @@ Functions for importing, checking, and formatting input data.
   : Read continuous monitoring data from an external file
 - [`readASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/readASRdqo.md)
   : Read data quality objectives from an external file
+- [`readASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md)
+  : Read flow or stage height data from an external file
 - [`readASRusgs()`](https://massbays-tech.github.io/AquaSensR/reference/readASRusgs.md)
   : Retrieve USGS time series data for overlay in editASRflag
 - [`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md)
   : Check continuous monitoring data
 - [`checkASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRdqo.md)
   : Check data quality objectives
+- [`checkASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRflow.md)
+  : Check flow or stage height data
 - [`formASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/formASRcont.md)
   : Format continuous data
 - [`formASRdqo()`](https://massbays-tech.github.io/AquaSensR/reference/formASRdqo.md)
   : Format data quality objectives
+- [`formASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/formASRflow.md)
+  : Format flow or stage height data
 
 ## Quality control
 
