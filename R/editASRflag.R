@@ -91,7 +91,13 @@
 #'       directly (without clicking \strong{Done / Close}) also saves edits,
 #'       equivalent to \strong{Close, save edits}.  Refreshing the page has
 #'       the same effect and ends the session, since a refresh disconnects
-#'       the browser from the running app.
+#'       the browser from the running app.  If any points have been removed
+#'       or DQO thresholds edited in the current session, closing or
+#'       refreshing this way triggers the browser's own "leave site?"
+#'       confirmation as a warning.  Dismissing that warning by
+#'       declining it keeps the session open.  This warning does not appear
+#'       when closing via \strong{Done / Close}, since that choice is already
+#'       explicit.
 #'   }
 #' }
 #'
@@ -150,13 +156,20 @@ editASRflag <- function(cont, dqo, removed = NULL) {
 #   rendered in the open state on startup.  Default FALSE matches the normal
 #   interactive behaviour.  Set TRUE when generating vignette screenshots via
 #   webshot2 so the panel is visible in the initial render without JS clicks.
-editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE) {
+editASRflag_app <- function(
+  cont,
+  dqo,
+  removed = NULL,
+  dqo_sidebar_open = FALSE
+) {
   # If prior removed observations are supplied, restore their original values
   # into cont before flagging so QC checks are not affected by the gaps.
   if (!is.null(removed) && nrow(removed) > 0L) {
     cont <- cont[order(cont$DateTime), ]
     for (p in unique(removed$Parameter)) {
-      if (!p %in% names(cont)) next
+      if (!p %in% names(cont)) {
+        next
+      }
       p_rows <- removed[removed$Parameter == p, , drop = FALSE]
       idx <- match(p_rows$DateTime, cont$DateTime)
       ok <- !is.na(idx)
@@ -181,12 +194,19 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
   if (!is.null(removed) && nrow(removed) > 0L) {
     for (p in params) {
       p_rows <- removed[removed$Parameter == p, , drop = FALSE]
-      if (nrow(p_rows) == 0L) next
+      if (nrow(p_rows) == 0L) {
+        next
+      }
       fd <- flagdat_list[[p]]
       mask <- fd$DateTime %in% p_rows$DateTime
-      if (!any(mask)) next
+      if (!any(mask)) {
+        next
+      }
       init_remaining[[p]] <- fd[!mask, , drop = FALSE]
-      init_history[[p]] <- list(list(group_id = 0L, data = fd[mask, , drop = FALSE]))
+      init_history[[p]] <- list(list(
+        group_id = 0L,
+        data = fd[mask, , drop = FALSE]
+      ))
     }
   }
 
@@ -354,6 +374,13 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
             shiny::tags$li(
               shiny::tags$b("Done / Close:"),
               " stops the app and returns the cleaned data."
+            ),
+            shiny::tags$li(
+              shiny::tags$b("Closing the browser tab directly:"),
+              ' also saves edits automatically, the same as "Close, save edits."',
+              " If edits have been made, the browser may show its own generic",
+              " warning before closing.  This can be safely dismissed since the",
+              " edits will still be saved."
             )
           )
         )
@@ -409,7 +436,19 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
          e.stopPropagation();
          Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
        }, true);
+       var appDirty = false;
+       window.addEventListener("beforeunload", function (e) {
+         if (!appDirty) return;
+         e.preventDefault();
+         e.returnValue =
+           "Closing without using Done / Close will automatically save your current edits.";
+         return e.returnValue;
+       });
+       Shiny.addCustomMessageHandler("setDirty", function(msg) {
+         appDirty = msg.dirty;
+       });
        Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+         appDirty = false;
          window.close();
        });'
     ))),
@@ -1206,6 +1245,28 @@ editASRflag_app <- function(cont, dqo, removed = NULL, dqo_sidebar_open = FALSE)
     # else, so this never double-invokes stopApp(). Falls back to saving the
     # current edit state, same as "Close, save edits".
     app_closing <- FALSE
+
+    # TRUE if the session has made any removal not already present in the
+    # `removed` argument (group_id 0L marks those pre-loaded entries) or has
+    # changed the DQO thresholds. Drives the browser's beforeunload warning so
+    # it only appears when there is something to lose by closing ungracefully.
+    has_unsaved_edits <- shiny::reactive({
+      new_removal <- any(vapply(
+        removed_history_list(),
+        function(h) {
+          if (length(h) == 0L) {
+            return(FALSE)
+          }
+          any(vapply(h, function(x) x$group_id != 0L, logical(1)))
+        },
+        logical(1)
+      ))
+      new_removal || !identical(working_dqo(), dqo)
+    })
+
+    shiny::observe({
+      session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
+    })
 
     session$onSessionEnded(function() {
       if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
