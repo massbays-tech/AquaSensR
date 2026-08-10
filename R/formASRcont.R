@@ -22,6 +22,8 @@
 #'
 #' formASRcont(contdat)
 formASRcont <- function(contdat, tz = 'Etc/GMT+5') {
+  # NOTE: formASRflow() delegates to this function directly. Any change here
+  # (signature, tz handling, column-exclusion logic) affects formASRflow too.
   # combine date and time into a single DateTime column, or convert existing
   if ('DateTime' %in% names(contdat)) {
     out <- contdat |>

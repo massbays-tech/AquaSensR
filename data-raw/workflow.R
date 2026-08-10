@@ -8,24 +8,30 @@ library(AquaSensR)
 # ------------------------------------------------------------------------------
 # Replace with paths to your own files, or use the package example data:
 # contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
-contpth <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
+# contpth <- system.file("extdata/ExampleCont2.xlsx", package = "AquaSensR")
 # contpth <- '~/Desktop/AquaSensR_export_20260517_174049/contdat.xlsx'
 # contpth <- '~/Desktop/RVM-018 2022-07-25_2022-08-31_cond_vers2.xlsx'
 # contpth <- '~/Desktop/GRBGB_DO_sat_2023_clean_datetime_noTZ.xlsx'
 # contpth <- '~/Desktop/GRBGB_DO_sat_2023_clean_datetime_UTC.xlsx'
 # contpth <- '~/Desktop/Hobo_CND-DO_LoggerVers2.xlsx'
-dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
+contpth <- '~/Desktop/Hobo_CND-DO_LoggerVers2.xlsx'
+# dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 # dqopth <- '~/Desktop/ExampleDQO.xlsx'
+dqopth <- '~/Desktop/AquaSensR_DQO.xlsx'
+flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+# flowpth <- system.file("extdata/ExampleFlow2.xlsx", package = "AquaSensR")
 
 # ------------------------------------------------------------------------------
 # 2. Import data
 # ------------------------------------------------------------------------------
 contdat <- readASRcont(contpth)
 dqodat <- readASRdqo(dqopth)
+flowdat <- readASRflow(flowpth)
 
 # Quick look at inputs
 head(contdat)
 head(dqodat)
+head(flowdat)
 
 # ------------------------------------------------------------------------------
 # 3. Apply QC flags

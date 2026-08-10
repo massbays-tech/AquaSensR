@@ -95,5 +95,29 @@ tst <- list(
   dqodat = readASRdqo(
     system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR'),
     runchk = F
-  )
+  ),
+  # flow/stage data - separate Date/Time format (ExampleFlow1)
+  flowpth = system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR'),
+  flowdatchk = utilASRimportcont(
+    system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR')
+  ),
+  flowdat = readASRflow(
+    system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR'),
+    runchk = F
+  ),
+  # flow/stage data - combined DateTime format (ExampleFlow2)
+  flowpth2 = system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR'),
+  flowdatchk2 = utilASRimportcont(
+    system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR')
+  ),
+  flowdat2 = readASRflow(
+    system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR'),
+    runchk = F
+  ),
+  # CSV paths
+  flowpthcsv  = system.file('extdata/ExampleFlow1.csv', package = 'AquaSensR'),
+  flowpthcsv2 = system.file('extdata/ExampleFlow2.csv', package = 'AquaSensR'),
+  # TXT paths
+  flowpthtxt  = system.file('extdata/ExampleFlow1.txt', package = 'AquaSensR'),
+  flowpthtxt2 = system.file('extdata/ExampleFlow2.txt', package = 'AquaSensR')
 )
