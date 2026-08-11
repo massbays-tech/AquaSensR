@@ -15,7 +15,7 @@ original unmodified data.
 ## Usage
 
 ``` r
-editASRflag(cont, dqo, removed = NULL)
+editASRflag(cont, dqo, removed = NULL, flow = NULL)
 ```
 
 ## Arguments
@@ -41,6 +41,17 @@ editASRflag(cont, dqo, removed = NULL)
   excluded from the plot) and original values are restored before
   re-flagging so that QC checks are not affected by the gaps. Passing
   all three elements of a prior result enables fully iterative editing.
+
+- flow:
+
+  Optional `flowdat` data frame returned by
+  [`readASRflow`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md),
+  with a `DateTime` column plus one flow or stage height column. When
+  supplied, it is added as an additional entry in the **Overlay**
+  drop-down (see Controls below) so it can be plotted alongside any
+  parameter. Its `DateTime` column is aligned to `cont`'s time zone and
+  clipped to `cont`'s date range. The entry is omitted if the two do not
+  overlap.
 
 ## Value
 
@@ -90,13 +101,14 @@ to remove the selected area if present after removal.
   to each parameter are preserved independently when switching.
 
 - **Overlay**: optional drop-down to display a second parameter from
-  `condtat` on a right-side y-axis, useful for spotting co-occurring
-  changes across parameters.
+  `contdat` on a right-side y-axis, useful for spotting co-occurring
+  changes across parameters. If a `flow` argument was supplied, an
+  additional entry sourced from that file is also available.
 
 - **USGS Overlay**: enter a USGS site number and select a parameter
   type, then click **Load** to fetch continuous data from NWIS and
   display it on the secondary y-axis. Loading USGS data clears any
-  contdat overlay and selecting a contdat overlay clears the USGS data.
+  Overlay selection and selecting an Overlay entry clears the USGS data.
   Site numbers can be found at the NWIS Mapper
   (<https://apps.usgs.gov/nwismapper>).
 
@@ -170,5 +182,10 @@ cleaned <- editASRflag(contdat, dqodat)
 
 # Second session: picks up where the first left off
 cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
+
+# Optional flow or stage height overlay
+flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+flowdat <- readASRflow(flowpth)
+cleaned3 <- editASRflag(contdat, dqodat, flow = flowdat)
 } # }
 ```

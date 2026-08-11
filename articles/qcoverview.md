@@ -365,6 +365,19 @@ session.
 cleaned <- editASRflag(contdat, dqodat)
 ```
 
+An optional `flow` argument accepts a flow or stage height data frame
+from
+[`readASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md)
+(see the [inputs
+vignette](https://massbays-tech.github.io/AquaSensR/articles/inputs.md)),
+which adds it as an entry in the **Overlay** control described below.
+
+``` r
+
+flowdat <- readASRflow(flowpth)
+cleaned <- editASRflag(contdat, dqodat, flow = flowdat)
+```
+
 ### Interface overview
 
 ![Screenshot of the editASRflag Shiny app showing the flag plot and left
@@ -399,8 +412,8 @@ the edge to the right).
 | Control | Action |
 |----|----|
 | **Parameter** | Switch between parameters. Prev/Next buttons cycle through all parameters. |
-| **Overlay** | Display a second parameter from `contdat` on a right-side axis. |
-| **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis. Loading USGS data clears any contdat overlay. Selecting a contdat overlay clears the USGS data. Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
+| **Overlay** | Display a second parameter from `contdat` on a right-side axis. If a `flow` argument was supplied, an additional entry sourced from that file is also available. |
+| **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis. Loading USGS data clears any Overlay selection. Selecting an Overlay entry clears the USGS data. Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
 | **Linked Removal** | When checked (default), propagate every removal to all other parameters simultaneously. Undo restores all parameters together in the same batch. |
 | **Undo Last Removal** | Restore the most recently removed point or selection batch. Linked parameters are restored together. |
 | **Start Over** | Undo all removals and DQO edits made during the current session, reverting to the state the app was in when it opened. If prior removed points were supplied via the `removed` argument, those are retained. |
@@ -421,9 +434,19 @@ API](https://waterservices.usgs.gov) over the same date range as
 `contdat`. Supported parameter types are streamflow (00060), gage height
 (00065), precipitation (00045), and groundwater depth in feet below land
 surface (72019). The fetched time series is displayed on the secondary
-y-axis in the same position as a contdat overlay but is retrieved live
-when Load is clicked. Users without an internet connection or outside
-NWIS coverage can still use the contdat Overlay selector instead.
+y-axis in the same position as an Overlay selection but is retrieved
+live when Load is clicked. Users without an internet connection or
+outside NWIS coverage can still use the Overlay selector instead.
+
+If a `flow` data frame was supplied to
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md),
+its column appears as an additional entry in the **Overlay** drop-down
+(labeled with a “\[Flow File\]” suffix), alongside the `contdat`
+parameters. Its `DateTime` values are aligned to `contdat`’s time zone
+and clipped to `contdat`’s date range before display. The entry is
+omitted if the two do not overlap at all. Unlike the USGS Overlay, no
+network request is made since the data was already loaded via
+[`readASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md).
 
 ### DQO Settings panel
 
