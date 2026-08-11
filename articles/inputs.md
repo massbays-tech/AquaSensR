@@ -8,12 +8,19 @@ AquaSensR requires two input files to use the functions in the package:
     objectives used by the four QC checks (gross range, spike, rate of
     change, and flatline).
 
+A third input is optional:
+
+3.  **Flow or stage height data**: a single-column time series of flow
+    (cfs) or stage/depth height (ft) from a separate logger, e.g. for
+    reference alongside the continuous monitoring data.
+
 The DQO file is an Excel workbook (`.xlsx`). The continuous monitoring
-data file can be an Excel workbook (`.xlsx`), a CSV file (`.csv`), or a
-comma-delimited text file (`.txt`). This vignette describes how to
-import and check each input dataset. It is critical that the input
-datasets follow the exact specified format. Example files with the
-correct format are included with the package and are used throughout.
+data file and the flow or stage height file can each be an Excel
+workbook (`.xlsx`), a CSV file (`.csv`), or a comma-delimited text file
+(`.txt`). This vignette describes how to import and check each input
+dataset. It is critical that the input datasets follow the exact
+specified format. Example files with the correct format are included
+with the package and are used throughout.
 
 ## Load the package
 
@@ -26,8 +33,8 @@ library(AquaSensR)
 
 ## File paths
 
-First, specify the location of the two files by saving their paths to R
-variables. In practice you will supply paths to your own files, for
+First, specify the location of the required files by saving their paths
+to R variables. In practice you will supply paths to your own files, for
 example:
 
 ``` r
@@ -42,6 +49,23 @@ The examples below use the files included with the package:
 
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
+```
+
+If you also have flow or stage height data (optional, see [Flow or stage
+height data](#flow-or-stage-height-data)), specify its path the same
+way:
+
+``` r
+
+flowpth <- "path/to/your/FlowData.xlsx"
+```
+
+As for the other files, the examples below use the file included with
+the package:
+
+``` r
+
+flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
 ```
 
 ## Continuous monitoring data
@@ -402,6 +426,198 @@ head(dqodat)
 #> 6 DO_mg_l      Fail      1      18   4      60      0.01      NA       NA
 ```
 
+## Flow or stage height data
+
+This input is not required for use with the package, but can be used for
+comparison with the continuous data. It supports a simple, single-column
+time series of flow (cfs) or stage/depth height (ft), e.g. from a
+separate logger not otherwise included in the continuous monitoring
+data. Use
+[`readASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md)
+to import it. The function reads the file, automatically runs a series
+of checks via
+[`checkASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRflow.md),
+and then formats the result for downstream use, mirroring
+[`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
+above (including the `tz` argument and its default).
+
+AquaSensR accepts the same two date/time input formats as the continuous
+monitoring data. The examples below demonstrate both.
+
+**Format 1** — separate `Date` and `Time` columns (`ExampleFlow1.xlsx`):
+
+``` r
+
+flowdat <- readASRflow(flowpth)
+#> Running checks on flow/stage data...
+#>  Checking column names... OK
+#>  Checking Date, Time are present... OK
+#>  Checking exactly one flow or stage height column is present... OK
+#>  Checking date format... OK
+#>  Checking time format... OK
+#>  Checking for missing values... OK
+#>  Checking flow or stage height column for non-numeric values... OK
+#> 
+#> All checks passed!
+```
+
+**Format 2** — combined `DateTime` column (`ExampleFlow2.xlsx`):
+
+``` r
+
+flowpth2 <- system.file("extdata/ExampleFlow2.xlsx", package = "AquaSensR")
+flowdat2 <- readASRflow(flowpth2)
+#> Running checks on flow/stage data...
+#>  Checking column names... OK
+#>  Checking DateTime is present... OK
+#>  Checking exactly one flow or stage height column is present... OK
+#>  Checking DateTime format... OK
+#>  Checking for missing values... OK
+#>  Checking flow or stage height column for non-numeric values... OK
+#> 
+#> All checks passed!
+```
+
+Both calls return identically structured output (see [Output
+format](#output-format) below).
+
+### Format requirements
+
+The flow or stage height file follows the same two accepted schemas as
+the continuous monitoring data, but unlike
+[`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md),
+exactly one flow or stage height column is required (not both) and it
+must match one of the more restricted set of `paramsASR` entries in the
+“Water Level” or “Flow” parameter groups (see table below). Additional
+unrecognised columns, a missing flow or stage height column, or more
+than one such column will each trigger an error on import.
+
+**Format 1: separate Date and Time columns**
+
+| Column | Description |
+|----|----|
+| `Date` | Observation date, parseable by [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html) in year-first (e.g., `2024-06-01`), month-first (e.g., `06/01/2024`), or day-first (e.g., `01/06/2024`) formats |
+| `Time` | Observation time in 24-hour (e.g., `16:30:33`), 12-hour AM/PM (e.g., `4:30:33 PM`), or Excel-native format (e.g., `1899-12-31 16:30:33`) |
+| Exactly one flow or stage height column | Column name must match a `Parameter` entry in `paramsASR` from the “Water Level” or “Flow” groups (e.g., `Sensor_Depth_ft`) |
+
+**Format 2: combined DateTime column**
+
+| Column | Description |
+|----|----|
+| `DateTime` | Combined date and time with the date in year-first (e.g., `2024-06-01 16:30:33`), month-first (e.g., `06/01/2024 16:30:33`), or day-first format, combined with 24-hour or 12-hour AM/PM time (e.g., `2024-06-01 4:30:33 PM`) |
+| Exactly one flow or stage height column | Column name must match a `Parameter` entry in `paramsASR` from the “Water Level” or “Flow” groups (e.g., `Sensor_Depth_ft`) |
+
+Currently, AquaSensR allows the following parameters for flow or stage
+height data, a subset of the full `paramsASR` list shown above. As with
+the continuous monitoring data, make sure the parameter name matches the
+units used in your data.
+
+| Description           | Required file name  | Units |
+|:----------------------|:--------------------|:------|
+| Discharge (cfs)       | Discharge_cfs       | cfs   |
+| Flow (cfs)            | Flow_cfs            | cfs   |
+| Gage Height (ft)      | Gage_Height_ft      | ft    |
+| Sensor Depth (ft)     | Sensor_Depth_ft     | ft    |
+| Water Pressure (psi)  | Water_Pressure_psi  | psi   |
+| Water Pressure (mmHg) | Water_Pressure_mmHg | mmHg  |
+
+### Checks performed
+
+The
+[`readASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md)
+function imports the data and runs a series of checks using the
+[`checkASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRflow.md)
+function, following the same structure as
+[`checkASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRcont.md)
+above. Most checks stop with an informative error if they fail, except
+the check for missing values which produces a warning since these may
+occur in logger data. The checks evaluate the following:
+
+1.  **Column names**: all columns are either `Date`, `Time`, `DateTime`,
+    or a recognised flow/stage height parameter from `paramsASR` (Water
+    Level or Flow groups only).
+2.  **Required columns present**: either `Date` and `Time` (Format 1) or
+    `DateTime` (Format 2).
+3.  **Exactly one flow or stage height column**: zero or more than one
+    matching column is an error.
+4.  **Date format** *(Format 1 only)*: all values in `Date` are
+    parseable by
+    [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+    in year-first, month-first, or day-first formats.
+5.  **Time format** *(Format 1 only)*: all values in `Time` are
+    parseable by
+    [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+    in 24-hour, 12-hour AM/PM, or Excel-native formats.
+6.  **DateTime format** *(Format 2 only)*: all values in `DateTime` are
+    parseable by
+    [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html)
+    with year-first, month-first, or day-first date order combined with
+    24-hour or 12-hour AM/PM time.
+7.  **Missing values**: `NA` values in the flow or stage height column
+    produce a warning listing the affected rows. Missing values in
+    `DateTime`, `Date`, or `Time` columns remain an error.
+8.  **Numeric flow or stage height column**: the flow or stage height
+    column contains numeric values.
+
+### Example: triggering an error
+
+Adding a second flow or stage height column causes
+[`checkASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/checkASRflow.md)
+to stop immediately, since exactly one is required:
+
+``` r
+
+flowdat_raw <- utilASRimportcont(flowpth)
+flowdat_raw$Gage_Height_ft <- flowdat_raw$Sensor_Depth_ft
+
+checkASRflow(flowdat_raw)
+#> Running checks on flow/stage data...
+#>  Checking column names... OK
+#>  Checking Date, Time are present... OK
+#> Error:
+#> !    Checking exactly one flow or stage height column is present...
+#>  Multiple flow or stage height columns found, only one is allowed: Gage_Height_ft, Sensor_Depth_ft
+```
+
+### Output format
+
+After passing all checks,
+[`readASRflow()`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md)
+returns a data frame with the same structure regardless of input format:
+
+- `DateTime`: time-zone-aware `POSIXct` column
+- One numeric column for the flow or stage height parameter present in
+  the input file
+
+``` r
+
+head(flowdat)
+#> # A tibble: 6 × 2
+#>   DateTime            Sensor_Depth_ft
+#>   <dttm>                        <dbl>
+#> 1 2024-08-10 00:00:00            1.41
+#> 2 2024-08-10 00:15:00            1.41
+#> 3 2024-08-10 00:30:00            1.41
+#> 4 2024-08-10 00:45:00            1.41
+#> 5 2024-08-10 01:00:00            1.41
+#> 6 2024-08-10 01:15:00            1.41
+```
+
+``` r
+
+head(flowdat2)
+#> # A tibble: 6 × 2
+#>   DateTime            Sensor_Depth_ft
+#>   <dttm>                        <dbl>
+#> 1 2024-08-10 00:00:00            1.41
+#> 2 2024-08-10 00:15:00            1.41
+#> 3 2024-08-10 00:30:00            1.41
+#> 4 2024-08-10 00:45:00            1.41
+#> 5 2024-08-10 01:00:00            1.41
+#> 6 2024-08-10 01:15:00            1.41
+```
+
 The remaining functions in AquaSensR can now be used after the
 continuous data and data quality objectives files are successfully
-imported.
+imported. The flow or stage height data, if used, is imported the same
+way but is not required.
