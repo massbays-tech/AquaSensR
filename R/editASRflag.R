@@ -22,6 +22,13 @@
 #'   table and excluded from the plot) and original values are restored before
 #'   re-flagging so that QC checks are not affected by the gaps.  Passing all
 #'   three elements of a prior result enables fully iterative editing.
+#' @param flow Optional \code{flowdat} data frame returned by
+#'   \code{\link{readASRflow}}, with a \code{DateTime} column plus one flow or
+#'   stage height column.  When supplied, it is added as an additional entry
+#'   in the \strong{Overlay} drop-down (see Controls below) so it can be
+#'   plotted alongside any parameter.  Its \code{DateTime} column is aligned
+#'   to \code{cont}'s time zone and clipped to \code{cont}'s date range.  The
+#'   entry is omitted if the two do not overlap.
 #'
 #' @return A list with three elements, invisibly returned after the app closes:
 #'   \describe{
@@ -61,12 +68,13 @@
 #'       parameters.  Edits to each parameter are preserved independently when
 #'       switching.
 #'     \item \strong{Overlay}: optional drop-down to display a second parameter
-#'      from \code{condtat} on a right-side y-axis, useful for spotting co-occurring
-#'       changes across parameters.
+#'      from \code{contdat} on a right-side y-axis, useful for spotting co-occurring
+#'       changes across parameters.  If a \code{flow} argument was supplied, an
+#'       additional entry sourced from that file is also available.
 #'     \item \strong{USGS Overlay}: enter a USGS site number and select a
 #'       parameter type, then click \strong{Load} to fetch continuous data
 #'       from NWIS and display it on the secondary y-axis.  Loading USGS data
-#'       clears any contdat overlay and selecting a contdat overlay clears the
+#'       clears any Overlay selection and selecting an Overlay entry clears the
 #'       USGS data.  Site numbers can be found at the NWIS Mapper
 #'       (\url{https://apps.usgs.gov/nwismapper}).
 #'     \item \strong{Linked Removal}: optional checkbox.  When checked (default), any
@@ -138,11 +146,16 @@
 #'
 #' # Second session: picks up where the first left off
 #' cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
+#'
+#' # Optional flow or stage height overlay
+#' flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+#' flowdat <- readASRflow(flowpth)
+#' cleaned3 <- editASRflag(contdat, dqodat, flow = flowdat)
 #' }
 #'
 #' @export
-editASRflag <- function(cont, dqo, removed = NULL) {
-  shiny::runApp(editASRflag_app(cont, dqo, removed = removed))
+editASRflag <- function(cont, dqo, removed = NULL, flow = NULL) {
+  shiny::runApp(editASRflag_app(cont, dqo, removed = removed, flow = flow))
 }
 
 # Builds the shinyApp object without running it.  Separated from editASRflag()
@@ -152,6 +165,7 @@ editASRflag <- function(cont, dqo, removed = NULL) {
 # @param cont    contdat data frame (see editASRflag).
 # @param dqo     dqodat data frame (see editASRflag).
 # @param removed Optional removed data frame (see editASRflag).
+# @param flow    Optional flowdat data frame (see editASRflag).
 # @param dqo_sidebar_open Logical; if TRUE the DQO Settings right-sidebar is
 #   rendered in the open state on startup.  Default FALSE matches the normal
 #   interactive behaviour.  Set TRUE when generating vignette screenshots via
@@ -160,6 +174,7 @@ editASRflag_app <- function(
   cont,
   dqo,
   removed = NULL,
+  flow = NULL,
   dqo_sidebar_open = FALSE
 ) {
   # If prior removed observations are supplied, restore their original values
@@ -221,6 +236,52 @@ editASRflag_app <- function(
   )
   param_choices <- stats::setNames(params, param_labels)
 
+  # Sentinel value identifying the flow-file entry in the "Overlay" dropdown's
+  # `overlay_param` input, distinct from any real cont column name.
+  FLOW_OVERLAY_VALUE <- "__flow_file__"
+
+  # One-time flow-file prep: align its DateTime to cont's timezone (mirrors
+  # readASRusgs()'s own tz conversion) and clip to cont's DateTime range
+  # (mirrors the USGS fetch's clipping below) so the overlay doesn't dominate
+  # the plot's default x-axis autorange. If there's no temporal overlap, the
+  # flow entry is omitted entirely, same as if `flow` were NULL.
+  flow_param <- NULL
+  flow_aligned <- NULL
+  flow_label <- NULL
+  if (!is.null(flow)) {
+    flow_param <- setdiff(names(flow), "DateTime")[1L]
+
+    cont_tz <- attr(cont$DateTime, "tzone")
+    if (is.null(cont_tz) || !nzchar(cont_tz)) {
+      cont_tz <- "Etc/GMT+5"
+    }
+    flow_aligned <- flow
+    flow_aligned$DateTime <- lubridate::with_tz(flow_aligned$DateTime, cont_tz)
+
+    dt_rng <- range(cont$DateTime)
+    flow_aligned <- flow_aligned[
+      flow_aligned$DateTime >= dt_rng[1L] & flow_aligned$DateTime <= dt_rng[2L],
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(flow_aligned) == 0L) {
+      flow_param <- NULL
+      flow_aligned <- NULL
+    } else {
+      lbl <- paramsASR[paramsASR$Parameter == flow_param, "Label"]
+      lbl <- if (length(lbl) == 0L || is.na(lbl[1L])) {
+        flow_param
+      } else {
+        as.character(lbl[1L])
+      }
+      flow_label <- stats::setNames(
+        FLOW_OVERLAY_VALUE,
+        paste0(lbl, " [Flow File]")
+      )
+    }
+  }
+
   # -------------------------------------------------------------------------
   # UI
   # -------------------------------------------------------------------------
@@ -269,7 +330,11 @@ editASRflag_app <- function(
             style = "color: #6c757d; cursor: pointer;"
           ),
           title = "Overlay",
-          "Optionally display a second parameter on the plot. This can help identify whether flagged observations in the current parameter can be explained with changes in another."
+          if (!is.null(flow_param)) {
+            "Optionally display a second parameter on the plot, including the flow or stage height file if one was supplied. This can help identify whether flagged observations in the current parameter can be explained with changes in another."
+          } else {
+            "Optionally display a second parameter on the plot. This can help identify whether flagged observations in the current parameter can be explained with changes in another."
+          }
         )
       ),
       shiny::selectizeInput(
@@ -297,8 +362,8 @@ editASRflag_app <- function(
               target = "_blank"
             ),
             ") and click Load.",
-            "Loading USGS data clears any contdat overlay and",
-            "selecting a contdat overlay clears the USGS data."
+            "Loading USGS data clears any Overlay selection and",
+            "selecting an Overlay entry clears the USGS data."
           )
         )
       ),
@@ -810,7 +875,7 @@ editASRflag_app <- function(
       shiny::updateSelectInput(
         session,
         "overlay_param",
-        choices = c("None" = "", param_choices),
+        choices = c("None" = "", param_choices, flow_label),
         selected = ""
       )
       update_dqo_inputs(working_dqo(), input$param_select)
@@ -837,7 +902,7 @@ editASRflag_app <- function(
       shiny::updateSelectInput(
         session,
         "overlay_param",
-        choices = c("None" = "", param_choices),
+        choices = c("None" = "", param_choices, flow_label),
         selected = cur_ovl
       )
       update_dqo_inputs(working_dqo(), input$param_select)
@@ -1031,12 +1096,16 @@ editASRflag_app <- function(
 
     # ---- Plot ---------------------------------------------------------------
     output$flagPlot <- plotly::renderPlotly({
-      # USGS overlay takes priority over the contdat overlay selector.
+      # USGS overlay takes priority over the Overlay dropdown selection, which
+      # is itself either a cont parameter or the flow-file entry (mutually
+      # exclusive, since only one can be selected in that dropdown at a time).
       ovl <- if (!is.null(usgs_ovl())) {
         usgs_ovl()
       } else {
         ovl_param <- input$overlay_param
-        if (
+        if (!is.null(ovl_param) && identical(ovl_param, FLOW_OVERLAY_VALUE)) {
+          flow_aligned[, c("DateTime", flow_param), drop = FALSE]
+        } else if (
           !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(cont)
         ) {
           # Use remaining data for the overlay param if it is a linked parameter
