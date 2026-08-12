@@ -34,7 +34,21 @@ head(dqodat)
 head(flowdat)
 
 # ------------------------------------------------------------------------------
-# 3. Apply QC flags
+# 3. Bulk removal of out-of-water stretches
+# ------------------------------------------------------------------------------
+# Interactive app for quickly trimming a contiguous stretch of data across
+# every parameter at once, e.g., the sensor warm-up/retrieval periods at the
+# start/end of a deployment. No QC flags or DQOs are involved; typically run
+# before step 4 below. Returns list(contdat, removed) on close.
+bulk_result <- editASRbulk(contdat)
+
+# Chain into the flag-based workflow: use the trimmed data going forward and
+# carry the bulk removals into editASRflag() so they show up in its
+# removed-points table too (see step 5).
+# contdat <- bulk_result$contdat
+
+# ------------------------------------------------------------------------------
+# 4. Apply QC flags
 # ------------------------------------------------------------------------------
 # Change `param` to any parameter column present in contdat / dqodat
 flagdat <- utilASRflag(contdat, dqodat, param = "Water_Temp_C")
@@ -48,17 +62,17 @@ table(flagdat$roc_flag)
 table(flagdat$flat_flag)
 
 # ------------------------------------------------------------------------------
-# 4. Visualize flagged data
+# 5. Visualize flagged data
 # ------------------------------------------------------------------------------
 anlzASRflag(flagdat)
 
 # ------------------------------------------------------------------------------
-# 5. Edit flags in interactive Shiny app
+# 6. Edit flags in interactive Shiny app
 #' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
-cleaned <- editASRflag(contdat, dqodat, flow = flowdat)
+cleaned <- editASRflag(contdat, dqodat, flow = flowdat, removed = bulk_result$removed)
 
 # ------------------------------------------------------------------------------
-# 6. Drift correction
+# 7. Drift correction
 # ------------------------------------------------------------------------------
 # Apply a single drift correction to one parameter programmatically.
 # cal_ref is the true value from an independent sonde at deployment end;
@@ -83,7 +97,7 @@ corrected <- utilASRdrift(
 
 
 # ------------------------------------------------------------------------------
-# 7. Interactive drift correction app
+# 8. Interactive drift correction app
 # Interactive drift correction app — works parameter by parameter,
 # returns list(contdat, corrections) on close
 drift_result <- editASRdrift(contdat)
