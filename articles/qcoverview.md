@@ -12,6 +12,9 @@ workflow:
 - [`anlzASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/anlzASRflag.md):
   Produces an interactive time-series plot of those flags for visual
   review.
+- [`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md):
+  An interactive editor to review and clean data, uses the other two
+  functions.
 
 ## Load the data
 
