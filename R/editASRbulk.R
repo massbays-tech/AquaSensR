@@ -603,12 +603,23 @@ editASRbulk_app <- function(cont, removed = NULL) {
       p
     })
 
-    # ---- Removed points count and table (all parameters) --------------------
+    # ---- Removed points count and table (current parameter) -----------------
+    # The count of removed timestamps is the same for every parameter (removal
+    # is always linked), but the table itself is filtered to the parameter
+    # currently displayed so it isn't a jumble of every parameter's rows.
+    cur_removed_points <- shiny::reactive({
+      rp <- removed_points()
+      if (is.null(input$param_select)) {
+        return(rp[0L, , drop = FALSE])
+      }
+      rp[rp$Parameter == input$param_select, , drop = FALSE]
+    })
+
     output$removed_count <- shiny::renderText({
       paste("Removed Timestamps:", length(removed_dt()))
     })
     output$removed_table <- DT::renderDT({
-      rp <- removed_points()
+      rp <- cur_removed_points()
       if (nrow(rp) > 0L) {
         rp$DateTime <- format(rp$DateTime)
       }

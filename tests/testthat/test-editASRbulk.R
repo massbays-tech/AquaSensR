@@ -122,6 +122,26 @@ test_that("removal is visible after switching parameters (global, not per-param)
   )
 })
 
+test_that("removed table is filtered to the currently selected parameter", {
+  cont <- make_bulk_cont()
+  app <- AquaSensR:::editASRbulk_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
+
+      rp <- cur_removed_points()
+      expect_equal(nrow(rp), 2L)
+      expect_true(all(rp$Parameter == "Water_Temp_C"))
+
+      session$setInputs(param_select = "DO_mg_l")
+      rp2 <- cur_removed_points()
+      expect_equal(nrow(rp2), 2L)
+      expect_true(all(rp2$Parameter == "DO_mg_l"))
+    })
+  )
+})
+
 test_that("plotly_selected with an empty selection is a no-op", {
   cont <- make_bulk_cont()
   app <- AquaSensR:::editASRbulk_app(cont)
