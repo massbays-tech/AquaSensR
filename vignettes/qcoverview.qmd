@@ -22,6 +22,7 @@ The quality control (QC) functions in AquaSensR can be used once the required da
 
 - `utilASRflag()`: Applies four independent QC checks to a selected parameter and returns a data frame of flag results.
 - `anlzASRflag()`: Produces an interactive time-series plot of those flags for visual review.
+- `editASRflag()`: An interactive editor to review and clean data, uses the other two functions.
 
 ## Load the data
 
