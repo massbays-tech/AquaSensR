@@ -51,3 +51,14 @@ appshot(
   zoom = 1.5
 )
 message("Wrote editASRdrift_main.png")
+
+# ---- Screenshot 4: editASRbulk main view -------------------------------------
+appshot(
+  AquaSensR:::editASRbulk_app(contdat),
+  file = file.path(outdir, "editASRbulk_main.png"),
+  delay = 5,
+  vwidth = 1400,
+  vheight = 820,
+  zoom = 1.5
+)
+message("Wrote editASRbulk_main.png")

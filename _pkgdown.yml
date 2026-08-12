@@ -42,6 +42,11 @@ reference:
   - anlzASRflag
   - editASRflag
   - starts_with('utilASRflag')
+- title: Bulk removal
+  desc: >
+    Functions for removing a contiguous stretch of data across all parameters at once, e.g., when a sensor was out of the water.
+  contents:
+  - editASRbulk
 - title: Drift correction
   desc: >
     Functions for correcting instrument drift in continuous monitoring data.
