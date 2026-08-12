@@ -103,6 +103,14 @@ data quality objectives.
 - [`utilASRflagupdate()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflagupdate.md)
   : Update QC flag severity
 
+## Bulk removal
+
+Functions for removing a contiguous stretch of data across all
+parameters at once, e.g., when a sensor was out of the water.
+
+- [`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
+  : Interactive bulk removal editor
+
 ## Drift correction
 
 Functions for correcting instrument drift in continuous monitoring data.

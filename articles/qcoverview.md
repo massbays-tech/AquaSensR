@@ -6,6 +6,10 @@ vignette](https://massbays-tech.github.io/AquaSensR/articles/inputs.md)
 for details). This vignette covers the primary functions of the QC
 workflow:
 
+- [`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md):
+  An interactive editor for bulk-removing whole stretches of data, e.g.,
+  when a sensor was out of the water, typically run before flag-based
+  review.
 - [`utilASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflag.md):
   Applies four independent QC checks to a selected parameter and returns
   a data frame of flag results.
@@ -343,6 +347,60 @@ one parameter co-occur with changes in another.
 overlay_df <- contdat[, c("DateTime", "DO_pctsat")]
 anlzASRflag(flagdat, overlay = overlay_df)
 ```
+
+## `editASRbulk()` for bulk removal of out-of-water stretches
+
+Before flag-based review of continuous data, it is often useful to
+remove obvious stretches of bad data first, most commonly the start or
+end of a deployment when a sensor was out of the water, or occasionally
+a gap in the middle if the sensor was pulled and redeployed.
+[`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
+is a simplified version of the
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
+editor (described below) that can be used for this purpose. No QC flags
+are computed and no DQO thresholds are involved, and removal is always
+linked across parameters, so a selection made while viewing one
+parameter removes the same timestamps from every other parameter at
+once.
+
+The app only needs `contdat`:
+
+``` r
+
+trimmed <- editASRbulk(contdat)
+```
+
+![Screenshot of the editASRbulk Shiny app showing the raw time series
+and left sidebar.](figures/editASRbulk_main.png)
+
+The editASRbulk interface. The left sidebar contains parameter selection
+and the removed-points table. The raw time series for the selected
+parameter is shown in the center and removal applies to every parameter
+at once.
+
+Zoom and pan with the plot toolbar to focus on the stretch to remove,
+then use the **Box Select** or **Lasso Select** toolbar buttons to
+select it (unlike
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md),
+single-point click removal is not possible since this tool is meant for
+removing a contiguous range rather than individual points). **Undo Last
+Removal** and **Start Over** can be selected to revert a change or
+completely start over.
+
+[`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
+returns a named list with two elements:
+
+| Element | Description |
+|----|----|
+| `contdat` | The original data frame sorted by `DateTime`, with every parameter at a removed timestamp replaced by `NA`. |
+| `removed` | A stacked data frame of every removed observation, with columns `Parameter`, `DateTime`, and `Value`. |
+
+[`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
+also supports the same iterative-editing pattern as
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md).
+Providing a prior result’s `removed` element to the `removed` argument
+pre-populates that state, and it can be used with either function since
+the column shape matches.
 
 ## `editASRflag()` to review and clean data interactively
 
