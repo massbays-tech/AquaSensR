@@ -510,6 +510,120 @@ test_that("flagPlot renders without error when overlay_param is not a column in 
 })
 
 # ---------------------------------------------------------------------------
+# Flow file overlay (editASRflag()'s optional `flow` argument)
+#
+# `flow` is a pre-read data frame (readASRflow() output), so unlike the USGS
+# overlay there is no network call to mock -- tst$flowdat / tst$flowdat2
+# (already defined in helper.R) are passed directly. The sentinel value
+# below MUST match FLOW_OVERLAY_VALUE in R/editASRflag.R; it is not exported
+# so it is duplicated here as a literal.
+# ---------------------------------------------------------------------------
+
+flow_sentinel <- "__flow_file__"
+
+test_that("flagPlot renders without error when flow overlay is selected", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, flow = tst$flowdat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(overlay_param = flow_sentinel))
+      expect_no_error(invisible(output$flagPlot))
+    })
+  )
+})
+
+test_that("flagPlot renders without error when flow overlay is selected (combined DateTime variant)", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, flow = tst$flowdat2)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      expect_no_error(session$setInputs(overlay_param = flow_sentinel))
+    })
+  )
+})
+
+test_that("flagPlot renders without error when flow is NULL (default, unaffected)", {
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # The sentinel is not a real choice when flow is NULL; flow_aligned and
+      # flow_param are both NULL, so this degrades to no overlay (NULL indexing
+      # into NULL), not an error.
+      expect_no_error(session$setInputs(overlay_param = flow_sentinel))
+    })
+  )
+})
+
+test_that("flow overlay entry is omitted when flow has no temporal overlap with cont", {
+  no_overlap_flow <- tst$flowdat
+  no_overlap_flow$DateTime <- no_overlap_flow$DateTime - as.difftime(3650, units = "days")
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, flow = no_overlap_flow)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Same graceful degradation as the flow = NULL case above.
+      expect_no_error(session$setInputs(overlay_param = flow_sentinel))
+    })
+  )
+})
+
+test_that("load_usgs after selecting flow overlay clears the flow selection", {
+  fake_usgs <- data.frame(
+    DateTime                        = tst$contdat$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(tst$contdat)),
+    check.names                     = FALSE,
+    stringsAsFactors                = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, flow = tst$flowdat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(
+        param_select  = edit_first_param,
+        overlay_param = flow_sentinel  # set the flow overlay first
+      )
+      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      # No crash; removed count unchanged
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+test_that("selecting flow overlay after USGS load clears usgs_ovl", {
+  fake_usgs <- data.frame(
+    DateTime                        = tst$contdat$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(tst$contdat)),
+    check.names                     = FALSE,
+    stringsAsFactors                = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, flow = tst$flowdat)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = edit_first_param)
+      # Load USGS data
+      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      # Now select the flow overlay -- should clear USGS
+      session$setInputs(overlay_param = flow_sentinel)
+      # No crash; plot still renders
+      expect_equal(output$removed_count, "Removed Points: 0")
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
 # DQO Settings panel — apply_dqo and reset_dqo
 # ---------------------------------------------------------------------------
 
