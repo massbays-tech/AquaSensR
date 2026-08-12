@@ -492,31 +492,58 @@ editASRflag_app <- function(
         DT::DTOutput("removed_table")
       )
     ),
-    shiny::tags$head(shiny::tags$script(shiny::HTML(
-      'document.addEventListener("click", function(e) {
-         var el = document.getElementById("flagPlot");
-         if (!el) return;
-         var btn = e.target.closest("[data-title]");
-         if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
-         e.stopPropagation();
-         Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
-       }, true);
-       var appDirty = false;
-       window.addEventListener("beforeunload", function (e) {
-         if (!appDirty) return;
-         e.preventDefault();
-         e.returnValue =
-           "Closing without using Done / Close will automatically save your current edits.";
-         return e.returnValue;
-       });
-       Shiny.addCustomMessageHandler("setDirty", function(msg) {
-         appDirty = msg.dirty;
-       });
-       Shiny.addCustomMessageHandler("closeWindow", function(msg) {
-         appDirty = false;
-         window.close();
-       });'
-    ))),
+    shiny::tags$head(
+      shiny::tags$script(shiny::HTML(
+        'document.addEventListener("click", function(e) {
+           var el = document.getElementById("flagPlot");
+           if (!el) return;
+           var btn = e.target.closest("[data-title]");
+           if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
+           e.stopPropagation();
+           Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
+         }, true);
+         var appDirty = false;
+         window.addEventListener("beforeunload", function (e) {
+           if (!appDirty) return;
+           e.preventDefault();
+           e.returnValue =
+             "Closing without using Done / Close will automatically save your current edits.";
+           return e.returnValue;
+         });
+         Shiny.addCustomMessageHandler("setDirty", function(msg) {
+           appDirty = msg.dirty;
+         });
+         Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+           appDirty = false;
+           window.close();
+         });'
+      )),
+      shiny::tags$style(shiny::HTML(
+        # bslib's sidebar resize handle has two bits that reach a few pixels
+        # into the sidebar itself, overlapping the sidebar's own scrollbar
+        # and making it hard to grab: the always-visible grab indicator, and
+        # the hover-expanded hit area used to keep the handle "sticky" while
+        # dragging. Nudge the indicator just outside the sidebar border and
+        # stop the hover-expanded hit area from reaching back into the
+        # sidebar, so both remain usable without competing for the same pixels.
+        ".bslib-sidebar-layout .bslib-sidebar-resize-handle .resize-indicator {
+           right: -6px !important;
+         }
+         .bslib-sidebar-layout.sidebar-right .bslib-sidebar-resize-handle .resize-indicator {
+           right: auto !important;
+           left: -6px !important;
+         }
+         .bslib-sidebar-layout .bslib-sidebar-resize-handle.handle-active::before {
+           left: 100% !important;
+           width: 16px !important;
+         }
+         .bslib-sidebar-layout.sidebar-right .bslib-sidebar-resize-handle.handle-active::before {
+           left: auto !important;
+           right: 100% !important;
+           width: 16px !important;
+         }"
+      ))
+    ),
     shiny::p(
       "Zoom and pan normally with the plot toolbar visible on the top right when the pointer is over the plot.",
       "To remove points: click individual points directly, or use the",
