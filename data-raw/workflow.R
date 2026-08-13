@@ -36,10 +36,12 @@ head(flowdat)
 # ------------------------------------------------------------------------------
 # 3. Bulk removal of out-of-water stretches
 # ------------------------------------------------------------------------------
-# Interactive app for quickly trimming a contiguous stretch of data across
-# every parameter at once, e.g., the sensor warm-up/retrieval periods at the
-# start/end of a deployment. No QC flags or DQOs are involved; typically run
-# before step 4 below. Returns list(contdat, removed) on close.
+# Interactive app for quickly trimming the start and/or end of a deployment
+# across every parameter at once, e.g., the sensor warm-up/retrieval periods.
+# No QC flags or DQOs are involved; typically run before step 4 below.
+# Intended only for edge-trimming: a gap in the middle of a record should be
+# reviewed and removed with editASRflag() instead. Returns
+# list(contdat, removed) on close.
 bulk_result <- editASRbulk(contdat)
 
 # Chain into the flag-based workflow: use the trimmed data going forward and

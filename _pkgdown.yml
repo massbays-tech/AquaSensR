@@ -44,8 +44,7 @@ reference:
   - starts_with('utilASRflag')
 - title: Bulk removal
   desc: >
-    Functions for removing a contiguous stretch of data across all parameters at once, e.g., when a sensor was out of the water.
-  contents:
+    Functions for trimming the start and/or end of a deployment across all parameters at once.
   - editASRbulk
 - title: Drift correction
   desc: >

@@ -32,16 +32,21 @@ all parameters, with columns \code{Parameter}, \code{DateTime}, and
 }
 }
 \description{
-Opens a Shiny application for quickly removing a contiguous stretch of
-continuous monitoring data across every parameter at once, typically
-because a sensor was out of the water at the start, end, or middle of a
-deployment. Removal is always linked so that a selection made while viewing one
-parameter removes the same timestamps from every other parameter.
-Unlike \code{\link{editASRflag}}, no QC flags are computed and no DQO
-thresholds are involved. This is a coarse first pass meant to run before
-other QC processes.
+Opens a Shiny application for quickly trimming the start and/or end of a
+continuous monitoring deployment across every parameter at once, typically
+because a sensor was out of the water before it started recording or
+after it was retrieved. Removal is always linked so that a selection made
+while viewing one parameter removes the same timestamps from every other
+parameter. Unlike \code{\link{editASRflag}}, no QC flags are computed and
+no DQO thresholds are involved. This is a coarse first pass meant to run
+before other QC processes.
 }
 \details{
+This tool is intended only for trimming the edges of a deployment. A bad
+stretch in the middle of a record (e.g., the sensor was pulled for
+cleaning and redeployed mid-deployment) should be reviewed and removed
+with \code{\link{editASRflag}} instead.
+
 \subsection{How to select a range}{
 Zooming and panning with the plot toolbar is recommended to more easily
 identify the portion to remove. Hover over the plot and choose the
@@ -49,6 +54,12 @@ identify the portion to remove. Hover over the plot and choose the
 top right, then click and drag (box) or click and encircle (lasso) the
 points to remove. The removal applies to every parameter at those
 timestamps, not just the one currently displayed.
+
+Only trim contiguous stretches at the very start or end of the record.
+Do not use this app to remove a stretch from the middle of a deployment,
+e.g., a period when the sensor was pulled for cleaning and redeployed;
+review and remove that kind of gap with \code{\link{editASRflag}}
+instead.
 }
 
 \subsection{Controls}{
