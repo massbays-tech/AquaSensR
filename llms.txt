@@ -105,8 +105,8 @@ data quality objectives.
 
 ## Bulk removal
 
-Functions for removing a contiguous stretch of data across all
-parameters at once, e.g., when a sensor was out of the water.
+Functions for trimming the start and/or end of a deployment across all
+parameters at once.
 
 - [`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
   : Interactive bulk removal editor

@@ -7,9 +7,9 @@ for details). This vignette covers the primary functions of the QC
 workflow:
 
 - [`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md):
-  An interactive editor for bulk-removing whole stretches of data, e.g.,
-  when a sensor was out of the water, typically run before flag-based
-  review.
+  An interactive editor for trimming the start and/or end of a
+  deployment, e.g., when a sensor was out of the water, typically run
+  before flag-based review.
 - [`utilASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRflag.md):
   Applies four independent QC checks to a selected parameter and returns
   a data frame of flag results.
@@ -348,12 +348,12 @@ overlay_df <- contdat[, c("DateTime", "DO_pctsat")]
 anlzASRflag(flagdat, overlay = overlay_df)
 ```
 
-## `editASRbulk()` for bulk removal of out-of-water stretches
+## `editASRbulk()` for trimming out-of-water deployment edges
 
-Before flag-based review of continuous data, it is often useful to
-remove obvious stretches of bad data first, most commonly the start or
-end of a deployment when a sensor was out of the water, or occasionally
-a gap in the middle if the sensor was pulled and redeployed.
+Before flag-based review of continuous data, it is often useful to trim
+obvious bad data from the start and/or end of a deployment first, most
+commonly the period when a sensor was out of the water before it started
+recording or after it was retrieved.
 [`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
 is a simplified version of the
 [`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
@@ -362,6 +362,13 @@ are computed and no DQO thresholds are involved, and removal is always
 linked across parameters, so a selection made while viewing one
 parameter removes the same timestamps from every other parameter at
 once.
+
+[`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
+is intended only for trimming the edges of a deployment. A bad stretch
+in the middle of a record, e.g., a period when the sensor was pulled for
+cleaning and redeployed, should be reviewed and removed with
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
+instead.
 
 The app only needs `contdat`:
 
@@ -383,9 +390,11 @@ then use the **Box Select** or **Lasso Select** toolbar buttons to
 select it (unlike
 [`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md),
 single-point click removal is not possible since this tool is meant for
-removing a contiguous range rather than individual points). **Undo Last
-Removal** and **Start Over** can be selected to revert a change or
-completely start over.
+removing a contiguous range rather than individual points). Only select
+a stretch at the very start or end of the record; do not use this app to
+remove a stretch from the middle of a deployment. **Undo Last Removal**
+and **Start Over** can be selected to revert a change or completely
+start over.
 
 [`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md)
 returns a named list with two elements:
