@@ -45,6 +45,7 @@ reference:
 - title: Bulk removal
   desc: >
     Functions for trimming the start and/or end of a deployment across all parameters at once.
+  contents:
   - editASRbulk
 - title: Drift correction
   desc: >
