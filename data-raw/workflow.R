@@ -38,7 +38,7 @@ head(extdat)
 # ------------------------------------------------------------------------------
 # Interactive app for quickly trimming the start and/or end of a deployment
 # across every parameter at once, e.g., the sensor warm-up/retrieval periods.
-# No QC flags or DQOs are involved; typically run before step 4 below.
+# No QC flags or DQOs are involved; typically run before step 6 below.
 # Intended only for edge-trimming: a gap in the middle of a record should be
 # reviewed and removed with editASRflag() instead. Returns
 # list(contdat, removed) on close.
@@ -46,35 +46,11 @@ bulk_result <- editASRbulk(contdat)
 
 # Chain into the flag-based workflow: use the trimmed data going forward and
 # carry the bulk removals into editASRflag() so they show up in its
-# removed-points table too (see step 5).
+# removed-points table too (see step 8).
 # contdat <- bulk_result$contdat
 
 # ------------------------------------------------------------------------------
-# 4. Apply QC flags
-# ------------------------------------------------------------------------------
-# Change `param` to any parameter column present in contdat / dqodat
-flagdat <- utilASRflag(contdat, dqodat, param = "Water_Temp_C")
-flagdat <- utilASRflag(contdat, dqodat, param = "DO_adj_mg_l")
-
-# Summary of flag results
-head(flagdat)
-table(flagdat$gross_flag)
-table(flagdat$spike_flag)
-table(flagdat$roc_flag)
-table(flagdat$flat_flag)
-
-# ------------------------------------------------------------------------------
-# 5. Visualize flagged data
-# ------------------------------------------------------------------------------
-anlzASRflag(flagdat)
-
-# ------------------------------------------------------------------------------
-# 6. Edit flags in interactive Shiny app
-#' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
-cleaned <- editASRflag(contdat, dqodat, ext = extdat) #, removed = bulk_result$removed)
-
-# ------------------------------------------------------------------------------
-# 7. Drift correction
+# 4. Drift correction
 # ------------------------------------------------------------------------------
 # Apply a single drift correction to one parameter programmatically.
 # cal_ref is the true value from an independent sonde at deployment end;
@@ -99,7 +75,31 @@ corrected <- utilASRdrift(
 
 
 # ------------------------------------------------------------------------------
-# 8. Interactive drift correction app
+# 5. Interactive drift correction app
 # Interactive drift correction app — works parameter by parameter,
 # returns list(contdat, corrections) on close
-drift_result <- editASRdrift(contdat)
+drift_result <- editASRdrift(contdat, ext = extdat)
+
+# ------------------------------------------------------------------------------
+# 6. Apply QC flags
+# ------------------------------------------------------------------------------
+# Change `param` to any parameter column present in contdat / dqodat
+flagdat <- utilASRflag(contdat, dqodat, param = "Water_Temp_C")
+flagdat <- utilASRflag(contdat, dqodat, param = "DO_adj_mg_l")
+
+# Summary of flag results
+head(flagdat)
+table(flagdat$gross_flag)
+table(flagdat$spike_flag)
+table(flagdat$roc_flag)
+table(flagdat$flat_flag)
+
+# ------------------------------------------------------------------------------
+# 7. Visualize flagged data
+# ------------------------------------------------------------------------------
+anlzASRflag(flagdat)
+
+# ------------------------------------------------------------------------------
+# 8. Edit flags in interactive Shiny app
+#' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
+cleaned <- editASRflag(contdat, dqodat, ext = extdat) #, removed = bulk_result$removed)
