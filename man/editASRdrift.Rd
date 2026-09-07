@@ -26,7 +26,10 @@ Opens a Shiny application for interactively correcting instrument drift in
 continuous water quality monitoring data.  Click the plot twice to mark the
 start and end of a drift period, enter the reference value measured by an
 independent calibrated instrument at the end of the deployment, and click
-\strong{Apply Correction}.  A third click resets the selection.
+\strong{Apply Correction}.  A third click resets the selection.  Clicking
+\strong{Done / Close} stops the app.  Choose \strong{Close, save corrections}
+to return the corrected data or \strong{Close, discard corrections} to
+return the original unmodified data.
 }
 \details{
 \subsection{How to correct drift}{
@@ -62,8 +65,19 @@ correction for the current parameter.
 parameter and clears the corrections log.
 \item \strong{Export Progress}: saves the current corrected data and
 corrections log as Excel files in a ZIP archive.
-\item \strong{Done / Close}: stops the app and returns the corrected
-data and corrections summary to the R session.
+\item \strong{Done / Close}: stops the app.  Choosing
+\strong{Close, save corrections} returns the corrected data and
+corrections summary.  Choosing \strong{Close, discard corrections}
+returns the original unmodified data.  Closing the browser tab or
+window directly (without clicking \strong{Done / Close}) also saves
+corrections, equivalent to \strong{Close, save corrections}.
+Refreshing the page has the same effect and ends the session, since
+a refresh disconnects the browser from the running app.  If any
+corrections have been applied in the current session, closing or
+refreshing this way triggers the browser's own "leave site?"
+confirmation as a warning.  Dismissing that warning by declining it
+keeps the session open.  This warning does not appear when closing
+via \strong{Done / Close}, since that choice is already explicit.
 }
 }
 }

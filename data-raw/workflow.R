@@ -18,20 +18,20 @@ contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 dqopth <- system.file("extdata/ExampleDQO.xlsx", package = "AquaSensR")
 # dqopth <- '~/Desktop/ExampleDQO.xlsx'
 # dqopth <- '~/Desktop/AquaSensR_DQO.xlsx'
-flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
-# flowpth <- system.file("extdata/ExampleFlow2.xlsx", package = "AquaSensR")
+extpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+# extpth <- system.file("extdata/ExampleFlow2.xlsx", package = "AquaSensR")
 
 # ------------------------------------------------------------------------------
 # 2. Import data
 # ------------------------------------------------------------------------------
 contdat <- readASRcont(contpth)
 dqodat <- readASRdqo(dqopth)
-flowdat <- readASRflow(flowpth)
+extdat <- readASRcont(extpth)
 
 # Quick look at inputs
 head(contdat)
 head(dqodat)
-head(flowdat)
+head(extdat)
 
 # ------------------------------------------------------------------------------
 # 3. Bulk removal of out-of-water stretches
@@ -71,7 +71,7 @@ anlzASRflag(flagdat)
 # ------------------------------------------------------------------------------
 # 6. Edit flags in interactive Shiny app
 #' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
-cleaned <- editASRflag(contdat, dqodat, flow = flowdat) #, removed = bulk_result$removed)
+cleaned <- editASRflag(contdat, dqodat, ext = extdat) #, removed = bulk_result$removed)
 
 # ------------------------------------------------------------------------------
 # 7. Drift correction

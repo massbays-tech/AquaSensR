@@ -4,7 +4,10 @@
 #' continuous water quality monitoring data.  Click the plot twice to mark the
 #' start and end of a drift period, enter the reference value measured by an
 #' independent calibrated instrument at the end of the deployment, and click
-#' \strong{Apply Correction}.  A third click resets the selection.
+#' \strong{Apply Correction}.  A third click resets the selection.  Clicking
+#' \strong{Done / Close} stops the app.  Choose \strong{Close, save corrections}
+#' to return the corrected data or \strong{Close, discard corrections} to
+#' return the original unmodified data.
 #'
 #' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
 #'
@@ -53,8 +56,19 @@
 #'       parameter and clears the corrections log.
 #'     \item \strong{Export Progress}: saves the current corrected data and
 #'       corrections log as Excel files in a ZIP archive.
-#'     \item \strong{Done / Close}: stops the app and returns the corrected
-#'       data and corrections summary to the R session.
+#'     \item \strong{Done / Close}: stops the app.  Choosing
+#'       \strong{Close, save corrections} returns the corrected data and
+#'       corrections summary.  Choosing \strong{Close, discard corrections}
+#'       returns the original unmodified data.  Closing the browser tab or
+#'       window directly (without clicking \strong{Done / Close}) also saves
+#'       corrections, equivalent to \strong{Close, save corrections}.
+#'       Refreshing the page has the same effect and ends the session, since
+#'       a refresh disconnects the browser from the running app.  If any
+#'       corrections have been applied in the current session, closing or
+#'       refreshing this way triggers the browser's own "leave site?"
+#'       confirmation as a warning.  Dismissing that warning by declining it
+#'       keeps the session open.  This warning does not appear when closing
+#'       via \strong{Done / Close}, since that choice is already explicit.
 #'   }
 #' }
 #'
@@ -228,7 +242,19 @@ editASRdrift_app <- function(cont) {
            e.stopPropagation();
            Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
          }, true);
+         var appDirty = false;
+         window.addEventListener("beforeunload", function (e) {
+           if (!appDirty) return;
+           e.preventDefault();
+           e.returnValue =
+             "Closing without using Done / Close will automatically save your current corrections.";
+           return e.returnValue;
+         });
+         Shiny.addCustomMessageHandler("setDirty", function(msg) {
+           appDirty = msg.dirty;
+         });
          Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+           appDirty = false;
            window.close();
          });'
       )),
@@ -550,16 +576,52 @@ editASRdrift_app <- function(cont) {
       selected_points(list())
     })
 
-    # ---- Done / Close -------------------------------------------------------
+    # ---- Ungraceful close safety net (browser tab/window closed without
+    # clicking Done/Close, or the page was refreshed) --------------------------
+    # onSessionEnded() fires on every disconnect. app_closing distinguishes a
+    # normal Done/Close (which already calls stopApp() itself) from anything
+    # else, so this never double-invokes stopApp(). Falls back to saving the
+    # current corrections, same as "Close, save corrections".
+    app_closing <- FALSE
+
+    session$onSessionEnded(function() {
+      if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
+        return(invisible(NULL))
+      }
+      shiny::isolate(
+        shiny::stopApp(
+          returnValue = editASRdrift_result(working_cont(), corrections_log())
+        )
+      )
+    })
+
+    # TRUE if any correction has been applied this session. Drives the
+    # browser's beforeunload warning so it only appears when there is
+    # something to lose by closing ungracefully.
+    has_unsaved_edits <- shiny::reactive({
+      nrow(corrections_log()) > 0L
+    })
+
+    shiny::observe({
+      session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
+    })
+
+    # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
       shiny::showModal(shiny::modalDialog(
-        "Are you sure you want to close the app?",
+        "Choose how to close the app.",
         title = "Done / Close",
-        footer = shiny::tagList(
+        footer = shiny::div(
+          style = "display: flex; gap: 4px; justify-content: flex-end;",
           shiny::modalButton("Cancel"),
           shiny::actionButton(
+            "done_discard",
+            "Close, discard corrections",
+            style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
+          ),
+          shiny::actionButton(
             "done_confirm",
-            "Close",
+            "Close, save corrections",
             style = "background-color: #037B71; border-color: #037B71; color: #fff;"
           )
         ),
@@ -567,7 +629,17 @@ editASRdrift_app <- function(cont) {
       ))
     })
 
+    shiny::observeEvent(input$done_discard, {
+      app_closing <<- TRUE
+      shiny::removeModal()
+      session$sendCustomMessage("closeWindow", list())
+      shiny::stopApp(
+        returnValue = editASRdrift_result(cont, empty_log)
+      )
+    })
+
     shiny::observeEvent(input$done_confirm, {
+      app_closing <<- TRUE
       shiny::removeModal()
       session$sendCustomMessage("closeWindow", list())
       shiny::stopApp(

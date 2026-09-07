@@ -337,6 +337,37 @@ test_that("done observer fires without error", {
 })
 
 # ---------------------------------------------------------------------------
+# onSessionEnded — ungraceful close safety net
+# ---------------------------------------------------------------------------
+
+test_that("session$close() does not error when app closed without Done/Close", {
+  cont <- make_drift_cont_app()
+  app  <- AquaSensR:::editASRdrift_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      # app_closing stays FALSE here, simulating an ungraceful close.
+      # Guarded by inherits(session, "MockShinySession"), so the real
+      # stopApp() (unsafe under testServer) must never be reached.
+      expect_no_error(session$close())
+    })
+  )
+})
+
+test_that("session$close() is a no-op once Done/Close has already fired", {
+  cont <- make_drift_cont_app()
+  app  <- AquaSensR:::editASRdrift_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      # Simulate done_confirm/done_discard having already set the guard.
+      session$env$app_closing <- TRUE
+      expect_no_error(session$close())
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
 # Zoom state via plotly_relayout
 # ---------------------------------------------------------------------------
 

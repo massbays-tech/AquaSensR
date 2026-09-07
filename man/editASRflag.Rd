@@ -108,7 +108,7 @@ thresholds as Excel files in a ZIP archive.  If any points have been
 removed, a removed-observations file is included as well.
 \item \strong{Done / Close}: stops the app.  Choosing
 \strong{Close, save edits} returns the filtered datasets for all
-parameters; choosing \strong{Close, discard edits} returns the
+parameters.  Choosing \strong{Close, discard edits} returns the
 original unmodified data.  Closing the browser tab or window
 directly (without clicking \strong{Done / Close}) also saves edits,
 equivalent to \strong{Close, save edits}.  Refreshing the page has
