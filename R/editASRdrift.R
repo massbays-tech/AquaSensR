@@ -233,13 +233,7 @@ editASRdrift_app <- function(cont) {
          });'
       )),
       shiny::tags$style(shiny::HTML(
-        # bslib's sidebar resize handle has two bits that reach a few pixels
-        # into the sidebar itself, overlapping the sidebar's own scrollbar
-        # and making it hard to grab: the always-visible grab indicator, and
-        # the hover-expanded hit area used to keep the handle "sticky" while
-        # dragging. Nudge the indicator just outside the sidebar border and
-        # stop the hover-expanded hit area from reaching back into the
-        # sidebar, so both remain usable without competing for the same pixels.
+        # sidebar scrollbar mod for easier selection
         ".bslib-sidebar-layout .bslib-sidebar-resize-handle .resize-indicator {
            right: -6px !important;
          }
@@ -247,14 +241,43 @@ editASRdrift_app <- function(cont) {
            right: auto !important;
            left: -6px !important;
          }
+         .bslib-sidebar-layout .bslib-sidebar-resize-handle::before {
+           left: calc(100% + 2px) !important;
+           width: 6px !important;
+         }
          .bslib-sidebar-layout .bslib-sidebar-resize-handle.handle-active::before {
-           left: 100% !important;
-           width: 16px !important;
+           left: calc(100% + 2px) !important;
+           width: 18px !important;
+         }
+         .bslib-sidebar-layout.sidebar-right .bslib-sidebar-resize-handle::before {
+           left: auto !important;
+           right: calc(100% + 2px) !important;
+           width: 6px !important;
          }
          .bslib-sidebar-layout.sidebar-right .bslib-sidebar-resize-handle.handle-active::before {
            left: auto !important;
-           right: 100% !important;
-           width: 16px !important;
+           right: calc(100% + 2px) !important;
+           width: 18px !important;
+         }
+
+         .bslib-sidebar-layout > .sidebar {
+           scrollbar-width: auto;
+           scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+         }
+         .bslib-sidebar-layout > .sidebar::-webkit-scrollbar {
+           width: 14px;
+         }
+         .bslib-sidebar-layout > .sidebar::-webkit-scrollbar-track {
+           background: transparent;
+         }
+         .bslib-sidebar-layout > .sidebar::-webkit-scrollbar-thumb {
+           background-color: rgba(0, 0, 0, 0.35);
+           border-radius: 7px;
+           border: 3px solid transparent;
+           background-clip: content-box;
+         }
+         .bslib-sidebar-layout > .sidebar::-webkit-scrollbar-thumb:hover {
+           background-color: rgba(0, 0, 0, 0.55);
          }"
       ))
     ),
@@ -607,7 +630,11 @@ editASRdrift_app <- function(cont) {
       y_vals <- dat[[p_name]]
       y_rng_data <- range(y_vals, na.rm = TRUE)
       y_span <- diff(y_rng_data)
-      y_pad <- if (y_span > 0) y_span * 0.05 else max(abs(y_rng_data[1L]) * 0.05, 0.1)
+      y_pad <- if (y_span > 0) {
+        y_span * 0.05
+      } else {
+        max(abs(y_rng_data[1L]) * 0.05, 0.1)
+      }
       y_rng <- if (!is.null(rng$y)) {
         rng$y
       } else {
