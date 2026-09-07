@@ -15,7 +15,7 @@ original unmodified data.
 ## Usage
 
 ``` r
-editASRflag(cont, dqo, removed = NULL, flow = NULL)
+editASRflag(cont, dqo, removed = NULL, ext = NULL)
 ```
 
 ## Arguments
@@ -42,16 +42,17 @@ editASRflag(cont, dqo, removed = NULL, flow = NULL)
   re-flagging so that QC checks are not affected by the gaps. Passing
   all three elements of a prior result enables fully iterative editing.
 
-- flow:
+- ext:
 
-  Optional `flowdat` data frame returned by
-  [`readASRflow`](https://massbays-tech.github.io/AquaSensR/reference/readASRflow.md),
-  with a `DateTime` column plus one flow or stage height column. When
-  supplied, it is added as an additional entry in the **Overlay**
-  drop-down (see Controls below) so it can be plotted alongside any
-  parameter. Its `DateTime` column is aligned to `cont`'s time zone and
-  clipped to `cont`'s date range. The entry is omitted if the two do not
-  overlap.
+  Optional external data frame returned by
+  [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md),
+  with a `DateTime` column plus one or more parameter columns from a
+  second file (e.g. a separate logger not otherwise included in `cont`).
+  When supplied, each column is added as an additional entry in the
+  **Overlay** drop-down (see Controls below) so it can be plotted
+  alongside any parameter. Its `DateTime` column is aligned to `cont`'s
+  time zone and clipped to `cont`'s date range. Entries are omitted
+  entirely if the two do not overlap.
 
 ## Value
 
@@ -102,8 +103,9 @@ to remove the selected area if present after removal.
 
 - **Overlay**: optional drop-down to display a second parameter from
   `contdat` on a right-side y-axis, useful for spotting co-occurring
-  changes across parameters. If a `flow` argument was supplied, an
-  additional entry sourced from that file is also available.
+  changes across parameters. If an `ext` argument was supplied, one
+  additional entry per column in that file is also available, labeled
+  with an `"[External File]"` suffix.
 
 - **USGS Overlay**: enter a USGS site number and select a parameter
   type, then click **Load** to fetch continuous data from NWIS and
@@ -183,9 +185,9 @@ cleaned <- editASRflag(contdat, dqodat)
 # Second session: picks up where the first left off
 cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
 
-# Optional flow or stage height overlay
-flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
-flowdat <- readASRflow(flowpth)
-cleaned3 <- editASRflag(contdat, dqodat, flow = flowdat)
+# Optional external overlay from a second file
+extpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+extdat <- readASRcont(extpth)
+cleaned3 <- editASRflag(contdat, dqodat, ext = extdat)
 } # }
 ```

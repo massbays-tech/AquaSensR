@@ -82,9 +82,9 @@
 <p>A third input is optional:</p>
 <ol start="3" type="1">
 <li>
-<strong>Flow or stage height data</strong>: a single-column time series of flow (cfs) or stage/depth height (ft) from a separate logger, e.g. for reference alongside the continuous monitoring data.</li>
+<strong>External overlay data</strong>: a second file in the same format as the continuous monitoring data, imported the same way (via <code><a href="../reference/readASRcont.html">readASRcont()</a></code>), used only for reference overlay plotting in <code><a href="../reference/editASRflag.html">editASRflag()</a></code> (see the <a href="qcoverview.html">quality control vignette</a>).</li>
 </ol>
-<p>The DQO file is an Excel workbook (<code>.xlsx</code>). The continuous monitoring data file and the flow or stage height file can each be an Excel workbook (<code>.xlsx</code>), a CSV file (<code>.csv</code>), or a comma-delimited text file (<code>.txt</code>). This vignette describes how to import and check each input dataset. It is critical that the input datasets follow the exact specified format. Example files with the correct format are included with the package and are used throughout.</p>
+<p>The DQO file is an Excel workbook (<code>.xlsx</code>). The continuous monitoring data file (and any external overlay file) can each be an Excel workbook (<code>.xlsx</code>), a CSV file (<code>.csv</code>), or a comma-delimited text file (<code>.txt</code>). This vignette describes how to import and check each required input dataset. It is critical that the input datasets follow the exact specified format. Example files with the correct format are included with the package and are used throughout.</p>
 <section class="level2"><h2 id="load-the-package">Load the package<a class="anchor" aria-label="anchor" href="#load-the-package"></a>
 </h2>
 <p>Load the package in an R session after installation:</p>
@@ -106,15 +106,15 @@
 <code class="sourceCode R"><span><span class="va">contpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleCont1.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
 <span><span class="va">dqopth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleDQO.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<p>If you also have flow or stage height data (optional, see <a href="#flow-or-stage-height-data">Flow or stage height data</a>), specify its path the same way:</p>
+<p>If you also have a second file for optional overlay use in <code><a href="../reference/editASRflag.html">editASRflag()</a></code> (see <a href="#overlay-data-for-editasrflag">Overlay data for editASRflag()</a>), specify its path the same way:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flowpth</span> <span class="op">&lt;-</span> <span class="st">"path/to/your/FlowData.xlsx"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">extpth</span> <span class="op">&lt;-</span> <span class="st">"path/to/your/ExternalData.xlsx"</span></span></code></pre></div>
 </div>
-<p>As for the other files, the examples below use the file included with the package:</p>
+<p>As for the other files, the examples below use a file included with the package:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flowpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleFlow1.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">extpth</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleFlow1.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="continuous-monitoring-data">Continuous monitoring data<a class="anchor" aria-label="anchor" href="#continuous-monitoring-data"></a>
 </h2>
@@ -621,181 +621,23 @@
 <span><span class="co">#&gt; 5 DO_mg_l      Suspect   2      16   2      30      0.01       6       25</span></span>
 <span><span class="co">#&gt; 6 DO_mg_l      Fail      1      18   4      60      0.01      NA       NA</span></span></code></pre></div>
 </div>
-</section></section><section class="level2"><h2 id="flow-or-stage-height-data">Flow or stage height data<a class="anchor" aria-label="anchor" href="#flow-or-stage-height-data"></a>
+</section></section><section class="level2"><h2 id="overlay-data-for-editasrflag">Overlay data for editASRflag()<a class="anchor" aria-label="anchor" href="#overlay-data-for-editasrflag"></a>
 </h2>
-<p>This input is not required for use with the package, but can be used for comparison with the continuous data. It supports a simple, single-column time series of flow (cfs) or stage/depth height (ft), e.g. from a separate logger not otherwise included in the continuous monitoring data. Use <code><a href="../reference/readASRflow.html">readASRflow()</a></code> to import it. The function reads the file, automatically runs a series of checks via <code><a href="../reference/checkASRflow.html">checkASRflow()</a></code>, and then formats the result for downstream use, mirroring <code><a href="../reference/readASRcont.html">readASRcont()</a></code> above (including the <code>tz</code> argument and its default).</p>
-<p>AquaSensR accepts the same two date/time input formats as the continuous monitoring data. The examples below demonstrate both.</p>
-<p><strong>Format 1</strong> — separate <code>Date</code> and <code>Time</code> columns (<code>ExampleFlow1.xlsx</code>):</p>
+<p><code><a href="../reference/editASRflag.html">editASRflag()</a></code> (see the <a href="qcoverview.html">quality control vignette</a>) accepts an optional <code>ext</code> argument as a second file used only for reference overlay plotting in the app. Because it is plotted alongside <code>contdat</code> rather than checked or flagged itself, it is imported exactly like continuous monitoring data, with <code><a href="../reference/readASRcont.html">readASRcont()</a></code>. Any <code>paramsASR</code> parameter is allowed, and the file may have one or more parameter columns.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flowdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRflow.html">readASRflow</a></span><span class="op">(</span><span class="va">flowpth</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Running checks on flow/stage data...</span></span>
+<code class="sourceCode R"><span><span class="va">extdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRcont.html">readASRcont</a></span><span class="op">(</span><span class="va">extpth</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Running checks on continuous data...</span></span>
 <span><span class="co">#&gt;  Checking column names... OK</span></span>
 <span><span class="co">#&gt;  Checking Date, Time are present... OK</span></span>
-<span><span class="co">#&gt;  Checking exactly one flow or stage height column is present... OK</span></span>
+<span><span class="co">#&gt;  Checking at least one parameter column is present... OK</span></span>
 <span><span class="co">#&gt;  Checking date format... OK</span></span>
 <span><span class="co">#&gt;  Checking time format... OK</span></span>
 <span><span class="co">#&gt;  Checking for missing values... OK</span></span>
-<span><span class="co">#&gt;  Checking flow or stage height column for non-numeric values... OK</span></span>
+<span><span class="co">#&gt;  Checking parameter columns for non-numeric values... OK</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; All checks passed!</span></span></code></pre></div>
-</div>
-<p><strong>Format 2</strong> — combined <code>DateTime</code> column (<code>ExampleFlow2.xlsx</code>):</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flowpth2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ExampleFlow2.xlsx"</span>, package <span class="op">=</span> <span class="st">"AquaSensR"</span><span class="op">)</span></span>
-<span><span class="va">flowdat2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readASRflow.html">readASRflow</a></span><span class="op">(</span><span class="va">flowpth2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Running checks on flow/stage data...</span></span>
-<span><span class="co">#&gt;  Checking column names... OK</span></span>
-<span><span class="co">#&gt;  Checking DateTime is present... OK</span></span>
-<span><span class="co">#&gt;  Checking exactly one flow or stage height column is present... OK</span></span>
-<span><span class="co">#&gt;  Checking DateTime format... OK</span></span>
-<span><span class="co">#&gt;  Checking for missing values... OK</span></span>
-<span><span class="co">#&gt;  Checking flow or stage height column for non-numeric values... OK</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; All checks passed!</span></span></code></pre></div>
-</div>
-<p>Both calls return identically structured output (see <a href="#output-format">Output format</a> below).</p>
-<section class="level3"><h3 id="format-requirements-2">Format requirements<a class="anchor" aria-label="anchor" href="#format-requirements-2"></a>
-</h3>
-<p>The flow or stage height file follows the same two accepted schemas as the continuous monitoring data, but unlike <code><a href="../reference/readASRcont.html">readASRcont()</a></code>, exactly one flow or stage height column is required (not both) and it must match one of the more restricted set of <code>paramsASR</code> entries in the “Water Level” or “Flow” parameter groups (see table below). Additional unrecognised columns, a missing flow or stage height column, or more than one such column will each trigger an error on import.</p>
-<p><strong>Format 1: separate Date and Time columns</strong></p>
-<table class="table caption-top">
-<colgroup>
-<col style="width: 38%">
-<col style="width: 61%">
-</colgroup>
-<thead><tr class="header">
-<th>Column</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>Date</code></td>
-<td>Observation date, parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> in year-first (e.g., <code>2024-06-01</code>), month-first (e.g., <code>06/01/2024</code>), or day-first (e.g., <code>01/06/2024</code>) formats</td>
-</tr>
-<tr class="even">
-<td><code>Time</code></td>
-<td>Observation time in 24-hour (e.g., <code>16:30:33</code>), 12-hour AM/PM (e.g., <code>4:30:33 PM</code>), or Excel-native format (e.g., <code>1899-12-31 16:30:33</code>)</td>
-</tr>
-<tr class="odd">
-<td>Exactly one flow or stage height column</td>
-<td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> from the “Water Level” or “Flow” groups (e.g., <code>Sensor_Depth_ft</code>)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Format 2: combined DateTime column</strong></p>
-<table class="table caption-top">
-<colgroup>
-<col style="width: 38%">
-<col style="width: 61%">
-</colgroup>
-<thead><tr class="header">
-<th>Column</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>DateTime</code></td>
-<td>Combined date and time with the date in year-first (e.g., <code>2024-06-01 16:30:33</code>), month-first (e.g., <code>06/01/2024 16:30:33</code>), or day-first format, combined with 24-hour or 12-hour AM/PM time (e.g., <code>2024-06-01 4:30:33 PM</code>)</td>
-</tr>
-<tr class="even">
-<td>Exactly one flow or stage height column</td>
-<td>Column name must match a <code>Parameter</code> entry in <code>paramsASR</code> from the “Water Level” or “Flow” groups (e.g., <code>Sensor_Depth_ft</code>)</td>
-</tr>
-</tbody>
-</table>
-<p>Currently, AquaSensR allows the following parameters for flow or stage height data, a subset of the full <code>paramsASR</code> list shown above. As with the continuous monitoring data, make sure the parameter name matches the units used in your data.</p>
-<div class="cell">
-<div class="cell-output-display">
-<table class="table caption-top">
-<thead><tr class="header">
-<th style="text-align: left;">Description</th>
-<th style="text-align: left;">Required file name</th>
-<th style="text-align: left;">Units</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Discharge (cfs)</td>
-<td style="text-align: left;">Discharge_cfs</td>
-<td style="text-align: left;">cfs</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Flow (cfs)</td>
-<td style="text-align: left;">Flow_cfs</td>
-<td style="text-align: left;">cfs</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Gage Height (ft)</td>
-<td style="text-align: left;">Gage_Height_ft</td>
-<td style="text-align: left;">ft</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Sensor Depth (ft)</td>
-<td style="text-align: left;">Sensor_Depth_ft</td>
-<td style="text-align: left;">ft</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Water Pressure (psi)</td>
-<td style="text-align: left;">Water_Pressure_psi</td>
-<td style="text-align: left;">psi</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Water Pressure (mmHg)</td>
-<td style="text-align: left;">Water_Pressure_mmHg</td>
-<td style="text-align: left;">mmHg</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section><section class="level3"><h3 id="checks-performed-2">Checks performed<a class="anchor" aria-label="anchor" href="#checks-performed-2"></a>
-</h3>
-<p>The <code><a href="../reference/readASRflow.html">readASRflow()</a></code> function imports the data and runs a series of checks using the <code><a href="../reference/checkASRflow.html">checkASRflow()</a></code> function, following the same structure as <code><a href="../reference/checkASRcont.html">checkASRcont()</a></code> above. Most checks stop with an informative error if they fail, except the check for missing values which produces a warning since these may occur in logger data. The checks evaluate the following:</p>
-<ol type="1">
-<li>
-<strong>Column names</strong>: all columns are either <code>Date</code>, <code>Time</code>, <code>DateTime</code>, or a recognised flow/stage height parameter from <code>paramsASR</code> (Water Level or Flow groups only).</li>
-<li>
-<strong>Required columns present</strong>: either <code>Date</code> and <code>Time</code> (Format 1) or <code>DateTime</code> (Format 2).</li>
-<li>
-<strong>Exactly one flow or stage height column</strong>: zero or more than one matching column is an error.</li>
-<li>
-<strong>Date format</strong> <em>(Format 1 only)</em>: all values in <code>Date</code> are parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> in year-first, month-first, or day-first formats.</li>
-<li>
-<strong>Time format</strong> <em>(Format 1 only)</em>: all values in <code>Time</code> are parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> in 24-hour, 12-hour AM/PM, or Excel-native formats.</li>
-<li>
-<strong>DateTime format</strong> <em>(Format 2 only)</em>: all values in <code>DateTime</code> are parseable by <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> with year-first, month-first, or day-first date order combined with 24-hour or 12-hour AM/PM time.</li>
-<li>
-<strong>Missing values</strong>: <code>NA</code> values in the flow or stage height column produce a warning listing the affected rows. Missing values in <code>DateTime</code>, <code>Date</code>, or <code>Time</code> columns remain an error.</li>
-<li>
-<strong>Numeric flow or stage height column</strong>: the flow or stage height column contains numeric values.</li>
-</ol></section><section class="level3"><h3 id="example-triggering-an-error-2">Example: triggering an error<a class="anchor" aria-label="anchor" href="#example-triggering-an-error-2"></a>
-</h3>
-<p>Adding a second flow or stage height column causes <code><a href="../reference/checkASRflow.html">checkASRflow()</a></code> to stop immediately, since exactly one is required:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flowdat_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/utilASRimportcont.html">utilASRimportcont</a></span><span class="op">(</span><span class="va">flowpth</span><span class="op">)</span></span>
-<span><span class="va">flowdat_raw</span><span class="op">$</span><span class="va">Gage_Height_ft</span> <span class="op">&lt;-</span> <span class="va">flowdat_raw</span><span class="op">$</span><span class="va">Sensor_Depth_ft</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/checkASRflow.html">checkASRflow</a></span><span class="op">(</span><span class="va">flowdat_raw</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Running checks on flow/stage data...</span></span>
-<span><span class="co">#&gt;  Checking column names... OK</span></span>
-<span><span class="co">#&gt;  Checking Date, Time are present... OK</span></span>
-<span><span class="co">#&gt; Error:</span></span>
-<span><span class="co">#&gt; !    Checking exactly one flow or stage height column is present...</span></span>
-<span><span class="co">#&gt;  Multiple flow or stage height columns found, only one is allowed: Gage_Height_ft, Sensor_Depth_ft</span></span></code></pre></div>
-</div>
-</section><section class="level3"><h3 id="output-format-2">Output format<a class="anchor" aria-label="anchor" href="#output-format-2"></a>
-</h3>
-<p>After passing all checks, <code><a href="../reference/readASRflow.html">readASRflow()</a></code> returns a data frame with the same structure regardless of input format:</p>
-<ul>
-<li>
-<code>DateTime</code>: time-zone-aware <code>POSIXct</code> column</li>
-<li>One numeric column for the flow or stage height parameter present in the input file</li>
-</ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">flowdat</span><span class="op">)</span></span>
+<span><span class="co">#&gt; All checks passed!</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">extdat</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
 <span><span class="co">#&gt;   DateTime            Sensor_Depth_ft</span></span>
 <span><span class="co">#&gt;   &lt;dttm&gt;                        &lt;dbl&gt;</span></span>
@@ -806,21 +648,9 @@
 <span><span class="co">#&gt; 5 2024-08-10 01:00:00            1.41</span></span>
 <span><span class="co">#&gt; 6 2024-08-10 01:15:00            1.41</span></span></code></pre></div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">flowdat2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
-<span><span class="co">#&gt;   DateTime            Sensor_Depth_ft</span></span>
-<span><span class="co">#&gt;   &lt;dttm&gt;                        &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 2024-08-10 00:00:00            1.41</span></span>
-<span><span class="co">#&gt; 2 2024-08-10 00:15:00            1.41</span></span>
-<span><span class="co">#&gt; 3 2024-08-10 00:30:00            1.41</span></span>
-<span><span class="co">#&gt; 4 2024-08-10 00:45:00            1.41</span></span>
-<span><span class="co">#&gt; 5 2024-08-10 01:00:00            1.41</span></span>
-<span><span class="co">#&gt; 6 2024-08-10 01:15:00            1.41</span></span></code></pre></div>
-</div>
-<p>The remaining functions in AquaSensR can now be used after the continuous data and data quality objectives files are successfully imported. The flow or stage height data, if used, is imported the same way but is not required.</p>
-</section></section><script id="quarto-html-after-body" type="application/javascript">
+<p>Passing <code>extdat</code> to <code>editASRflag(contdat, dqodat, ext = extdat)</code> adds one entry per column in <code>extdat</code> to the app’s <strong>Overlay</strong> drop-down, labeled with an “[External File]” suffix. See the <a href="qcoverview.html">quality control vignette</a> for details on how the overlay is used.</p>
+<p>The remaining functions in AquaSensR can now be used after the continuous data and data quality objectives files are successfully imported. The external overlay data, if used, is imported the same way but is not required for any other function.</p>
+</section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
