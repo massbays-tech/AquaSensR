@@ -4,7 +4,7 @@
 \alias{editASRflag}
 \title{Interactive editor for continuous monitoring data}
 \usage{
-editASRflag(cont, dqo, removed = NULL, flow = NULL)
+editASRflag(cont, dqo, removed = NULL, ext = NULL)
 }
 \arguments{
 \item{cont}{\code{contdat} data frame returned by \code{\link{readASRcont}},
@@ -21,13 +21,14 @@ table and excluded from the plot) and original values are restored before
 re-flagging so that QC checks are not affected by the gaps.  Passing all
 three elements of a prior result enables fully iterative editing.}
 
-\item{flow}{Optional \code{flowdat} data frame returned by
-\code{\link{readASRflow}}, with a \code{DateTime} column plus one flow or
-stage height column.  When supplied, it is added as an additional entry
-in the \strong{Overlay} drop-down (see Controls below) so it can be
-plotted alongside any parameter.  Its \code{DateTime} column is aligned
-to \code{cont}'s time zone and clipped to \code{cont}'s date range.  The
-entry is omitted if the two do not overlap.}
+\item{ext}{Optional external data frame returned by
+\code{\link{readASRcont}}, with a \code{DateTime} column plus one or more
+parameter columns from a second file (e.g. a separate logger not
+otherwise included in \code{cont}).  When supplied, each column is added
+as an additional entry in the \strong{Overlay} drop-down (see Controls
+below) so it can be plotted alongside any parameter.  Its \code{DateTime}
+column is aligned to \code{cont}'s time zone and clipped to \code{cont}'s
+date range.  Entries are omitted entirely if the two do not overlap.}
 }
 \value{
 A list with three elements, invisibly returned after the app closes:
@@ -81,8 +82,9 @@ parameters.  Edits to each parameter are preserved independently when
 switching.
 \item \strong{Overlay}: optional drop-down to display a second parameter
 from \code{contdat} on a right-side y-axis, useful for spotting co-occurring
-changes across parameters.  If a \code{flow} argument was supplied, an
-additional entry sourced from that file is also available.
+changes across parameters.  If an \code{ext} argument was supplied, one
+additional entry per column in that file is also available, labeled
+with an \code{"[External File]"} suffix.
 \item \strong{USGS Overlay}: enter a USGS site number and select a
 parameter type, then click \strong{Load} to fetch continuous data
 from NWIS and display it on the secondary y-axis.  Loading USGS data
@@ -159,10 +161,10 @@ cleaned <- editASRflag(contdat, dqodat)
 # Second session: picks up where the first left off
 cleaned2 <- editASRflag(cleaned$contdat, cleaned$dqodat, cleaned$removed)
 
-# Optional flow or stage height overlay
-flowpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
-flowdat <- readASRflow(flowpth)
-cleaned3 <- editASRflag(contdat, dqodat, flow = flowdat)
+# Optional external overlay from a second file
+extpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+extdat <- readASRcont(extpth)
+cleaned3 <- editASRflag(contdat, dqodat, ext = extdat)
 }
 
 }

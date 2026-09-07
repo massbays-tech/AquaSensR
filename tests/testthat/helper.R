@@ -96,28 +96,19 @@ tst <- list(
     system.file('extdata/ExampleDQO.xlsx', package = 'AquaSensR'),
     runchk = F
   ),
-  # flow/stage data - separate Date/Time format (ExampleFlow1)
-  flowpth = system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR'),
-  flowdatchk = utilASRimportcont(
-    system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR')
-  ),
-  flowdat = readASRflow(
+  # external overlay data for editASRflag()'s `ext` argument - reuses the
+  # ExampleFlow1/2 example files (still valid single-parameter examples),
+  # imported the same general-purpose way as contdat via readASRcont().
+  # separate Date/Time format (ExampleFlow1)
+  extpth = system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR'),
+  extdat = readASRcont(
     system.file('extdata/ExampleFlow1.xlsx', package = 'AquaSensR'),
     runchk = F
   ),
-  # flow/stage data - combined DateTime format (ExampleFlow2)
-  flowpth2 = system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR'),
-  flowdatchk2 = utilASRimportcont(
-    system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR')
-  ),
-  flowdat2 = readASRflow(
+  # combined DateTime format (ExampleFlow2)
+  extpth2 = system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR'),
+  extdat2 = readASRcont(
     system.file('extdata/ExampleFlow2.xlsx', package = 'AquaSensR'),
     runchk = F
-  ),
-  # CSV paths
-  flowpthcsv  = system.file('extdata/ExampleFlow1.csv', package = 'AquaSensR'),
-  flowpthcsv2 = system.file('extdata/ExampleFlow2.csv', package = 'AquaSensR'),
-  # TXT paths
-  flowpthtxt  = system.file('extdata/ExampleFlow1.txt', package = 'AquaSensR'),
-  flowpthtxt2 = system.file('extdata/ExampleFlow2.txt', package = 'AquaSensR')
+  )
 )
