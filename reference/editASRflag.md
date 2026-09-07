@@ -134,7 +134,7 @@ to remove the selected area if present after removal.
   removed-observations file is included as well.
 
 - **Done / Close**: stops the app. Choosing **Close, save edits**
-  returns the filtered datasets for all parameters; choosing **Close,
+  returns the filtered datasets for all parameters. Choosing **Close,
   discard edits** returns the original unmodified data. Closing the
   browser tab or window directly (without clicking **Done / Close**)
   also saves edits, equivalent to **Close, save edits**. Refreshing the

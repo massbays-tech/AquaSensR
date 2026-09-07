@@ -5,7 +5,9 @@ in continuous water quality monitoring data. Click the plot twice to
 mark the start and end of a drift period, enter the reference value
 measured by an independent calibrated instrument at the end of the
 deployment, and click **Apply Correction**. A third click resets the
-selection.
+selection. Clicking **Done / Close** stops the app. Choose **Close, save
+corrections** to return the corrected data or **Close, discard
+corrections** to return the original unmodified data.
 
 ## Usage
 
@@ -76,8 +78,18 @@ deployment period), and each can be individually undone.
 - **Export Progress**: saves the current corrected data and corrections
   log as Excel files in a ZIP archive.
 
-- **Done / Close**: stops the app and returns the corrected data and
-  corrections summary to the R session.
+- **Done / Close**: stops the app. Choosing **Close, save corrections**
+  returns the corrected data and corrections summary. Choosing **Close,
+  discard corrections** returns the original unmodified data. Closing
+  the browser tab or window directly (without clicking **Done / Close**)
+  also saves corrections, equivalent to **Close, save corrections**.
+  Refreshing the page has the same effect and ends the session, since a
+  refresh disconnects the browser from the running app. If any
+  corrections have been applied in the current session, closing or
+  refreshing this way triggers the browser's own "leave site?"
+  confirmation as a warning. Dismissing that warning by declining it
+  keeps the session open. This warning does not appear when closing via
+  **Done / Close**, since that choice is already explicit.
 
 ## Examples
 
