@@ -12,7 +12,7 @@ corrections** to return the original unmodified data.
 ## Usage
 
 ``` r
-editASRdrift(cont)
+editASRdrift(cont, ext = NULL)
 ```
 
 ## Arguments
@@ -21,6 +21,18 @@ editASRdrift(cont)
 
   `contdat` data frame returned by
   [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
+
+- ext:
+
+  Optional external data frame returned by
+  [`readASRcont`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md),
+  with a `DateTime` column plus one or more parameter columns from a
+  second file (e.g. a separate logger not otherwise included in `cont`).
+  When supplied, each column is added as an additional entry in the
+  **Overlay** drop-down (see Controls below) so it can be plotted
+  alongside any parameter. Its `DateTime` column is aligned to `cont`'s
+  time zone and clipped to `cont`'s date range. Entries are omitted
+  entirely if the two do not overlap.
 
 ## Value
 
@@ -69,6 +81,19 @@ deployment period), and each can be individually undone.
 - **Parameter**: drop-down selector to switch between parameters.
   Corrections are tracked independently for each parameter.
 
+- **Overlay**: optional drop-down to display a second parameter from
+  `contdat` on a right-side y-axis, useful for spotting co-occurring
+  changes across parameters. If an `ext` argument was supplied, one
+  additional entry per column in that file is also available, labeled
+  with an `"[External File]"` suffix.
+
+- **USGS Overlay**: enter a USGS site number and select a parameter
+  type, then click **Load** to fetch continuous data from NWIS and
+  display it on the secondary y-axis. Loading USGS data clears any
+  Overlay selection and selecting an Overlay entry clears the USGS data.
+  Site numbers can be found at the NWIS Mapper
+  (<https://apps.usgs.gov/nwismapper>).
+
 - **Undo Last Correction**: reverses the most recently applied
   correction for the current parameter.
 
@@ -98,5 +123,10 @@ if (FALSE) { # \dontrun{
 contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 contdat <- readASRcont(contpth)
 result  <- editASRdrift(contdat)
+
+# Optional external overlay from a second file
+extpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+extdat <- readASRcont(extpth)
+result2 <- editASRdrift(contdat, ext = extdat)
 } # }
 ```

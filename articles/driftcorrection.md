@@ -162,6 +162,20 @@ moving on.
 drift_result <- editASRdrift(contdat)
 ```
 
+An optional `ext` argument accepts a second data frame imported the same
+way as `contdat`, via
+[`readASRcont()`](https://massbays-tech.github.io/AquaSensR/reference/readASRcont.md)
+(see the [inputs
+vignette](https://massbays-tech.github.io/AquaSensR/articles/inputs.md)),
+which adds one entry per column in that file to the **Overlay** control
+described below.
+
+``` r
+
+extdat <- readASRcont(extpth)
+drift_result <- editASRdrift(contdat, ext = extdat)
+```
+
 ### Interface overview
 
 ![Screenshot of the editASRdrift Shiny app showing the time series plot
@@ -205,13 +219,41 @@ and can be individually undone.
 | Control | Action |
 |----|----|
 | **Parameter** | Drop-down selector to switch between parameters. Prev/Next buttons cycle through all available parameters. Corrections are preserved independently for each parameter. |
+| **Overlay** | Display a second parameter from `contdat` on a right-side axis. If an `ext` argument was supplied, one additional entry per column in that file is also available. |
+| **USGS Overlay** | Enter a USGS site number and select a parameter type, then click **Load** to fetch continuous data from NWIS and display it on the secondary axis. Loading USGS data clears any Overlay selection. Selecting an Overlay entry clears the USGS data. Site numbers can be found using the [NWIS Mapper](https://apps.usgs.gov/nwismapper). |
 | **Drift Period** | Displays the currently selected start and end times. |
 | **Reference value** | Appears once two times are selected. Enter the true value from the independent reference instrument at the end of the deployment. |
 | **Apply Correction** | Applies the linear drift correction to the selected window and updates the plot. |
 | **Undo Last Correction** | Reverses the most recently applied correction for the current parameter. |
 | **Start Over** | Restores all original values for every parameter and clears the corrections log. |
 | **Export Progress** | Saves the current corrected data and corrections log as Excel files in a ZIP archive. |
-| **Done / Close** | Stops the app and returns the corrected data and corrections summary to the R session. |
+| **Done / Close** | Stop the app. **Close, save corrections** returns the corrected data and corrections summary. **Close, discard corrections** reverts any corrections made in the current session and returns the data as it was when the app opened. |
+
+Closing the browser tab or window directly, or refreshing the page, also
+stops the app and saves corrections, the same as **Close, save
+corrections**. If corrections have been applied in the current session,
+the browser may show its own generic warning before closing (its wording
+cannot be customized by the app). This can be safely dismissed since the
+corrections will still be saved.
+
+The **USGS Overlay** feature uses
+[`readASRusgs()`](https://massbays-tech.github.io/AquaSensR/reference/readASRusgs.md)
+internally to pull unit-value (continuous) data from the [NWIS
+API](https://waterservices.usgs.gov) over the same date range as
+`contdat`. Supported parameter types are streamflow (00060), gage height
+(00065), precipitation (00045), and groundwater depth in feet below land
+surface (72019). The fetched time series is displayed on the secondary
+y-axis in the same position as an Overlay selection but is retrieved
+live when Load is clicked. Users without an internet connection or
+outside NWIS coverage can still use the Overlay selector instead.
+
+If an `ext` data frame was supplied to
+[`editASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/editASRdrift.md),
+each of its columns appears as an additional entry in the **Overlay**
+drop-down (labeled with an “\[External File\]” suffix), alongside the
+`contdat` parameters. Its `DateTime` values are aligned to `contdat`’s
+time zone and clipped to `contdat`’s date range before display. Entries
+are omitted entirely if the two do not overlap at all.
 
 ### Corrections log
 
