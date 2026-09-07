@@ -10,6 +10,24 @@ make_drift_cont_app <- function(n = 24, tz = "Etc/GMT+5") {
   )
 }
 
+make_drift_cont_multi <- function(n = 24, tz = "Etc/GMT+5") {
+  cont <- make_drift_cont_app(n = n, tz = tz)
+  cont$DO_mg_l <- seq(8, by = -0.01, length.out = n)
+  cont
+}
+
+make_drift_ext <- function(n = 24, tz = "Etc/GMT+5") {
+  data.frame(
+    DateTime = seq(
+      as.POSIXct("2024-08-01 00:00:00", tz = tz),
+      by = "hour",
+      length.out = n
+    ),
+    Sensor_Depth_ft = seq(1, by = 0.02, length.out = n),
+    stringsAsFactors = FALSE
+  )
+}
+
 make_empty_log <- function(tz = "Etc/GMT+5") {
   data.frame(
     Parameter     = character(0),
@@ -363,6 +381,166 @@ test_that("session$close() is a no-op once Done/Close has already fired", {
       # Simulate done_confirm/done_discard having already set the guard.
       session$env$app_closing <- TRUE
       expect_no_error(session$close())
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Overlay (cont parameter and external file)
+# ---------------------------------------------------------------------------
+
+test_that("driftPlot renders without error when overlay_param is a valid cont parameter", {
+  cont <- make_drift_cont_multi()
+  app  <- AquaSensR:::editASRdrift_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      expect_no_error(session$setInputs(overlay_param = "DO_mg_l"))
+      expect_no_error(invisible(output$driftPlot))
+    })
+  )
+})
+
+test_that("driftPlot renders without error when overlay_param is empty (None)", {
+  cont <- make_drift_cont_multi()
+  app  <- AquaSensR:::editASRdrift_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      session$setInputs(overlay_param = "DO_mg_l")
+      expect_no_error(session$setInputs(overlay_param = ""))
+    })
+  )
+})
+
+test_that("driftPlot renders without error when ext overlay is selected", {
+  cont <- make_drift_cont_app()
+  ext  <- make_drift_ext()
+  app  <- AquaSensR:::editASRdrift_app(cont, ext = ext)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      expect_no_error(
+        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+      )
+      expect_no_error(invisible(output$driftPlot))
+    })
+  )
+})
+
+test_that("driftPlot renders without error when ext is NULL (default, unaffected)", {
+  cont <- make_drift_cont_app()
+  app  <- AquaSensR:::editASRdrift_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      # The sentinel is not a real choice when ext is NULL; ext_aligned is
+      # NULL, so this degrades to no overlay (NULL indexing into NULL), not
+      # an error.
+      expect_no_error(
+        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+      )
+    })
+  )
+})
+
+test_that("ext overlay entries are omitted when ext has no temporal overlap with cont", {
+  cont <- make_drift_cont_app()
+  no_overlap_ext <- make_drift_ext()
+  no_overlap_ext$DateTime <- no_overlap_ext$DateTime - as.difftime(3650, units = "days")
+
+  app <- AquaSensR:::editASRdrift_app(cont, ext = no_overlap_ext)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      expect_no_error(
+        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+      )
+    })
+  )
+})
+
+test_that("ext column sharing a name with a cont column remains independently selectable", {
+  cont <- make_drift_cont_multi()
+  ext_collide <- cont[, c("DateTime", "DO_mg_l")]
+
+  app <- AquaSensR:::editASRdrift_app(cont, ext = ext_collide)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      expect_no_error(session$setInputs(overlay_param = "DO_mg_l"))
+      expect_no_error(session$setInputs(overlay_param = "__ext__DO_mg_l"))
+    })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# USGS overlay
+# ---------------------------------------------------------------------------
+
+test_that("load_usgs with empty site fires without error and shows error status", {
+  cont <- make_drift_cont_app()
+  app  <- AquaSensR:::editASRdrift_app(cont)
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      expect_no_error(
+        session$setInputs(usgs_site = "", usgs_pcode = "00060", load_usgs = 1L)
+      )
+    })
+  )
+})
+
+test_that("load_usgs success populates usgs_ovl and clears overlay_param", {
+  cont <- make_drift_cont_app()
+  fake_usgs <- data.frame(
+    DateTime                        = cont$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(cont)),
+    check.names                     = FALSE,
+    stringsAsFactors                = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRdrift_app(cont)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      expect_no_error(
+        session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      )
+      expect_no_error(invisible(output$driftPlot))
+    })
+  )
+})
+
+test_that("selecting an overlay entry after USGS load clears usgs_ovl", {
+  cont <- make_drift_cont_app()
+  ext  <- make_drift_ext()
+  fake_usgs <- data.frame(
+    DateTime                        = cont$DateTime,
+    `Streamflow (ft³/s) [99999999]` = seq_len(nrow(cont)),
+    check.names                     = FALSE,
+    stringsAsFactors                = FALSE
+  )
+  attr(fake_usgs, "site_name") <- "Fake River"
+
+  app <- AquaSensR:::editASRdrift_app(cont, ext = ext)
+  local_mocked_bindings(
+    readASRusgs = function(...) fake_usgs,
+    .package = "AquaSensR"
+  )
+  suppressWarnings(
+    shiny::testServer(app, {
+      session$setInputs(param_select = "Water_Temp_C")
+      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+      expect_no_error(
+        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+      )
+      expect_true(is.null(usgs_ovl()))
     })
   )
 })

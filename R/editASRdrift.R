@@ -10,6 +10,14 @@
 #' return the original unmodified data.
 #'
 #' @param cont \code{contdat} data frame returned by \code{\link{readASRcont}}
+#' @param ext Optional external data frame returned by
+#'   \code{\link{readASRcont}}, with a \code{DateTime} column plus one or more
+#'   parameter columns from a second file (e.g. a separate logger not
+#'   otherwise included in \code{cont}).  When supplied, each column is added
+#'   as an additional entry in the \strong{Overlay} drop-down (see Controls
+#'   below) so it can be plotted alongside any parameter.  Its \code{DateTime}
+#'   column is aligned to \code{cont}'s time zone and clipped to \code{cont}'s
+#'   date range.  Entries are omitted entirely if the two do not overlap.
 #'
 #' @return A list with two elements, invisibly returned after the app closes:
 #'   \describe{
@@ -50,6 +58,17 @@
 #'   \itemize{
 #'     \item \strong{Parameter}: drop-down selector to switch between
 #'       parameters.  Corrections are tracked independently for each parameter.
+#'     \item \strong{Overlay}: optional drop-down to display a second
+#'       parameter from \code{contdat} on a right-side y-axis, useful for
+#'       spotting co-occurring changes across parameters.  If an \code{ext}
+#'       argument was supplied, one additional entry per column in that file
+#'       is also available, labeled with an \code{"[External File]"} suffix.
+#'     \item \strong{USGS Overlay}: enter a USGS site number and select a
+#'       parameter type, then click \strong{Load} to fetch continuous data
+#'       from NWIS and display it on the secondary y-axis.  Loading USGS data
+#'       clears any Overlay selection and selecting an Overlay entry clears
+#'       the USGS data.  Site numbers can be found at the NWIS Mapper
+#'       (\url{https://apps.usgs.gov/nwismapper}).
 #'     \item \strong{Undo Last Correction}: reverses the most recently applied
 #'       correction for the current parameter.
 #'     \item \strong{Start Over}: restores all original values for every
@@ -77,17 +96,25 @@
 #' contpth <- system.file("extdata/ExampleCont1.xlsx", package = "AquaSensR")
 #' contdat <- readASRcont(contpth)
 #' result  <- editASRdrift(contdat)
+#'
+#' # Optional external overlay from a second file
+#' extpth <- system.file("extdata/ExampleFlow1.xlsx", package = "AquaSensR")
+#' extdat <- readASRcont(extpth)
+#' result2 <- editASRdrift(contdat, ext = extdat)
 #' }
 #'
 #' @export
-editASRdrift <- function(cont) {
-  shiny::runApp(editASRdrift_app(cont))
+editASRdrift <- function(cont, ext = NULL) {
+  shiny::runApp(editASRdrift_app(cont, ext = ext))
 }
 
 # Builds the shinyApp object without running it.  Separated from editASRdrift()
 # so tests can call shiny::testServer() on the server function directly.
 # Not exported.
-editASRdrift_app <- function(cont) {
+#
+# @param cont contdat data frame (see editASRdrift).
+# @param ext  Optional external data frame (see editASRdrift).
+editASRdrift_app <- function(cont, ext = NULL) {
   params <- setdiff(names(cont), "DateTime")
 
   tz <- attr(cont$DateTime, "tzone")
@@ -104,6 +131,51 @@ editASRdrift_app <- function(cont) {
     character(1L)
   )
   param_choices <- stats::setNames(params, param_labels)
+
+  # Prefix identifying external-file entries in the "Overlay" dropdown's
+  # `overlay_param` input. Namespacing by prefix (rather than a single fixed
+  # sentinel) lets an `ext` file contribute one entry per column, and avoids
+  # ambiguity if a column in `ext` happens to share a name with a `cont`
+  # column -- the prefixed value and the bare cont column name are distinct.
+  EXT_OVERLAY_PREFIX <- "__ext__"
+
+  # One-time external-file prep: align its DateTime to cont's timezone and
+  # clip to cont's DateTime range (mirrors the USGS fetch's clipping below)
+  # so the overlay doesn't dominate the plot's default x-axis autorange. If
+  # there's no temporal overlap, all entries are omitted, same as if `ext`
+  # were NULL.
+  ext_aligned <- NULL
+  ext_choices <- NULL
+  if (!is.null(ext)) {
+    ext_params <- setdiff(names(ext), "DateTime")
+
+    ext_aligned <- ext
+    ext_aligned$DateTime <- lubridate::with_tz(ext_aligned$DateTime, tz)
+
+    dt_rng <- range(cont$DateTime)
+    ext_aligned <- ext_aligned[
+      ext_aligned$DateTime >= dt_rng[1L] & ext_aligned$DateTime <= dt_rng[2L],
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(ext_aligned) == 0L) {
+      ext_aligned <- NULL
+    } else {
+      ext_labels <- vapply(
+        ext_params,
+        function(p) {
+          lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
+          if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
+        },
+        character(1L)
+      )
+      ext_choices <- stats::setNames(
+        paste0(EXT_OVERLAY_PREFIX, ext_params),
+        paste0(ext_labels, " [External File]")
+      )
+    }
+  }
 
   # -------------------------------------------------------------------------
   # UI
@@ -144,6 +216,80 @@ editASRdrift_app <- function(cont) {
           style = "flex: 1; background-color: #ebebeb;"
         )
       ),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("Overlay", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "Overlay",
+          if (!is.null(ext_choices)) {
+            "Optionally display a second parameter on the plot, including any columns from the external file if one was supplied. This can help identify whether the observed drift can be explained with changes in another parameter."
+          } else {
+            "Optionally display a second parameter on the plot. This can help identify whether the observed drift can be explained with changes in another parameter."
+          }
+        )
+      ),
+      shiny::selectizeInput(
+        "overlay_param",
+        label = NULL,
+        choices = c("None" = ""),
+        selected = "",
+        options = list(allowEmptyOption = TRUE, placeholder = "None")
+      ),
+      shiny::div(
+        style = "display: flex; align-items: center; gap: 6px;",
+        shiny::h4("USGS Overlay", style = "margin: 0;"),
+        bslib::popover(
+          shiny::icon(
+            "circle-info",
+            style = "color: #6c757d; cursor: pointer;"
+          ),
+          title = "USGS Overlay",
+          shiny::tags$span(
+            "Fetch a USGS time series for the secondary axis.",
+            "Enter a site number (find yours at the ",
+            shiny::tags$a(
+              "NWIS Mapper",
+              href = "https://apps.usgs.gov/nwismapper",
+              target = "_blank"
+            ),
+            ") and click Load.",
+            "Loading USGS data clears any Overlay selection and",
+            "selecting an Overlay entry clears the USGS data."
+          )
+        )
+      ),
+      shiny::selectInput(
+        "usgs_pcode",
+        label = NULL,
+        choices = c(
+          "Streamflow (ft\u00b3/s)" = "00060",
+          "Gage height (ft)" = "00065",
+          "Precipitation (in)" = "00045",
+          "Groundwater depth (ft bls)" = "72019"
+        ),
+        selected = "00060"
+      ),
+      shiny::div(
+        style = "display: flex; gap: 4px; align-items: flex-start;",
+        shiny::div(
+          style = "flex: 1;",
+          shiny::textInput(
+            "usgs_site",
+            label = NULL,
+            placeholder = "e.g., 01099500"
+          )
+        ),
+        shiny::actionButton(
+          "load_usgs",
+          "Load",
+          style = "background-color: #5b7fa6; border-color: #5b7fa6; color: #fff; margin-top: 0;"
+        )
+      ),
+      shiny::uiOutput("usgs_status"),
       shiny::hr(),
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
@@ -339,6 +485,13 @@ editASRdrift_app <- function(cont) {
     corrections_log <- shiny::reactiveVal(empty_log)
     original_segments <- shiny::reactiveVal(list())
 
+    # USGS overlay data (NULL or a 2-col data frame from readASRusgs()).
+    usgs_ovl <- shiny::reactiveVal(NULL)
+
+    # Status message for the USGS overlay section.
+    # list(text = <character>, ok = <logical>)
+    usgs_status_msg <- shiny::reactiveVal(list(text = "", ok = TRUE))
+
     cur_history <- shiny::reactive(correction_history_list()[[
       input$param_select
     ]])
@@ -349,10 +502,31 @@ editASRdrift_app <- function(cont) {
       correction_history_list(hl)
     }
 
+    # Populate overlay choices on startup (all parameters available, none pre-selected).
+    shiny::observe({
+      shiny::updateSelectInput(
+        session,
+        "overlay_param",
+        choices = c("None" = "", param_choices, ext_choices),
+        selected = ""
+      )
+    }) |>
+      shiny::bindEvent(TRUE, once = TRUE)
+
     # ---- Parameter navigation -----------------------------------------------
     shiny::observeEvent(input$param_select, {
       plot_ranges(list(x = NULL, y = NULL))
       selected_points(list())
+      # Preserve the current overlay selection when switching parameters.
+      # All parameters (including the newly selected one) remain available as
+      # overlay options so the user does not lose their overlay on a switch.
+      cur_ovl <- if (is.null(input$overlay_param)) "" else input$overlay_param
+      shiny::updateSelectInput(
+        session,
+        "overlay_param",
+        choices = c("None" = "", param_choices, ext_choices),
+        selected = cur_ovl
+      )
     })
 
     shiny::observeEvent(input$param_prev, {
@@ -576,6 +750,95 @@ editASRdrift_app <- function(cont) {
       selected_points(list())
     })
 
+    # ---- USGS overlay load --------------------------------------------------
+    shiny::observeEvent(input$load_usgs, {
+      site <- trimws(if (is.null(input$usgs_site)) "" else input$usgs_site)
+      if (!nzchar(site)) {
+        usgs_ovl(NULL)
+        usgs_status_msg(list(
+          text = "\u2717 Please enter a site number.",
+          ok = FALSE
+        ))
+        return()
+      }
+      # Express dates in UTC so the API interval covers the full monitoring
+      # period regardless of the contdat timezone.  Add one calendar day to
+      # end so that same-day ranges (e.g. "2024-08-14"/"2024-08-14") are not
+      # treated as a zero-duration point by the OGC API.
+      start <- format(lubridate::with_tz(min(cont$DateTime), "UTC"), "%Y-%m-%d")
+      end <- format(
+        lubridate::with_tz(max(cont$DateTime), "UTC") + lubridate::days(1),
+        "%Y-%m-%d"
+      )
+      result <- tryCatch(
+        readASRusgs(site, input$usgs_pcode, start, end, tz = tz),
+        error = function(e) e
+      )
+      if (inherits(result, "error")) {
+        usgs_ovl(NULL)
+        usgs_status_msg(list(
+          text = paste0("\u2717 ", conditionMessage(result)),
+          ok = FALSE
+        ))
+      } else {
+        # Clip to the exact datetime range of the contdat monitoring period.
+        dt_min <- min(cont$DateTime)
+        dt_max <- max(cont$DateTime)
+        result <- result[
+          result$DateTime >= dt_min & result$DateTime <= dt_max,
+          ,
+          drop = FALSE
+        ]
+        if (nrow(result) == 0L) {
+          usgs_ovl(NULL)
+          usgs_status_msg(list(
+            text = paste0("\u2717 No data overlap with monitoring period."),
+            ok = FALSE
+          ))
+          return()
+        }
+        usgs_ovl(result)
+        nm <- attr(result, "site_name")
+        nm <- if (is.null(nm)) site else nm
+        usgs_status_msg(list(
+          text = paste0("\u2713 ", nm),
+          ok = TRUE
+        ))
+        shiny::updateSelectizeInput(session, "overlay_param", selected = "")
+      }
+    })
+
+    # Clear USGS overlay when an Overlay entry is selected.
+    shiny::observeEvent(
+      input$overlay_param,
+      {
+        if (!is.null(input$overlay_param) && nzchar(input$overlay_param)) {
+          usgs_ovl(NULL)
+          usgs_status_msg(list(text = "", ok = TRUE))
+          shiny::updateTextInput(session, "usgs_site", value = "")
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    # ---- USGS status message output -----------------------------------------
+    output$usgs_status <- shiny::renderUI({
+      msg <- usgs_status_msg()
+      if (!nzchar(msg$text)) {
+        return(NULL)
+      }
+      color <- if (msg$ok) "#2a7d2e" else "#cc3300"
+      shiny::p(
+        msg$text,
+        style = paste0(
+          "color: ",
+          color,
+          "; font-size: 0.85em; margin: 2px 0 8px 0;",
+          " word-break: break-word;"
+        )
+      )
+    })
+
     # ---- Ungraceful close safety net (browser tab/window closed without
     # clicking Done/Close, or the page was refreshed) --------------------------
     # onSessionEnded() fires on every disconnect. app_closing distinguishes a
@@ -688,6 +951,25 @@ editASRdrift_app <- function(cont) {
       dat <- working_cont()
       pts <- selected_points()
 
+      # USGS overlay takes priority over the Overlay dropdown selection, which
+      # is itself either a cont parameter or an external-file entry (mutually
+      # exclusive, since only one can be selected in that dropdown at a time).
+      ovl <- if (!is.null(usgs_ovl())) {
+        usgs_ovl()
+      } else {
+        ovl_param <- input$overlay_param
+        if (!is.null(ovl_param) && startsWith(ovl_param, EXT_OVERLAY_PREFIX)) {
+          real_col <- substring(ovl_param, nchar(EXT_OVERLAY_PREFIX) + 1L)
+          ext_aligned[, c("DateTime", real_col), drop = FALSE]
+        } else if (
+          !is.null(ovl_param) && nzchar(ovl_param) && ovl_param %in% names(dat)
+        ) {
+          dat[, c("DateTime", ovl_param), drop = FALSE]
+        } else {
+          NULL
+        }
+      }
+
       lbl <- paramsASR$Label[paramsASR$Parameter == p_name]
       y_label <- if (length(lbl) == 0L || is.na(lbl[1L])) {
         p_name
@@ -771,6 +1053,81 @@ editASRdrift_app <- function(cont) {
               hoverinfo = "none"
             )
         }
+      }
+
+      # Add the overlay trace on a secondary y-axis, if one is selected.
+      if (!is.null(ovl)) {
+        norm_tz <- function(x) if (is.null(x) || !nzchar(x)) "UTC" else x
+        dat_tz <- norm_tz(attr(dat$DateTime, "tzone"))
+        ovl_tz <- norm_tz(attr(ovl$DateTime, "tzone"))
+        if (!identical(dat_tz, ovl_tz)) {
+          stop(
+            "Overlay DateTime timezone ('",
+            ovl_tz,
+            "') differs from the continuous data timezone ('",
+            dat_tz,
+            "'). Pass tz = '",
+            dat_tz,
+            "' to readASRusgs() to align the axes.",
+            call. = FALSE
+          )
+        }
+
+        ovl_param2 <- setdiff(names(ovl), "DateTime")[1L]
+        ovl_ylab <- as.character(paramsASR$Label[
+          paramsASR$Parameter == ovl_param2
+        ])
+        if (length(ovl_ylab) == 0L || is.na(ovl_ylab[1L])) {
+          ovl_ylab <- ovl_param2
+        }
+
+        # Sort once; use a direct vector for y (consistent with every other
+        # trace above) so plotly never has to formula-evaluate a column name
+        # that may contain special characters (e.g. ft³/s, brackets).
+        ovl_sorted <- ovl[order(ovl$DateTime), , drop = FALSE]
+
+        p <- plotly::add_trace(
+          p,
+          data = ovl_sorted,
+          x = ~DateTime,
+          y = ovl_sorted[[ovl_param2]],
+          inherit = FALSE,
+          type = "scatter",
+          mode = "lines",
+          line = list(color = "#91bbd6", width = 1),
+          name = ovl_ylab,
+          yaxis = "y2",
+          showlegend = TRUE,
+          hovertemplate = paste0(
+            "<b>",
+            ovl_ylab,
+            "</b>: %{y}<br>",
+            "<b>DateTime</b>: %{x}",
+            "<extra></extra>"
+          )
+        )
+
+        p <- plotly::layout(
+          p,
+          margin = list(r = 90),
+          yaxis2 = list(
+            overlaying = "y",
+            side = "right",
+            title = list(
+              text = ovl_ylab,
+              standoff = 15,
+              font = list(color = "#91bbd6")
+            ),
+            tickfont = list(color = "#91bbd6"),
+            showgrid = FALSE,
+            automargin = TRUE,
+            # Lock y2 to the same scale as y when both axes show the same
+            # parameter so that the tick marks align exactly.  For different
+            # parameters the attribute is omitted and each axis scales
+            # independently.
+            matches = if (identical(ovl_param2, p_name)) "y" else NULL
+          )
+        )
       }
 
       p <- plotly::event_register(p, "plotly_relayout")
