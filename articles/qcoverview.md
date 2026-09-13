@@ -602,6 +602,30 @@ interactively:
 - **Close, discard edits** likewise returns the data as it was at app
   open, with prior removals intact.
 
+## Running the full workflow
+
+[`editASRworkflow()`](https://massbays-tech.github.io/AquaSensR/reference/editASRworkflow.md)
+steps through
+[`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md),
+[`editASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/editASRdrift.md)
+(see the [drift correction
+vignette](https://massbays-tech.github.io/AquaSensR/articles/driftcorrection.md)),
+and
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
+in order from a single launcher screen, with each step’s output feeding
+the next step’s input:
+
+``` r
+
+result <- editASRworkflow(contdat, dqodat)
+```
+
+The launcher shows one icon per step where clicking an icon opens that
+step’s editor and closing it returns to the launcher with the updated
+data. See
+[`?editASRworkflow`](https://massbays-tech.github.io/AquaSensR/reference/editASRworkflow.md)
+for the full return value and navigation details.
+
 Any number of sessions can be chained this way. Each session’s output
 becomes the next session’s input, and the cumulative `removed` table
 grows with each round of cleaning.

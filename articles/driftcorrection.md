@@ -285,3 +285,17 @@ drift_result$corrections
 The `corrections` data frame provides a complete audit trail of every
 change made during the session, which can be saved alongside the
 corrected data for documentation purposes.
+
+## Running the full workflow
+
+[`editASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/editASRdrift.md)
+can also be run as one step of
+[`editASRworkflow()`](https://massbays-tech.github.io/AquaSensR/reference/editASRworkflow.md),
+which steps through
+[`editASRbulk()`](https://massbays-tech.github.io/AquaSensR/reference/editASRbulk.md),
+[`editASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/editASRdrift.md),
+and
+[`editASRflag()`](https://massbays-tech.github.io/AquaSensR/reference/editASRflag.md)
+in order from a single launcher screen (see the [quality control
+vignette](https://massbays-tech.github.io/AquaSensR/articles/qcoverview.html#running-the-full-workflow)),
+with each step’s output feeding the next step’s input.

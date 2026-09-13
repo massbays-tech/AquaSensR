@@ -114,6 +114,14 @@ Functions for correcting instrument drift in continuous monitoring data.
 - [`utilASRdrift()`](https://massbays-tech.github.io/AquaSensR/reference/utilASRdrift.md)
   : Apply linear drift correction to a continuous monitoring parameter
 
+## Combined workflow
+
+Runs the bulk removal, drift correction, and flag-review editors in
+sequence through a single launcher.
+
+- [`editASRworkflow()`](https://massbays-tech.github.io/AquaSensR/reference/editASRworkflow.md)
+  : Combined bulk removal, drift correction, and flag review workflow
+
 ## Utility functions
 
 Additional miscellaneous functions used internally by other functions.
