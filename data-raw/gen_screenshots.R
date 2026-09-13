@@ -5,6 +5,15 @@
 # Requires:
 #   install.packages("webshot2")
 #   chromote::find_chrome()   # verify Chrome is detected
+#   The package must be (re-)installed first (e.g. devtools::install()) --
+#   library(AquaSensR) below picks up the installed version, not any
+#   in-memory devtools::load_all() session.
+#
+# webshot2::appshot() can throw "Error in `rp_get_result()`: ! Still alive"
+# even after successfully writing the screenshot -- a benign callr/processx
+# race between the background screenshot process finishing and this session
+# checking its result. Check the output file's timestamp rather than treating
+# that specific error as a real failure.
 
 library(AquaSensR)
 library(webshot2)

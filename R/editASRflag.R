@@ -273,7 +273,7 @@ editASRflag_ui <- function(id, cont, ext = NULL, dqo_sidebar_open = FALSE) {
   ext_choices <- ext_prep$ext_choices
 
   bslib::page_sidebar(
-    title = "Edit: QC Flags",
+    title = aquasensr_logo_title("Edit: QC Flags"),
     sidebar = bslib::sidebar(
       width = 300,
       open = "open",
@@ -451,12 +451,12 @@ editASRflag_ui <- function(id, cont, ext = NULL, dqo_sidebar_open = FALSE) {
         ns("export_progress"),
         "Export Progress",
         icon = NULL,
-        style = "width: 100%; display: block; background-color: #3BAD99; border-color: #3BAD99; color: #fff;"
+        style = "width: 100%; display: block; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
       shiny::actionButton(
         ns("done"),
         "Done / Close",
-        style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
+        style = "width: 100%; background-color: #0E3455; border-color: #0E3455; color: #fff;"
       ),
       shiny::hr(),
       shiny::div(

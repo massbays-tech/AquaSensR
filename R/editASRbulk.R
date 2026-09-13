@@ -127,7 +127,7 @@ editASRbulk_ui <- function(id, cont) {
   param_choices <- stats::setNames(params, param_labels)
 
   bslib::page_sidebar(
-    title = "Edit: Bulk Removal",
+    title = aquasensr_logo_title("Edit: Bulk Removal"),
     sidebar = bslib::sidebar(
       width = 300,
       open = "open",
@@ -214,12 +214,12 @@ editASRbulk_ui <- function(id, cont) {
         ns("export_progress"),
         "Export Progress",
         icon = NULL,
-        style = "width: 100%; display: block; background-color: #3BAD99; border-color: #3BAD99; color: #fff;"
+        style = "width: 100%; display: block; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
       shiny::actionButton(
         ns("done"),
         "Done / Close",
-        style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
+        style = "width: 100%; background-color: #0E3455; border-color: #0E3455; color: #fff;"
       ),
       shiny::hr(),
       shiny::div(
