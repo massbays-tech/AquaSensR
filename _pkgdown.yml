@@ -53,6 +53,12 @@ reference:
   contents:
   - editASRdrift
   - utilASRdrift
+- title: Combined workflow
+  desc: >
+    Runs the bulk removal, drift correction, and flag-review editors in
+    sequence through a single launcher.
+  contents:
+  - editASRworkflow
 - title: Utility functions
   desc: >
     Additional miscellaneous functions used internally by other functions.

@@ -4,7 +4,7 @@
 \alias{anlzASRflag}
 \title{Plot QC flag results for a continuous monitoring parameter}
 \usage{
-anlzASRflag(flag, overlay = NULL)
+anlzASRflag(flag, overlay = NULL, source = "A")
 }
 \arguments{
 \item{flag}{data frame returned by \code{\link{utilASRflag}}.}
@@ -13,6 +13,13 @@ anlzASRflag(flag, overlay = NULL)
 and one numeric parameter column.  When supplied, the series is drawn as a
 light blue line on a second y-axis on the right side of the plot.  Pass
 \code{NULL} (the default) to omit the overlay.}
+
+\item{source}{character string identifying this plot for
+\code{\link[plotly:event_data]{plotly::event_data()}}.  Defaults to
+\code{"A"} (plotly's own default).  \code{\link{editASRflag}} sets this
+to a namespaced value when embedded as one step of
+\code{\link{editASRworkflow}}, so that multiple mounted instances don't
+read/write each other's click, selection, or zoom events.}
 }
 \value{
 An interactive \code{plotly} object.

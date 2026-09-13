@@ -103,3 +103,13 @@ anlzASRflag(flagdat)
 # 8. Edit flags in interactive Shiny app
 #' Edit QC flags for a continuous monitoring parameter in an interactive Shiny app
 cleaned <- editASRflag(contdat, dqodat, ext = extdat) #, removed = bulk_result$removed)
+
+# ------------------------------------------------------------------------------
+# 9. Combined workflow launcher
+# ------------------------------------------------------------------------------
+# Single entry point that steps through editASRbulk(), editASRdrift(), and
+# editASRflag() in order from one icon screen, with each step's output
+# feeding the next step's input. An alternative to running steps 3, 5, and 8
+# separately above. Returns list(contdat, dqodat, bulk_removed, corrections,
+# removed) once "Finish & Return to R" is clicked.
+workflow_result <- editASRworkflow(contdat, dqodat, ext = extdat)

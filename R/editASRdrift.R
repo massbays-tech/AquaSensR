@@ -110,28 +110,28 @@ editASRdrift <- function(cont, ext = NULL) {
 
 # Builds the shinyApp object without running it.  Separated from editASRdrift()
 # so tests can call shiny::testServer() on the server function directly.
-# Not exported.
+# Not exported. A thin id = NULL / on_done = NULL wrapper around
+# editASRdrift_ui()/editASRdrift_server(), the same functions editASRworkflow()
+# uses to embed this editor as one step of the combined app -- see those two
+# functions for the actual UI/server logic.
 #
 # @param cont contdat data frame (see editASRdrift).
 # @param ext  Optional external data frame (see editASRdrift).
 editASRdrift_app <- function(cont, ext = NULL) {
-  params <- setdiff(names(cont), "DateTime")
-
-  tz <- attr(cont$DateTime, "tzone")
-  if (is.null(tz) || !nzchar(tz)) {
-    tz <- "UTC"
+  ui <- editASRdrift_ui(NULL, cont, ext = ext)
+  server <- function(input, output, session) {
+    editASRdrift_server(NULL, cont, ext = ext, on_done = NULL)
   }
+  shiny::shinyApp(ui, server)
+}
 
-  param_labels <- vapply(
-    params,
-    function(p) {
-      lbl <- paramsASR$Label[paramsASR$Parameter == p]
-      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
-    },
-    character(1L)
-  )
-  param_choices <- stats::setNames(params, param_labels)
-
+# Pure helper shared by editASRdrift_ui() and editASRdrift_server(): aligns
+# `ext`'s DateTime to `cont`'s timezone and clips it to `cont`'s DateTime
+# range, and builds the "Overlay" dropdown's external-file choices. Cheap and
+# side-effect free, so recomputing it once in the UI (to size the Overlay
+# popover text) and once in the server (to build the actual overlay trace) is
+# simpler than threading the result between them. Not exported.
+editASRdrift_ext_prep <- function(cont, ext) {
   # Prefix identifying external-file entries in the "Overlay" dropdown's
   # `overlay_param` input. Namespacing by prefix (rather than a single fixed
   # sentinel) lets an `ext` file contribute one entry per column, and avoids
@@ -139,18 +139,17 @@ editASRdrift_app <- function(cont, ext = NULL) {
   # column -- the prefixed value and the bare cont column name are distinct.
   EXT_OVERLAY_PREFIX <- "__ext__"
 
-  # One-time external-file prep: align its DateTime to cont's timezone and
-  # clip to cont's DateTime range (mirrors the USGS fetch's clipping below)
-  # so the overlay doesn't dominate the plot's default x-axis autorange. If
-  # there's no temporal overlap, all entries are omitted, same as if `ext`
-  # were NULL.
   ext_aligned <- NULL
   ext_choices <- NULL
   if (!is.null(ext)) {
     ext_params <- setdiff(names(ext), "DateTime")
 
+    cont_tz <- attr(cont$DateTime, "tzone")
+    if (is.null(cont_tz) || !nzchar(cont_tz)) {
+      cont_tz <- "UTC"
+    }
     ext_aligned <- ext
-    ext_aligned$DateTime <- lubridate::with_tz(ext_aligned$DateTime, tz)
+    ext_aligned$DateTime <- lubridate::with_tz(ext_aligned$DateTime, cont_tz)
 
     dt_rng <- range(cont$DateTime)
     ext_aligned <- ext_aligned[
@@ -177,10 +176,38 @@ editASRdrift_app <- function(cont, ext = NULL) {
     }
   }
 
-  # -------------------------------------------------------------------------
-  # UI
-  # -------------------------------------------------------------------------
-  ui <- bslib::page_sidebar(
+  list(
+    EXT_OVERLAY_PREFIX = EXT_OVERLAY_PREFIX,
+    ext_aligned = ext_aligned,
+    ext_choices = ext_choices
+  )
+}
+
+# Builds the drift-correction editor's UI. Not exported.
+#
+# @param id  Shiny module id. NULL for standalone use (editASRdrift_app()),
+#   producing today's exact unnamespaced input/output ids; a string when
+#   embedded as one step of editASRworkflow().
+# @param cont contdat data frame (see editASRdrift).
+# @param ext  Optional external data frame (see editASRdrift).
+editASRdrift_ui <- function(id, cont, ext = NULL) {
+  ns <- shiny::NS(id)
+
+  params <- setdiff(names(cont), "DateTime")
+  param_labels <- vapply(
+    params,
+    function(p) {
+      lbl <- paramsASR$Label[paramsASR$Parameter == p]
+      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
+    },
+    character(1L)
+  )
+  param_choices <- stats::setNames(params, param_labels)
+
+  ext_prep <- editASRdrift_ext_prep(cont, ext)
+  ext_choices <- ext_prep$ext_choices
+
+  bslib::page_sidebar(
     title = "Edit: Drift Correction",
     sidebar = bslib::sidebar(
       width = 300,
@@ -198,7 +225,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
         )
       ),
       shiny::selectInput(
-        "param_select",
+        ns("param_select"),
         label = NULL,
         choices = param_choices,
         selected = params[1L]
@@ -206,12 +233,12 @@ editASRdrift_app <- function(cont, ext = NULL) {
       shiny::div(
         style = "display: flex; gap: 4px; margin-bottom: 3px;",
         shiny::actionButton(
-          "param_prev",
+          ns("param_prev"),
           "\u2190 Prev",
           style = "flex: 1; background-color: #ebebeb;"
         ),
         shiny::actionButton(
-          "param_next",
+          ns("param_next"),
           "Next \u2192",
           style = "flex: 1; background-color: #ebebeb;"
         )
@@ -233,7 +260,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
         )
       ),
       shiny::selectizeInput(
-        "overlay_param",
+        ns("overlay_param"),
         label = NULL,
         choices = c("None" = ""),
         selected = "",
@@ -263,7 +290,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
         )
       ),
       shiny::selectInput(
-        "usgs_pcode",
+        ns("usgs_pcode"),
         label = NULL,
         choices = c(
           "Streamflow (ft\u00b3/s)" = "00060",
@@ -278,18 +305,18 @@ editASRdrift_app <- function(cont, ext = NULL) {
         shiny::div(
           style = "flex: 1;",
           shiny::textInput(
-            "usgs_site",
+            ns("usgs_site"),
             label = NULL,
             placeholder = "e.g., 01099500"
           )
         ),
         shiny::actionButton(
-          "load_usgs",
+          ns("load_usgs"),
           "Load",
           style = "background-color: #5b7fa6; border-color: #5b7fa6; color: #fff; margin-top: 0;"
         )
       ),
-      shiny::uiOutput("usgs_status"),
+      shiny::uiOutput(ns("usgs_status")),
       shiny::hr(),
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
@@ -303,8 +330,8 @@ editASRdrift_app <- function(cont, ext = NULL) {
           "Click the plot once to set the start of the drift window, then click again to set the end. A third click resets the selection. Once two times are selected, enter the reference value and click Apply Correction."
         )
       ),
-      shiny::verbatimTextOutput("selected_period"),
-      shiny::uiOutput("cal_ref_ui"),
+      shiny::verbatimTextOutput(ns("selected_period")),
+      shiny::uiOutput(ns("cal_ref_ui")),
       shiny::hr(),
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
@@ -337,23 +364,23 @@ editASRdrift_app <- function(cont, ext = NULL) {
         )
       ),
       shiny::actionButton(
-        "undo",
+        ns("undo"),
         "Undo Last Correction",
         style = "width: 100%; background-color: #eee685; border-color: #eee685; color: #000000ff;"
       ),
       shiny::actionButton(
-        "reset",
+        ns("reset"),
         "Start Over",
         style = "width: 100%; background-color: #ff6633; border-color: #ff6633; color: #fff;"
       ),
       shiny::downloadButton(
-        "export_progress",
+        ns("export_progress"),
         "Export Progress",
         icon = NULL,
         style = "width: 100%; display: block; background-color: #3BAD99; border-color: #3BAD99; color: #fff;"
       ),
       shiny::actionButton(
-        "done",
+        ns("done"),
         "Done / Close",
         style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
@@ -361,7 +388,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4(
-          shiny::textOutput("corrections_count", inline = TRUE),
+          shiny::textOutput(ns("corrections_count"), inline = TRUE),
           style = "margin: 0;"
         ),
         bslib::popover(
@@ -375,35 +402,39 @@ editASRdrift_app <- function(cont, ext = NULL) {
       ),
       shiny::div(
         style = "font-size: 12px;",
-        DT::DTOutput("corrections_table")
+        DT::DTOutput(ns("corrections_table"))
       )
     ),
     shiny::tags$head(
       shiny::tags$script(shiny::HTML(
         'document.addEventListener("click", function(e) {
-           var el = document.getElementById("driftPlot");
-           if (!el) return;
            var btn = e.target.closest("[data-title]");
-           if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
+           if (!btn || btn.dataset.title !== "Reset axes") return;
+           var el = btn.closest(".js-plotly-plot");
+           if (!el) return;
            e.stopPropagation();
            Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
-         }, true);
-         var appDirty = false;
-         window.addEventListener("beforeunload", function (e) {
-           if (!appDirty) return;
-           e.preventDefault();
-           e.returnValue =
-             "Closing without using Done / Close will automatically save your current corrections.";
-           return e.returnValue;
-         });
-         Shiny.addCustomMessageHandler("setDirty", function(msg) {
-           appDirty = msg.dirty;
-         });
-         Shiny.addCustomMessageHandler("closeWindow", function(msg) {
-           appDirty = false;
-           window.close();
-         });'
+         }, true);'
       )),
+      if (is.null(id)) {
+        shiny::tags$script(shiny::HTML(
+          'var appDirty = false;
+           window.addEventListener("beforeunload", function (e) {
+             if (!appDirty) return;
+             e.preventDefault();
+             e.returnValue =
+               "Closing without using Done / Close will automatically save your current corrections.";
+             return e.returnValue;
+           });
+           Shiny.addCustomMessageHandler("setDirty", function(msg) {
+             appDirty = msg.dirty;
+           });
+           Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+             appDirty = false;
+             window.close();
+           });'
+        ))
+      },
       shiny::tags$style(shiny::HTML(
         # sidebar scrollbar mod for easier selection
         ".bslib-sidebar-layout .bslib-sidebar-resize-handle .resize-indicator {
@@ -458,13 +489,67 @@ editASRdrift_app <- function(cont, ext = NULL) {
       "A third click resets the selection.",
       "Zoom and pan with the toolbar (visible when the pointer is over the plot) to inspect the data."
     ),
-    plotly::plotlyOutput("driftPlot", height = "550px")
+    plotly::plotlyOutput(ns("driftPlot"), height = "550px")
   )
+}
 
-  # -------------------------------------------------------------------------
-  # Server
-  # -------------------------------------------------------------------------
-  server <- function(input, output, session) {
+# Builds the drift-correction editor's server logic. Not exported.
+#
+# @param id      Shiny module id (see editASRdrift_ui()).
+# @param cont    contdat data frame (see editASRdrift).
+# @param ext     Optional external data frame (see editASRdrift).
+# @param on_done Optional callback invoked with the editASRdrift_result()
+#   list when the user finishes (Done/Close, or an ungraceful browser
+#   close). When NULL (standalone use), Done/Close instead calls
+#   shiny::stopApp() directly and this module also registers its own
+#   browser-close safety net and beforeunload warning. When supplied
+#   (embedded use, e.g. from editASRworkflow()), those two are skipped -- the
+#   caller is responsible for its own safety net across whichever step is
+#   currently active, and for closing the browser tab, if at all.
+editASRdrift_server <- function(id, cont, ext = NULL, on_done = NULL) {
+  params <- setdiff(names(cont), "DateTime")
+
+  tz <- attr(cont$DateTime, "tzone")
+  if (is.null(tz) || !nzchar(tz)) {
+    tz <- "UTC"
+  }
+
+  param_labels <- vapply(
+    params,
+    function(p) {
+      lbl <- paramsASR$Label[paramsASR$Parameter == p]
+      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
+    },
+    character(1L)
+  )
+  param_choices <- stats::setNames(params, param_labels)
+
+  ext_prep <- editASRdrift_ext_prep(cont, ext)
+  EXT_OVERLAY_PREFIX <- ext_prep$EXT_OVERLAY_PREFIX
+  ext_aligned <- ext_prep$ext_aligned
+  ext_choices <- ext_prep$ext_choices
+
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    # plotly::event_data() is keyed by a plain `source` string shared across
+    # the whole R session (it reads/writes session$rootScope(), bypassing
+    # module namespacing entirely) -- give each embedded instance its own
+    # source so a stale prior mount's click/relayout events can never be
+    # picked up by a later mount. Standalone use keeps the default "A".
+    plot_source <- if (is.null(id)) "A" else ns("driftPlot")
+
+    # Routes "finish" through stopApp() (standalone) or on_done() (embedded)
+    # so every completion path -- Done/Close and the ungraceful-close safety
+    # net below -- shares one implementation.
+    finish <- function(result) {
+      if (is.null(on_done)) {
+        shiny::stopApp(returnValue = result)
+      } else {
+        on_done(result)
+      }
+    }
+
     working_cont <- shiny::reactiveVal(cont)
     selected_points <- shiny::reactiveVal(list())
     plot_ranges <- shiny::reactiveVal(list(x = NULL, y = NULL))
@@ -553,9 +638,17 @@ editASRdrift_app <- function(cont, ext = NULL) {
 
     # ---- Zoom state ---------------------------------------------------------
     shiny::observeEvent(
-      plotly::event_data("plotly_relayout", session = session),
+      plotly::event_data(
+        "plotly_relayout",
+        source = plot_source,
+        session = session
+      ),
       {
-        ev <- plotly::event_data("plotly_relayout", session = session)
+        ev <- plotly::event_data(
+          "plotly_relayout",
+          source = plot_source,
+          session = session
+        )
         pr <- plot_ranges()
         if (
           !is.null(ev[["xaxis.range[0]"]]) && !is.null(ev[["xaxis.range[1]"]])
@@ -568,7 +661,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
           pr$y <- c(ev[["yaxis.range[0]"]], ev[["yaxis.range[1]"]])
         }
         if (
-          !is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])
+          isTRUE(ev[["xaxis.autorange"]]) || isTRUE(ev[["yaxis.autorange"]])
         ) {
           pr$x <- NULL
           pr$y <- NULL
@@ -579,9 +672,17 @@ editASRdrift_app <- function(cont, ext = NULL) {
 
     # ---- Click to mark drift period endpoints -------------------------------
     shiny::observeEvent(
-      plotly::event_data("plotly_click", session = session),
+      plotly::event_data(
+        "plotly_click",
+        source = plot_source,
+        session = session
+      ),
       {
-        click <- plotly::event_data("plotly_click", session = session)
+        click <- plotly::event_data(
+          "plotly_click",
+          source = plot_source,
+          session = session
+        )
         if (is.null(click)) {
           return()
         }
@@ -623,7 +724,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
       if (length(selected_points()) == 2L) {
         shiny::tagList(
           shiny::numericInput(
-            "cal_ref",
+            ns("cal_ref"),
             "Reference value (independent sonde)",
             value = NA,
             min = 0,
@@ -631,7 +732,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
             step = 0.01
           ),
           shiny::actionButton(
-            "apply_correction",
+            ns("apply_correction"),
             "Apply Correction",
             style = "width: 100%; background-color: #4a7ebf; border-color: #4a7ebf; color: #fff; margin-top: 4px;"
           )
@@ -730,7 +831,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
           shiny::actionButton(
-            "reset_confirm",
+            ns("reset_confirm"),
             "Proceed",
             style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
           )
@@ -840,34 +941,32 @@ editASRdrift_app <- function(cont, ext = NULL) {
     })
 
     # ---- Ungraceful close safety net (browser tab/window closed without
-    # clicking Done/Close, or the page was refreshed) --------------------------
-    # onSessionEnded() fires on every disconnect. app_closing distinguishes a
-    # normal Done/Close (which already calls stopApp() itself) from anything
-    # else, so this never double-invokes stopApp(). Falls back to saving the
-    # current corrections, same as "Close, save corrections".
+    # clicking Done/Close, or the page was refreshed) -- standalone only; an
+    # embedded instance's safety net is the caller's responsibility (it owns
+    # the browser tab, this module doesn't). --------------------------------
     app_closing <- FALSE
 
-    session$onSessionEnded(function() {
-      if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
-        return(invisible(NULL))
-      }
-      shiny::isolate(
-        shiny::stopApp(
-          returnValue = editASRdrift_result(working_cont(), corrections_log())
+    if (is.null(on_done)) {
+      session$onSessionEnded(function() {
+        if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
+          return(invisible(NULL))
+        }
+        shiny::isolate(
+          finish(editASRdrift_result(working_cont(), corrections_log()))
         )
-      )
-    })
+      })
 
-    # TRUE if any correction has been applied this session. Drives the
-    # browser's beforeunload warning so it only appears when there is
-    # something to lose by closing ungracefully.
-    has_unsaved_edits <- shiny::reactive({
-      nrow(corrections_log()) > 0L
-    })
+      # TRUE if any correction has been applied this session. Drives the
+      # browser's beforeunload warning so it only appears when there is
+      # something to lose by closing ungracefully.
+      has_unsaved_edits <- shiny::reactive({
+        nrow(corrections_log()) > 0L
+      })
 
-    shiny::observe({
-      session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
-    })
+      shiny::observe({
+        session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
+      })
+    }
 
     # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
@@ -878,12 +977,12 @@ editASRdrift_app <- function(cont, ext = NULL) {
           style = "display: flex; gap: 4px; justify-content: flex-end;",
           shiny::modalButton("Cancel"),
           shiny::actionButton(
-            "done_discard",
+            ns("done_discard"),
             "Close, discard corrections",
             style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
           ),
           shiny::actionButton(
-            "done_confirm",
+            ns("done_confirm"),
             "Close, save corrections",
             style = "background-color: #037B71; border-color: #037B71; color: #fff;"
           )
@@ -895,19 +994,19 @@ editASRdrift_app <- function(cont, ext = NULL) {
     shiny::observeEvent(input$done_discard, {
       app_closing <<- TRUE
       shiny::removeModal()
-      session$sendCustomMessage("closeWindow", list())
-      shiny::stopApp(
-        returnValue = editASRdrift_result(cont, empty_log)
-      )
+      if (is.null(on_done)) {
+        session$sendCustomMessage("closeWindow", list())
+      }
+      finish(editASRdrift_result(cont, empty_log))
     })
 
     shiny::observeEvent(input$done_confirm, {
       app_closing <<- TRUE
       shiny::removeModal()
-      session$sendCustomMessage("closeWindow", list())
-      shiny::stopApp(
-        returnValue = editASRdrift_result(working_cont(), corrections_log())
-      )
+      if (is.null(on_done)) {
+        session$sendCustomMessage("closeWindow", list())
+      }
+      finish(editASRdrift_result(working_cont(), corrections_log()))
     })
 
     # ---- Export Progress ----------------------------------------------------
@@ -995,7 +1094,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
         c(y_rng_data[1L] - y_pad, y_rng_data[2L] + y_pad)
       }
 
-      p <- plotly::plot_ly(dat, x = ~DateTime) |>
+      p <- plotly::plot_ly(dat, x = ~DateTime, source = plot_source) |>
         plotly::add_trace(
           y = dat[[p_name]],
           name = y_label,
@@ -1163,9 +1262,7 @@ editASRdrift_app <- function(cont, ext = NULL) {
         rownames = FALSE
       )
     })
-  }
-
-  shiny::shinyApp(ui, server)
+  })
 }
 
 # Computes the editASRdrift return value from the final reactive state.

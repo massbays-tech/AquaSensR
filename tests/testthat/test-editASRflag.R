@@ -66,9 +66,11 @@ test_that("editASRflag_app with dqo_sidebar_open = TRUE returns a shiny.appobj",
 # ---------------------------------------------------------------------------
 
 test_that("removed_count output starts at zero", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_equal(output$removed_count, "Removed Points: 0")
     })
@@ -80,9 +82,11 @@ test_that("removed_count output starts at zero", {
 # ---------------------------------------------------------------------------
 
 test_that("plotly_click removes the targeted point and updates removed_count", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
@@ -95,9 +99,11 @@ test_that("plotly_click removes the targeted point and updates removed_count", {
 # ---------------------------------------------------------------------------
 
 test_that("plotly_selected removes multiple points at once", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(
         `plotly_selected-A` = '[{"customdata":1},{"customdata":2},{"customdata":3}]'
@@ -112,9 +118,11 @@ test_that("plotly_selected removes multiple points at once", {
 # ---------------------------------------------------------------------------
 
 test_that("undo after one click restores the removed point", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
@@ -126,9 +134,11 @@ test_that("undo after one click restores the removed point", {
 })
 
 test_that("undo when nothing removed does not error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(undo = 1L))
       expect_equal(output$removed_count, "Removed Points: 0")
@@ -137,9 +147,11 @@ test_that("undo when nothing removed does not error", {
 })
 
 test_that("undo is per-batch: two clicks require two undos to fully restore", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       session$setInputs(`plotly_click-A` = '{"customdata":2}')
@@ -159,9 +171,11 @@ test_that("undo is per-batch: two clicks require two undos to fully restore", {
 # ---------------------------------------------------------------------------
 
 test_that("reset restores all removed points for current param after confirmation", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       session$setInputs(`plotly_click-A` = '{"customdata":2}')
@@ -178,9 +192,11 @@ test_that("reset restores all removed points for current param after confirmatio
 })
 
 test_that("reset restores removed points for all parameters, not just current", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       # Remove a point from the first parameter (unlinked so params stay independent)
       session$setInputs(param_select = edit_first_param, link_all = FALSE)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
@@ -209,9 +225,11 @@ test_that("reset restores removed points for all parameters, not just current", 
 # ---------------------------------------------------------------------------
 
 test_that("param_prev at the first parameter does not change selection", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(param_prev = 1L)
       expect_equal(input$param_select, edit_first_param)
@@ -220,9 +238,11 @@ test_that("param_prev at the first parameter does not change selection", {
 })
 
 test_that("removals are tracked independently per parameter", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       # Disable linking so the removal stays on the first parameter only
       session$setInputs(param_select = edit_first_param, link_all = FALSE)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
@@ -346,9 +366,11 @@ test_that("editASRflag_result with removals across multiple parameters records a
 # ---------------------------------------------------------------------------
 
 test_that("param_prev from non-first parameter fires without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_second_param)
       expect_no_error(session$setInputs(param_prev = 1L))
     })
@@ -356,9 +378,11 @@ test_that("param_prev from non-first parameter fires without error", {
 })
 
 test_that("param_next from non-last parameter fires without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(param_next = 1L))
     })
@@ -372,9 +396,11 @@ test_that("param_next from non-last parameter fires without error", {
 # ---------------------------------------------------------------------------
 
 test_that("plotly_relayout with x range fires without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(
@@ -386,9 +412,11 @@ test_that("plotly_relayout with x range fires without error", {
 })
 
 test_that("plotly_relayout with autorange fires without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # First set a range so x_range is non-NULL, then reset via autorange
       session$setInputs(
@@ -409,9 +437,11 @@ test_that("plotly_relayout with autorange fires without error", {
 # ---------------------------------------------------------------------------
 
 test_that("flagPlot applies xaxis range layout when x_range is non-NULL", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(
         `plotly_relayout-A` = '{"xaxis.range[0]":0,"xaxis.range[1]":1}'
@@ -430,9 +460,11 @@ test_that("flagPlot applies xaxis range layout when x_range is non-NULL", {
 test_that("plotly_selected returns early when event data is not a data frame", {
   # A JSON object (not array) parses to a list, which is !is.data.frame → early
   # return on line 246 before any removal occurs.
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_selected-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 0")
@@ -442,9 +474,11 @@ test_that("plotly_selected returns early when event data is not a data frame", {
 
 test_that("plotly_selected returns early when no remaining row matches selected rowids", {
   # Rowid 99999 does not exist in any real dataset → mask is all FALSE → line 251.
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_selected-A` = '[{"customdata":99999}]')
       expect_equal(output$removed_count, "Removed Points: 0")
@@ -459,9 +493,11 @@ test_that("plotly_selected returns early when no remaining row matches selected 
 # ---------------------------------------------------------------------------
 
 test_that("plotly_click returns early when clicked rowid is no longer in remaining", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # Remove row 1 via box-selection
       session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
@@ -478,9 +514,11 @@ test_that("plotly_click returns early when clicked rowid is no longer in remaini
 # ---------------------------------------------------------------------------
 
 test_that("flagPlot renders without error when overlay_param is a valid parameter", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(overlay_param = edit_second_param))
     })
@@ -488,9 +526,11 @@ test_that("flagPlot renders without error when overlay_param is a valid paramete
 })
 
 test_that("flagPlot renders without error when overlay_param is empty (None)", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # Select an overlay then clear it back to None
       session$setInputs(overlay_param = edit_second_param)
@@ -500,9 +540,11 @@ test_that("flagPlot renders without error when overlay_param is empty (None)", {
 })
 
 test_that("flagPlot renders without error when overlay_param is not a column in cont", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(overlay_param = "nonexistent_param"))
     })
@@ -522,9 +564,11 @@ test_that("flagPlot renders without error when overlay_param is not a column in 
 ext_sentinel <- function(col) paste0("__ext__", col)
 
 test_that("flagPlot renders without error when ext overlay is selected", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = tst$extdat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = tst$extdat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(overlay_param = ext_sentinel("Sensor_Depth_ft"))
@@ -535,9 +579,11 @@ test_that("flagPlot renders without error when ext overlay is selected", {
 })
 
 test_that("flagPlot renders without error when ext overlay is selected (combined DateTime variant)", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = tst$extdat2)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = tst$extdat2),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(overlay_param = ext_sentinel("Sensor_Depth_ft"))
@@ -547,9 +593,11 @@ test_that("flagPlot renders without error when ext overlay is selected (combined
 })
 
 test_that("flagPlot renders without error when ext is NULL (default, unaffected)", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # The sentinel is not a real choice when ext is NULL; ext_aligned is
       # NULL, so this degrades to no overlay (NULL indexing into NULL), not
@@ -565,9 +613,11 @@ test_that("ext overlay entries are omitted when ext has no temporal overlap with
   no_overlap_ext <- tst$extdat
   no_overlap_ext$DateTime <- no_overlap_ext$DateTime - as.difftime(3650, units = "days")
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = no_overlap_ext)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = no_overlap_ext),
+      {
       session$setInputs(param_select = edit_first_param)
       # Same graceful degradation as the ext = NULL case above.
       expect_no_error(
@@ -586,13 +636,15 @@ test_that("load_usgs after selecting ext overlay clears the ext selection", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = tst$extdat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = tst$extdat),
+      {
       session$setInputs(
         param_select  = edit_first_param,
         overlay_param = ext_sentinel("Sensor_Depth_ft")  # set the ext overlay first
@@ -613,13 +665,15 @@ test_that("selecting ext overlay after USGS load clears usgs_ovl", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = tst$extdat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = tst$extdat),
+      {
       session$setInputs(param_select = edit_first_param)
       # Load USGS data
       session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
@@ -634,10 +688,12 @@ test_that("selecting ext overlay after USGS load clears usgs_ovl", {
 test_that("multi-column ext file provides one selectable overlay entry per column", {
   # tst$contdat2 has multiple parameter columns and the same DateTime range
   # as tst$contdat, so passing it as `ext` exercises the multi-column branch.
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = tst$contdat2)
   ext_cols <- setdiff(names(tst$contdat2), "DateTime")
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = tst$contdat2),
+      {
       session$setInputs(param_select = edit_first_param)
       for (col in ext_cols) {
         expect_no_error(session$setInputs(overlay_param = ext_sentinel(col)))
@@ -651,10 +707,12 @@ test_that("ext column sharing a name with a cont column remains independently se
   # data, different file layout), so this doubles as a same-name-collision
   # test: the prefixed ext entry and the bare cont entry are distinct
   # dropdown values and must not be confused with each other.
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat, ext = tst$contdat2)
   shared_col <- edit_second_param
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat, ext = tst$contdat2),
+      {
       session$setInputs(param_select = edit_first_param)
       # Select the bare cont column first
       expect_no_error(session$setInputs(overlay_param = shared_col))
@@ -676,9 +734,11 @@ dqo_lookup <- function(p, flag_type, col) {
 }
 
 test_that("apply_dqo fires without error and resets removals for current param", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # Remove a point first
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
@@ -708,9 +768,11 @@ test_that("apply_dqo fires without error and resets removals for current param",
 })
 
 test_that("apply_dqo does not affect removals for other parameters", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       # Remove a point on the second parameter
       session$setInputs(param_select = edit_second_param)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
@@ -743,9 +805,11 @@ test_that("apply_dqo does not affect removals for other parameters", {
 })
 
 test_that("reset_dqo fires without error and retains prior removals", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
@@ -757,9 +821,11 @@ test_that("reset_dqo fires without error and retains prior removals", {
 })
 
 test_that("reset_dqo with no prior removals results in zero removed points", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(reset_dqo = 1L))
       expect_equal(output$removed_count, "Removed Points: 0")
@@ -768,9 +834,11 @@ test_that("reset_dqo with no prior removals results in zero removed points", {
 })
 
 test_that("start_over after apply_dqo resets removals to zero", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
 
       # Apply DQO (same values — just confirms the baseline is updated)
@@ -809,9 +877,11 @@ test_that("start_over after apply_dqo resets removals to zero", {
 # ---------------------------------------------------------------------------
 
 test_that("linked removal also removes matching DateTimes from all other params", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(
         param_select = edit_first_param,
         link_all     = TRUE
@@ -827,9 +897,11 @@ test_that("linked removal also removes matching DateTimes from all other params"
 })
 
 test_that("undo from primary param also restores all linked params", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(
         param_select = edit_first_param,
         link_all     = TRUE
@@ -847,9 +919,11 @@ test_that("undo from primary param also restores all linked params", {
 })
 
 test_that("undo from linked param also restores primary param", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(
         param_select = edit_first_param,
         link_all     = TRUE
@@ -870,9 +944,11 @@ test_that("undo from linked param also restores primary param", {
 })
 
 test_that("solo removal after linked removal only undoes solo batch on first undo", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       # Linked removal: rowid 1 removed from all params
       session$setInputs(
         param_select = edit_first_param,
@@ -906,9 +982,11 @@ test_that("solo removal after linked removal only undoes solo batch on first und
 # ---------------------------------------------------------------------------
 
 test_that("load_usgs with empty site fires without error and shows error status", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(usgs_site = "", usgs_pcode = "00060", load_usgs = 1L))
       # removed count should be unaffected
@@ -918,9 +996,11 @@ test_that("load_usgs with empty site fires without error and shows error status"
 })
 
 test_that("load_usgs with non-numeric site fires without error and shows error status", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(usgs_site = "not-a-number", usgs_pcode = "00060", load_usgs = 1L)
@@ -940,13 +1020,15 @@ test_that("load_usgs success populates usgs_ovl and clears overlay_param", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(
         param_select  = edit_first_param,
         overlay_param = edit_second_param  # set a contdat overlay first
@@ -963,9 +1045,11 @@ test_that("load_usgs success populates usgs_ovl and clears overlay_param", {
 # ---------------------------------------------------------------------------
 
 test_that("flagPlot renders without error for the default parameter (no overlay)", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(invisible(output$flagPlot))
     })
@@ -979,9 +1063,11 @@ test_that("flagPlot applies x and y range layout when both ranges are set", {
   #   2. Relayout events store x and y ranges in plot_ranges().
   #   3. A click removal invalidates cur_remaining() → flushReact re-evaluates
   #      flagPlot with rng$x and rng$y now non-NULL, executing lines 963-972.
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(
         `plotly_relayout-A` = '{"xaxis.range[0]":0,"xaxis.range[1]":1}'
@@ -996,9 +1082,11 @@ test_that("flagPlot applies x and y range layout when both ranges are set", {
 })
 
 test_that("plotly_relayout with y range updates plot_ranges y component", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(
@@ -1018,13 +1106,15 @@ test_that("flagPlot renders without error when USGS overlay is active", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
       # usgs_ovl() is now non-NULL; accessing the plot output exercises that branch.
@@ -1038,13 +1128,15 @@ test_that("flagPlot renders without error when USGS overlay is active", {
 # ---------------------------------------------------------------------------
 
 test_that("load_usgs shows error status when readASRusgs throws", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   local_mocked_bindings(
     readASRusgs = function(...) stop("site not found"),
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
@@ -1064,13 +1156,15 @@ test_that("load_usgs shows no-overlap message when all returned timestamps are o
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
@@ -1093,13 +1187,15 @@ test_that("load_usgs uses Etc/GMT+5 fallback when contdat DateTime has no tzone 
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(cont_notzone, tst$dqodat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, cont_notzone, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(
         session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
@@ -1113,9 +1209,11 @@ test_that("load_usgs uses Etc/GMT+5 fallback when contdat DateTime has no tzone 
 # ---------------------------------------------------------------------------
 
 test_that("done button shows modal without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       expect_no_error(session$setInputs(done = 1L))
     })
@@ -1127,9 +1225,11 @@ test_that("done button shows modal without error", {
 # ---------------------------------------------------------------------------
 
 test_that("session$close() does not error when app closed without Done/Close", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # app_closing stays FALSE here, simulating an ungraceful close.
       # Guarded by inherits(session, "MockShinySession"), so the real
@@ -1141,9 +1241,11 @@ test_that("session$close() does not error when app closed without Done/Close", {
 })
 
 test_that("session$close() is a no-op once Done/Close has already fired", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # Simulate done_confirm/done_discard having already set the guard.
       session$env$app_closing <- TRUE
@@ -1157,9 +1259,11 @@ test_that("session$close() is a no-op once Done/Close has already fired", {
 # ---------------------------------------------------------------------------
 
 test_that("apply_dqo with NULL param_select returns early without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       # Fire apply_dqo before param_select is ever set — input$param_select is NULL
       # so the observer hits the early-return branch (line 1076).
       expect_no_error(session$setInputs(apply_dqo = 1L))
@@ -1168,9 +1272,11 @@ test_that("apply_dqo with NULL param_select returns early without error", {
 })
 
 test_that("reset_dqo with NULL param_select returns early without error", {
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       # Same pattern: fire reset_dqo before param_select is set (line 1102).
       expect_no_error(session$setInputs(reset_dqo = 1L))
     })
@@ -1231,9 +1337,11 @@ test_that("linked removal with a single-parameter dataset does not error (length
   # With only one parameter, lp is empty and apply_linked_removals returns early.
   cont_one <- tst$contdat[, c("DateTime", edit_first_param)]
   dqo_one  <- tst$dqodat[tst$dqodat$Parameter == edit_first_param, ]
-  app_one  <- AquaSensR:::editASRflag_app(cont_one, dqo_one)
   suppressWarnings(
-    shiny::testServer(app_one, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, cont_one, dqo_one),
+      {
       session$setInputs(param_select = edit_first_param, link_all = TRUE)
       expect_no_error(session$setInputs(`plotly_click-A` = '{"customdata":1}'))
       expect_equal(output$removed_count, "Removed Points: 1")
@@ -1247,9 +1355,11 @@ test_that("linked removal skips a param whose DateTime was already removed (next
   # input key from plotly_click) so the observer re-fires even though the rowid
   # is the same.  apply_linked_removals finds no mask match for param 2 and
   # hits the `next` branch, leaving param 2 at exactly 1 removal.
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_second_param, link_all = FALSE)
       session$setInputs(`plotly_click-A` = '{"customdata":1}')
       expect_equal(output$removed_count, "Removed Points: 1")
@@ -1283,13 +1393,13 @@ test_that("editASRflag_app pre-populates removed count when removed argument is 
   )
 
   # Second session: pass the cleaned contdat, dqodat, and removed.
-  app2 <- AquaSensR:::editASRflag_app(
-    prior_result$contdat,
-    prior_result$dqodat,
-    removed = prior_result$removed
-  )
   suppressWarnings(
-    shiny::testServer(app2, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, prior_result$contdat,
+    prior_result$dqodat,
+    removed = prior_result$removed),
+      {
       session$setInputs(param_select = edit_first_param)
       # The prior removal should be visible immediately without any new action.
       expect_equal(output$removed_count, "Removed Points: 1")
@@ -1307,13 +1417,13 @@ test_that("editASRflag_app with removed argument: new removal adds to pre-existi
     tst$dqodat
   )
 
-  app2 <- AquaSensR:::editASRflag_app(
-    prior_result$contdat,
-    prior_result$dqodat,
-    removed = prior_result$removed
-  )
   suppressWarnings(
-    shiny::testServer(app2, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, prior_result$contdat,
+    prior_result$dqodat,
+    removed = prior_result$removed),
+      {
       session$setInputs(param_select = edit_first_param, link_all = FALSE)
       # rowid 1 was the prior removal; use rowid 2 to add a new one
       session$setInputs(`plotly_click-A` = '{"customdata":2}')
@@ -1332,13 +1442,13 @@ test_that("start_over with removed argument restores to app-open state, not full
     tst$dqodat
   )
 
-  app2 <- AquaSensR:::editASRflag_app(
-    prior_result$contdat,
-    prior_result$dqodat,
-    removed = prior_result$removed
-  )
   suppressWarnings(
-    shiny::testServer(app2, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, prior_result$contdat,
+    prior_result$dqodat,
+    removed = prior_result$removed),
+      {
       session$setInputs(param_select = edit_first_param, link_all = FALSE)
       # Add a new removal on top of the pre-existing one
       session$setInputs(`plotly_click-A` = '{"customdata":2}')
@@ -1361,13 +1471,15 @@ test_that("selecting contdat overlay after USGS load clears usgs_ovl", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRflag_app(tst$contdat, tst$dqodat)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(id = NULL, tst$contdat, tst$dqodat),
+      {
       session$setInputs(param_select = edit_first_param)
       # Load USGS data
       session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
@@ -1376,5 +1488,79 @@ test_that("selecting contdat overlay after USGS load clears usgs_ovl", {
       # No crash; plot still renders
       expect_equal(output$removed_count, "Removed Points: 0")
     })
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Embedded mode (id != NULL, on_done supplied) — used when editASRflag_server()
+# is mounted as one step of editASRworkflow()
+# ---------------------------------------------------------------------------
+
+test_that("on_done is called instead of stopApp when supplied", {
+  captured <- NULL
+  suppressWarnings(
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(
+        id = "flag_1",
+        cont = tst$contdat,
+        dqo = tst$dqodat,
+        on_done = function(res) captured <<- res
+      ),
+      {
+        session$setInputs(param_select = edit_first_param)
+        session$setInputs(done = 1L)
+        session$setInputs(done_confirm = 1L)
+      }
+    )
+  )
+  expect_false(is.null(captured))
+  expect_named(captured, c("contdat", "dqodat", "removed"))
+})
+
+test_that("embedded mode uses a namespaced plotly source, not the default 'A'", {
+  suppressWarnings(
+    shiny::testServer(
+      AquaSensR:::editASRflag_server,
+      args = list(
+        id = "flag_1",
+        cont = tst$contdat,
+        dqo = tst$dqodat,
+        on_done = function(res) NULL
+      ),
+      {
+        session$setInputs(param_select = edit_first_param)
+        expect_equal(plot_source, "flag_1-flagPlot")
+      }
+    )
+  )
+})
+
+test_that("module construction does not error when param_select is not yet set", {
+  # When editASRflag_server() is mounted from editASRworkflow() (or any other
+  # embedding caller), the module's own startup observer fires as soon as the
+  # server function is called -- before its UI has even reached the browser,
+  # so there is no reported input$param_select value yet (unlike standalone
+  # use, where the browser's initial page load reports every input's
+  # starting value before the first reactive flush runs). Regression test for
+  # a crash reported when opening Flag Review after Bulk Removal and Drift
+  # Correction in editASRworkflow(): "Can't subset rows with
+  # wd$Parameter == p & wd$Flag == flag_type ... must be size 1 or 14, not 0."
+  expect_no_error(
+    suppressWarnings(
+      shiny::testServer(
+        AquaSensR:::editASRflag_server,
+        args = list(
+          id = "flag_1",
+          cont = tst$contdat,
+          dqo = tst$dqodat,
+          on_done = function(res) NULL
+        ),
+        {
+          # deliberately do not call session$setInputs(param_select = ...)
+          invisible(NULL)
+        }
+      )
+    )
   )
 })

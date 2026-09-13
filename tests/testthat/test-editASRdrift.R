@@ -1,3 +1,11 @@
+# testServer() must target editASRdrift_server() directly (not
+# editASRdrift_app()) to expose its internal reactives/locals via
+# session$env -- testServer() on a shinyApp() whose server merely calls a
+# moduleServer()-wrapped function does not instrument that function's
+# environment. Passing id = NULL reproduces standalone behavior exactly
+# (same unnamespaced input/output ids, same "A" plotly event source as
+# before this file was modularized).
+
 make_drift_cont_app <- function(n = 24, tz = "Etc/GMT+5") {
   data.frame(
     DateTime = seq(
@@ -81,38 +89,47 @@ test_that("editASRdrift_result() preserves corrections data frame", {
 
 test_that("server initialises with empty selections and unchanged data", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_equal(working_cont()$Water_Temp_C, cont$Water_Temp_C)
-      expect_equal(length(selected_points()), 0L)
-      expect_equal(nrow(corrections_log()), 0L)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_equal(working_cont()$Water_Temp_C, cont$Water_Temp_C)
+        expect_equal(length(selected_points()), 0L)
+        expect_equal(nrow(corrections_log()), 0L)
+      }
+    )
   )
 })
 
 test_that("server selected_period output reflects empty selection", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_match(output$selected_period, "Click plot")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_match(output$selected_period, "Click plot")
+      }
+    )
   )
 })
 
 test_that("server start-over resets working_cont and log", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(reset_confirm = 1)
-      expect_equal(working_cont()$Water_Temp_C, cont$Water_Temp_C)
-      expect_equal(nrow(corrections_log()), 0L)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(reset_confirm = 1)
+        expect_equal(working_cont()$Water_Temp_C, cont$Water_Temp_C)
+        expect_equal(nrow(corrections_log()), 0L)
+      }
+    )
   )
 })
 
@@ -153,57 +170,69 @@ click_json <- function(dt) paste0('{"x":', as.numeric(dt), '}')
 
 test_that("first plotly click shows start time in selected_period", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
-      expect_match(output$selected_period, "Start:")
-      expect_match(output$selected_period, "Click again")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
+        expect_match(output$selected_period, "Start:")
+        expect_match(output$selected_period, "Click again")
+      }
+    )
   )
 })
 
 test_that("two plotly clicks show start and end in selected_period", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[15]))
-      expect_match(output$selected_period, "Start:")
-      expect_match(output$selected_period, "End:")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[15]))
+        expect_match(output$selected_period, "Start:")
+        expect_match(output$selected_period, "End:")
+      }
+    )
   )
 })
 
 test_that("third plotly click resets selection back to empty", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[15]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
-      expect_match(output$selected_period, "Click plot")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[15]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
+        expect_match(output$selected_period, "Click plot")
+      }
+    )
   )
 })
 
 test_that("switching parameter resets selected points", {
   cont        <- make_drift_cont_app()
   cont$DO_mg_l <- rnorm(nrow(cont), 8, 0.5)
-  app <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
-      expect_match(output$selected_period, "Start:")
-      session$setInputs(param_select = "DO_mg_l")
-      expect_match(output$selected_period, "Click plot")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[5]))
+        expect_match(output$selected_period, "Start:")
+        session$setInputs(param_select = "DO_mg_l")
+        expect_match(output$selected_period, "Click plot")
+      }
+    )
   )
 })
 
@@ -213,83 +242,98 @@ test_that("switching parameter resets selected points", {
 
 test_that("apply_correction corrects end value to cal_ref and logs the correction", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
-      session$setInputs(cal_ref = 22.0, apply_correction = 1)
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
+        session$setInputs(cal_ref = 22.0, apply_correction = 1)
 
-      t2 <- cont$DateTime[20]
-      expect_equal(working_cont()$Water_Temp_C[working_cont()$DateTime == t2], 22.0)
-      expect_equal(nrow(corrections_log()), 1L)
-      expect_equal(corrections_log()$cal_ref, 22.0)
-      expect_equal(length(selected_points()), 0L)
-    })
+        t2 <- cont$DateTime[20]
+        expect_equal(working_cont()$Water_Temp_C[working_cont()$DateTime == t2], 22.0)
+        expect_equal(nrow(corrections_log()), 1L)
+        expect_equal(corrections_log()$cal_ref, 22.0)
+        expect_equal(length(selected_points()), 0L)
+      }
+    )
   )
 })
 
 test_that("apply_correction leaves start value unchanged", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
-      original_start <- cont$Water_Temp_C[3]
-      session$setInputs(cal_ref = 22.0, apply_correction = 1)
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
+        original_start <- cont$Water_Temp_C[3]
+        session$setInputs(cal_ref = 22.0, apply_correction = 1)
 
-      t1 <- cont$DateTime[3]
-      expect_equal(working_cont()$Water_Temp_C[working_cont()$DateTime == t1], original_start)
-    })
+        t1 <- cont$DateTime[3]
+        expect_equal(working_cont()$Water_Temp_C[working_cont()$DateTime == t1], original_start)
+      }
+    )
   )
 })
 
 test_that("apply_correction is a no-op when fewer than 2 points are selected", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      original_vals <- working_cont()$Water_Temp_C
-      session$setInputs(cal_ref = 22.0, apply_correction = 1)
-      expect_equal(working_cont()$Water_Temp_C, original_vals)
-      expect_equal(nrow(corrections_log()), 0L)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        original_vals <- working_cont()$Water_Temp_C
+        session$setInputs(cal_ref = 22.0, apply_correction = 1)
+        expect_equal(working_cont()$Water_Temp_C, original_vals)
+        expect_equal(nrow(corrections_log()), 0L)
+      }
+    )
   )
 })
 
 test_that("apply_correction is a no-op when cal_ref is NA", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
-      original_vals <- working_cont()$Water_Temp_C
-      session$setInputs(cal_ref = NA, apply_correction = 1)
-      expect_equal(working_cont()$Water_Temp_C, original_vals)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
+        original_vals <- working_cont()$Water_Temp_C
+        session$setInputs(cal_ref = NA, apply_correction = 1)
+        expect_equal(working_cont()$Water_Temp_C, original_vals)
+      }
+    )
   )
 })
 
 test_that("corrections_count updates after apply and after undo", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_equal(output$corrections_count, "Corrections Log: 0")
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
-      session$setInputs(cal_ref = 22.0, apply_correction = 1)
-      expect_equal(output$corrections_count, "Corrections Log: 1")
-      session$setInputs(undo = 1L)
-      expect_equal(output$corrections_count, "Corrections Log: 0")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_equal(output$corrections_count, "Corrections Log: 0")
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
+        session$setInputs(cal_ref = 22.0, apply_correction = 1)
+        expect_equal(output$corrections_count, "Corrections Log: 1")
+        session$setInputs(undo = 1L)
+        expect_equal(output$corrections_count, "Corrections Log: 0")
+      }
+    )
   )
 })
 
@@ -299,32 +343,38 @@ test_that("corrections_count updates after apply and after undo", {
 
 test_that("undo restores original values after a correction", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      original_vals <- working_cont()$Water_Temp_C
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
-      session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
-      session$setInputs(cal_ref = 22.0, apply_correction = 1)
-      expect_false(identical(working_cont()$Water_Temp_C, original_vals))
-      session$setInputs(undo = 1L)
-      expect_equal(working_cont()$Water_Temp_C, original_vals)
-      expect_equal(nrow(corrections_log()), 0L)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        original_vals <- working_cont()$Water_Temp_C
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[3]))
+        session$setInputs(`plotly_click-A` = click_json(cont$DateTime[20]))
+        session$setInputs(cal_ref = 22.0, apply_correction = 1)
+        expect_false(identical(working_cont()$Water_Temp_C, original_vals))
+        session$setInputs(undo = 1L)
+        expect_equal(working_cont()$Water_Temp_C, original_vals)
+        expect_equal(nrow(corrections_log()), 0L)
+      }
+    )
   )
 })
 
 test_that("undo with no history is a no-op", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      original_vals <- working_cont()$Water_Temp_C
-      expect_no_error(session$setInputs(undo = 1L))
-      expect_equal(working_cont()$Water_Temp_C, original_vals)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        original_vals <- working_cont()$Water_Temp_C
+        expect_no_error(session$setInputs(undo = 1L))
+        expect_equal(working_cont()$Water_Temp_C, original_vals)
+      }
+    )
   )
 })
 
@@ -334,23 +384,69 @@ test_that("undo with no history is a no-op", {
 
 test_that("reset observer fires without error", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(reset = 1L))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(reset = 1L))
+      }
+    )
   )
 })
 
 test_that("done observer fires without error", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(done = 1L))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(done = 1L))
+      }
+    )
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Embedded mode: on_done callback and plot source isolation
+# ---------------------------------------------------------------------------
+
+test_that("on_done is called instead of stopApp when supplied", {
+  cont <- make_drift_cont_app()
+  captured <- NULL
+  suppressWarnings(
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(
+        id = "drift_1",
+        cont = cont,
+        on_done = function(res) captured <<- res
+      ),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(done = 1L)
+        session$setInputs(done_confirm = 1L)
+      }
+    )
+  )
+  expect_false(is.null(captured))
+  expect_named(captured, c("contdat", "corrections"))
+})
+
+test_that("embedded mode uses a namespaced plotly source, not the default 'A'", {
+  cont <- make_drift_cont_app()
+  suppressWarnings(
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = "drift_1", cont = cont, on_done = function(res) NULL),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_equal(plot_source, "drift_1-driftPlot")
+      }
+    )
   )
 })
 
@@ -360,28 +456,34 @@ test_that("done observer fires without error", {
 
 test_that("session$close() does not error when app closed without Done/Close", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      # app_closing stays FALSE here, simulating an ungraceful close.
-      # Guarded by inherits(session, "MockShinySession"), so the real
-      # stopApp() (unsafe under testServer) must never be reached.
-      expect_no_error(session$close())
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        # app_closing stays FALSE here, simulating an ungraceful close.
+        # Guarded by inherits(session, "MockShinySession"), so the real
+        # stopApp() (unsafe under testServer) must never be reached.
+        expect_no_error(session$close())
+      }
+    )
   )
 })
 
 test_that("session$close() is a no-op once Done/Close has already fired", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      # Simulate done_confirm/done_discard having already set the guard.
-      session$env$app_closing <- TRUE
-      expect_no_error(session$close())
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        # Simulate done_confirm/done_discard having already set the guard.
+        session$env$app_closing <- TRUE
+        expect_no_error(session$close())
+      }
+    )
   )
 })
 
@@ -391,56 +493,68 @@ test_that("session$close() is a no-op once Done/Close has already fired", {
 
 test_that("driftPlot renders without error when overlay_param is a valid cont parameter", {
   cont <- make_drift_cont_multi()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(overlay_param = "DO_mg_l"))
-      expect_no_error(invisible(output$driftPlot))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(overlay_param = "DO_mg_l"))
+        expect_no_error(invisible(output$driftPlot))
+      }
+    )
   )
 })
 
 test_that("driftPlot renders without error when overlay_param is empty (None)", {
   cont <- make_drift_cont_multi()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(overlay_param = "DO_mg_l")
-      expect_no_error(session$setInputs(overlay_param = ""))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(overlay_param = "DO_mg_l")
+        expect_no_error(session$setInputs(overlay_param = ""))
+      }
+    )
   )
 })
 
 test_that("driftPlot renders without error when ext overlay is selected", {
   cont <- make_drift_cont_app()
   ext  <- make_drift_ext()
-  app  <- AquaSensR:::editASRdrift_app(cont, ext = ext)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(
-        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
-      )
-      expect_no_error(invisible(output$driftPlot))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont, ext = ext),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(
+          session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+        )
+        expect_no_error(invisible(output$driftPlot))
+      }
+    )
   )
 })
 
 test_that("driftPlot renders without error when ext is NULL (default, unaffected)", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      # The sentinel is not a real choice when ext is NULL; ext_aligned is
-      # NULL, so this degrades to no overlay (NULL indexing into NULL), not
-      # an error.
-      expect_no_error(
-        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
-      )
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        # The sentinel is not a real choice when ext is NULL; ext_aligned is
+        # NULL, so this degrades to no overlay (NULL indexing into NULL), not
+        # an error.
+        expect_no_error(
+          session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+        )
+      }
+    )
   )
 })
 
@@ -449,14 +563,17 @@ test_that("ext overlay entries are omitted when ext has no temporal overlap with
   no_overlap_ext <- make_drift_ext()
   no_overlap_ext$DateTime <- no_overlap_ext$DateTime - as.difftime(3650, units = "days")
 
-  app <- AquaSensR:::editASRdrift_app(cont, ext = no_overlap_ext)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(
-        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
-      )
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont, ext = no_overlap_ext),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(
+          session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+        )
+      }
+    )
   )
 })
 
@@ -464,13 +581,16 @@ test_that("ext column sharing a name with a cont column remains independently se
   cont <- make_drift_cont_multi()
   ext_collide <- cont[, c("DateTime", "DO_mg_l")]
 
-  app <- AquaSensR:::editASRdrift_app(cont, ext = ext_collide)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(overlay_param = "DO_mg_l"))
-      expect_no_error(session$setInputs(overlay_param = "__ext__DO_mg_l"))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont, ext = ext_collide),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(overlay_param = "DO_mg_l"))
+        expect_no_error(session$setInputs(overlay_param = "__ext__DO_mg_l"))
+      }
+    )
   )
 })
 
@@ -480,14 +600,17 @@ test_that("ext column sharing a name with a cont column remains independently se
 
 test_that("load_usgs with empty site fires without error and shows error status", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(
-        session$setInputs(usgs_site = "", usgs_pcode = "00060", load_usgs = 1L)
-      )
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(
+          session$setInputs(usgs_site = "", usgs_pcode = "00060", load_usgs = 1L)
+        )
+      }
+    )
   )
 })
 
@@ -501,19 +624,22 @@ test_that("load_usgs success populates usgs_ovl and clears overlay_param", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRdrift_app(cont)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(
-        session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
-      )
-      expect_no_error(invisible(output$driftPlot))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(
+          session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+        )
+        expect_no_error(invisible(output$driftPlot))
+      }
+    )
   )
 })
 
@@ -528,20 +654,23 @@ test_that("selecting an overlay entry after USGS load clears usgs_ovl", {
   )
   attr(fake_usgs, "site_name") <- "Fake River"
 
-  app <- AquaSensR:::editASRdrift_app(cont, ext = ext)
   local_mocked_bindings(
     readASRusgs = function(...) fake_usgs,
     .package = "AquaSensR"
   )
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
-      expect_no_error(
-        session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
-      )
-      expect_true(is.null(usgs_ovl()))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont, ext = ext),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(usgs_site = "99999999", usgs_pcode = "00060", load_usgs = 1L)
+        expect_no_error(
+          session$setInputs(overlay_param = "__ext__Sensor_Depth_ft")
+        )
+        expect_true(is.null(usgs_ovl()))
+      }
+    )
   )
 })
 
@@ -551,29 +680,35 @@ test_that("selecting an overlay entry after USGS load clears usgs_ovl", {
 
 test_that("plotly_relayout stores x and y ranges", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(
-        `plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000,"yaxis.range[0]":15,"yaxis.range[1]":25}'
-      )
-      expect_equal(plot_ranges()$x, c(1000, 2000))
-      expect_equal(plot_ranges()$y, c(15, 25))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(
+          `plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000,"yaxis.range[0]":15,"yaxis.range[1]":25}'
+        )
+        expect_equal(plot_ranges()$x, c(1000, 2000))
+        expect_equal(plot_ranges()$y, c(15, 25))
+      }
+    )
   )
 })
 
 test_that("plotly_relayout autorange resets stored ranges to NULL", {
   cont <- make_drift_cont_app()
-  app  <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000}')
-      session$setInputs(`plotly_relayout-A` = '{"xaxis.autorange":true}')
-      expect_null(plot_ranges()$x)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000}')
+        session$setInputs(`plotly_relayout-A` = '{"xaxis.autorange":true}')
+        expect_null(plot_ranges()$x)
+      }
+    )
   )
 })
 
@@ -584,12 +719,15 @@ test_that("plotly_relayout autorange resets stored ranges to NULL", {
 test_that("param_prev and param_next fire without error", {
   cont         <- make_drift_cont_app()
   cont$DO_mg_l <- rnorm(nrow(cont), 8, 0.5)
-  app <- AquaSensR:::editASRdrift_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(param_next = 1L))
-      expect_no_error(session$setInputs(param_prev = 1L))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRdrift_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(param_next = 1L))
+        expect_no_error(session$setInputs(param_prev = 1L))
+      }
+    )
   )
 })

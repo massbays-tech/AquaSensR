@@ -336,4 +336,14 @@ Within the second session, prior removals behave just like removals made interac
 - **Start Over** reverts to the app-open state, meaning prior removals are kept and only changes made in the current session are undone.
 - **Close, discard edits** likewise returns the data as it was at app open, with prior removals intact.
 
+## Running the full workflow
+
+`editASRworkflow()` steps through `editASRbulk()`, `editASRdrift()` (see the [drift correction vignette](driftcorrection.html)), and `editASRflag()` in order from a single launcher screen, with each step's output feeding the next step's input:
+
+```r
+result <- editASRworkflow(contdat, dqodat)
+```
+
+The launcher shows one icon per step where clicking an icon opens that step's editor  and closing it returns to the launcher with the updated data. See `?editASRworkflow` for the full return value and navigation details.
+
 Any number of sessions can be chained this way.  Each session's output becomes the next session's input, and the cumulative `removed` table grows with each round of cleaning.

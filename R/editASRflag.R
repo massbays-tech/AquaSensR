@@ -1,4 +1,4 @@
-﻿#' Interactive editor for continuous monitoring data
+#' Interactive editor for continuous monitoring data
 #'
 #' Opens a Shiny application displaying the QC flag plot from
 #' \code{\link{anlzASRflag}} for each parameter in \code{contdat} and allows
@@ -162,7 +162,10 @@ editASRflag <- function(cont, dqo, removed = NULL, ext = NULL) {
 
 # Builds the shinyApp object without running it.  Separated from editASRflag()
 # so that tests can call shiny::testServer() on the server function directly.
-# Not exported.
+# Not exported. A thin id = NULL / on_done = NULL wrapper around
+# editASRflag_ui()/editASRflag_server(), the same functions editASRworkflow()
+# uses to embed this editor as one step of the combined app -- see those two
+# functions for the actual UI/server logic.
 #
 # @param cont    contdat data frame (see editASRflag).
 # @param dqo     dqodat data frame (see editASRflag).
@@ -179,74 +182,24 @@ editASRflag_app <- function(
   ext = NULL,
   dqo_sidebar_open = FALSE
 ) {
-  # If prior removed observations are supplied, restore their original values
-  # into cont before flagging so QC checks are not affected by the gaps.
-  if (!is.null(removed) && nrow(removed) > 0L) {
-    cont <- cont[order(cont$DateTime), ]
-    for (p in unique(removed$Parameter)) {
-      if (!p %in% names(cont)) {
-        next
-      }
-      p_rows <- removed[removed$Parameter == p, , drop = FALSE]
-      idx <- match(p_rows$DateTime, cont$DateTime)
-      ok <- !is.na(idx)
-      cont[idx[ok], p] <- p_rows$Value[ok]
-    }
+  ui <- editASRflag_ui(NULL, cont, ext = ext, dqo_sidebar_open = dqo_sidebar_open)
+  server <- function(input, output, session) {
+    editASRflag_server(NULL, cont, dqo, removed = removed, ext = ext, on_done = NULL)
   }
+  shiny::shinyApp(ui, server)
+}
 
-  # Compute flags for all parameters up front
-  flagdat_list <- utilASRflagall(cont, dqo)
-  params <- names(flagdat_list)
-
-  # Add stable .rowid to each flagdat
-  flagdat_list <- lapply(flagdat_list, function(fd) {
-    fd$.rowid <- seq_len(nrow(fd))
-    fd
-  })
-
-  # Pre-populate initial removed state from prior removals.
-  # All prior removals share group_id 0L (new session removals start at 1L).
-  init_remaining <- flagdat_list
-  init_history <- stats::setNames(lapply(params, function(p) list()), params)
-  if (!is.null(removed) && nrow(removed) > 0L) {
-    for (p in params) {
-      p_rows <- removed[removed$Parameter == p, , drop = FALSE]
-      if (nrow(p_rows) == 0L) {
-        next
-      }
-      fd <- flagdat_list[[p]]
-      mask <- fd$DateTime %in% p_rows$DateTime
-      if (!any(mask)) {
-        next
-      }
-      init_remaining[[p]] <- fd[!mask, , drop = FALSE]
-      init_history[[p]] <- list(list(
-        group_id = 0L,
-        data = fd[mask, , drop = FALSE]
-      ))
-    }
-  }
-
-  # Build display labels for the parameter selector
-  param_labels <- vapply(
-    params,
-    function(p) {
-      lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
-      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
-    },
-    character(1L)
-  )
-  param_choices <- stats::setNames(params, param_labels)
-
+# Pure helper shared by editASRflag_ui() and editASRflag_server(): aligns
+# `ext`'s DateTime to `cont`'s timezone and clips it to `cont`'s DateTime
+# range, and builds the "Overlay" dropdown's external-file choices. Cheap and
+# side-effect free, so recomputing it once in the UI (to size the Overlay
+# popover text) and once in the server (to build the actual overlay trace) is
+# simpler than threading the result between them. Not exported.
+editASRflag_ext_prep <- function(cont, ext) {
   # Prefix identifying external-file entries in the "Overlay" dropdown's
   # `overlay_param` input.
   EXT_OVERLAY_PREFIX <- "__ext__"
 
-  # One-time external-file prep: align its DateTime to cont's timezone
-  # (mirrors readASRusgs()'s own tz conversion) and clip to cont's DateTime
-  # range (mirrors the USGS fetch's clipping below) so the overlay doesn't
-  # dominate the plot's default x-axis autorange. If there's no temporal
-  # overlap, all entries are omitted, same as if `ext` were NULL.
   ext_aligned <- NULL
   ext_choices <- NULL
   if (!is.null(ext)) {
@@ -284,10 +237,42 @@ editASRflag_app <- function(
     }
   }
 
-  # -------------------------------------------------------------------------
-  # UI
-  # -------------------------------------------------------------------------
-  ui <- bslib::page_sidebar(
+  list(
+    EXT_OVERLAY_PREFIX = EXT_OVERLAY_PREFIX,
+    ext_aligned = ext_aligned,
+    ext_choices = ext_choices
+  )
+}
+
+# Builds the flag editor's UI. Not exported. Note this does NOT need `dqo` --
+# the parameter list is exactly setdiff(names(cont), "DateTime")
+# (utilASRflagall() confirms no dqo-based filtering), so the UI avoids
+# recomputing the flagging itself.
+#
+# @param id   Shiny module id. NULL for standalone use (editASRflag_app()),
+#   producing today's exact unnamespaced input/output ids; a string when
+#   embedded as one step of editASRworkflow().
+# @param cont contdat data frame (see editASRflag).
+# @param ext  Optional external data frame (see editASRflag).
+# @param dqo_sidebar_open Logical (see editASRflag_app()).
+editASRflag_ui <- function(id, cont, ext = NULL, dqo_sidebar_open = FALSE) {
+  ns <- shiny::NS(id)
+
+  params <- setdiff(names(cont), "DateTime")
+  param_labels <- vapply(
+    params,
+    function(p) {
+      lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
+      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
+    },
+    character(1L)
+  )
+  param_choices <- stats::setNames(params, param_labels)
+
+  ext_prep <- editASRflag_ext_prep(cont, ext)
+  ext_choices <- ext_prep$ext_choices
+
+  bslib::page_sidebar(
     title = "Edit: QC Flags",
     sidebar = bslib::sidebar(
       width = 300,
@@ -305,7 +290,7 @@ editASRflag_app <- function(
         )
       ),
       shiny::selectInput(
-        "param_select",
+        ns("param_select"),
         label = NULL,
         choices = param_choices,
         selected = params[1L]
@@ -313,12 +298,12 @@ editASRflag_app <- function(
       shiny::div(
         style = "display: flex; gap: 4px; margin-bottom: 3px;",
         shiny::actionButton(
-          "param_prev",
+          ns("param_prev"),
           "\u2190 Prev",
           style = "flex: 1; background-color: #ebebeb;"
         ),
         shiny::actionButton(
-          "param_next",
+          ns("param_next"),
           "Next \u2192",
           style = "flex: 1; background-color: #ebebeb;"
         )
@@ -340,7 +325,7 @@ editASRflag_app <- function(
         )
       ),
       shiny::selectizeInput(
-        "overlay_param",
+        ns("overlay_param"),
         label = NULL,
         choices = c("None" = ""),
         selected = "",
@@ -370,7 +355,7 @@ editASRflag_app <- function(
         )
       ),
       shiny::selectInput(
-        "usgs_pcode",
+        ns("usgs_pcode"),
         label = NULL,
         choices = c(
           "Streamflow (ft\u00b3/s)" = "00060",
@@ -385,18 +370,18 @@ editASRflag_app <- function(
         shiny::div(
           style = "flex: 1;",
           shiny::textInput(
-            "usgs_site",
+            ns("usgs_site"),
             label = NULL,
             placeholder = "e.g., 01099500"
           )
         ),
         shiny::actionButton(
-          "load_usgs",
+          ns("load_usgs"),
           "Load",
           style = "background-color: #5b7fa6; border-color: #5b7fa6; color: #fff; margin-top: 0;"
         )
       ),
-      shiny::uiOutput("usgs_status"),
+      shiny::uiOutput(ns("usgs_status")),
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4("Linked Removal", style = "margin: 0;"),
@@ -410,7 +395,7 @@ editASRflag_app <- function(
         )
       ),
       shiny::checkboxInput(
-        "link_all",
+        ns("link_all"),
         "Link all parameters",
         value = TRUE
       ),
@@ -453,23 +438,23 @@ editASRflag_app <- function(
         )
       ),
       shiny::actionButton(
-        "undo",
+        ns("undo"),
         "Undo Last Removal",
         style = "width: 100%; background-color: #eee685; border-color: #eee685; color: #000000ff;"
       ),
       shiny::actionButton(
-        "reset",
+        ns("reset"),
         "Start Over",
         style = "width: 100%; background-color: #ff6633; border-color: #ff6633; color: #fff;"
       ),
       shiny::downloadButton(
-        "export_progress",
+        ns("export_progress"),
         "Export Progress",
         icon = NULL,
         style = "width: 100%; display: block; background-color: #3BAD99; border-color: #3BAD99; color: #fff;"
       ),
       shiny::actionButton(
-        "done",
+        ns("done"),
         "Done / Close",
         style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
@@ -477,7 +462,7 @@ editASRflag_app <- function(
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4(
-          shiny::textOutput("removed_count", inline = TRUE),
+          shiny::textOutput(ns("removed_count"), inline = TRUE),
           style = "margin: 0;"
         ),
         bslib::popover(
@@ -491,35 +476,39 @@ editASRflag_app <- function(
       ),
       shiny::div(
         style = "font-size: 12px;",
-        DT::DTOutput("removed_table")
+        DT::DTOutput(ns("removed_table"))
       )
     ),
     shiny::tags$head(
       shiny::tags$script(shiny::HTML(
         'document.addEventListener("click", function(e) {
-           var el = document.getElementById("flagPlot");
-           if (!el) return;
            var btn = e.target.closest("[data-title]");
-           if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
+           if (!btn || btn.dataset.title !== "Reset axes") return;
+           var el = btn.closest(".js-plotly-plot");
+           if (!el) return;
            e.stopPropagation();
            Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
-         }, true);
-         var appDirty = false;
-         window.addEventListener("beforeunload", function (e) {
-           if (!appDirty) return;
-           e.preventDefault();
-           e.returnValue =
-             "Closing without using Done / Close will automatically save your current edits.";
-           return e.returnValue;
-         });
-         Shiny.addCustomMessageHandler("setDirty", function(msg) {
-           appDirty = msg.dirty;
-         });
-         Shiny.addCustomMessageHandler("closeWindow", function(msg) {
-           appDirty = false;
-           window.close();
-         });'
+         }, true);'
       )),
+      if (is.null(id)) {
+        shiny::tags$script(shiny::HTML(
+          'var appDirty = false;
+           window.addEventListener("beforeunload", function (e) {
+             if (!appDirty) return;
+             e.preventDefault();
+             e.returnValue =
+               "Closing without using Done / Close will automatically save your current edits.";
+             return e.returnValue;
+           });
+           Shiny.addCustomMessageHandler("setDirty", function(msg) {
+             appDirty = msg.dirty;
+           });
+           Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+             appDirty = false;
+             window.close();
+           });'
+        ))
+      },
       shiny::tags$style(shiny::HTML(
         # sidebar scrollbar mod for easier selection
         ".bslib-sidebar-layout .bslib-sidebar-resize-handle .resize-indicator {
@@ -588,12 +577,12 @@ editASRflag_app <- function(
         shiny::div(
           style = "display: flex; gap: 4px; margin-bottom: 6px;",
           shiny::actionButton(
-            "apply_dqo",
+            ns("apply_dqo"),
             "Apply",
             style = "flex: 1; background-color: #4a7ebf; border-color: #4a7ebf; color: #fff;"
           ),
           shiny::actionButton(
-            "reset_dqo",
+            ns("reset_dqo"),
             "Reset to original",
             style = "flex: 1; background-color: #ebebeb;"
           )
@@ -615,13 +604,13 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Suspect")),
             shiny::numericInput(
-              "dqo_GrMin_Suspect",
+              ns("dqo_GrMin_Suspect"),
               "Min",
               value = NA,
               width = "100%"
             ),
             shiny::numericInput(
-              "dqo_GrMax_Suspect",
+              ns("dqo_GrMax_Suspect"),
               "Max",
               value = NA,
               width = "100%"
@@ -631,13 +620,13 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Fail")),
             shiny::numericInput(
-              "dqo_GrMin_Fail",
+              ns("dqo_GrMin_Fail"),
               "Min",
               value = NA,
               width = "100%"
             ),
             shiny::numericInput(
-              "dqo_GrMax_Fail",
+              ns("dqo_GrMax_Fail"),
               "Max",
               value = NA,
               width = "100%"
@@ -662,7 +651,7 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Suspect")),
             shiny::numericInput(
-              "dqo_Spike_Suspect",
+              ns("dqo_Spike_Suspect"),
               "Threshold",
               value = NA,
               width = "100%"
@@ -672,7 +661,7 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Fail")),
             shiny::numericInput(
-              "dqo_Spike_Fail",
+              ns("dqo_Spike_Fail"),
               "Threshold",
               value = NA,
               width = "100%"
@@ -697,13 +686,13 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Suspect")),
             shiny::numericInput(
-              "dqo_RoCStDv_Suspect",
+              ns("dqo_RoCStDv_Suspect"),
               "SD mult.",
               value = NA,
               width = "100%"
             ),
             shiny::numericInput(
-              "dqo_RoCHours_Suspect",
+              ns("dqo_RoCHours_Suspect"),
               "Window (hr)",
               value = NA,
               width = "100%"
@@ -713,13 +702,13 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Fail")),
             shiny::numericInput(
-              "dqo_RoCStDv_Fail",
+              ns("dqo_RoCStDv_Fail"),
               "SD mult.",
               value = NA,
               width = "100%"
             ),
             shiny::numericInput(
-              "dqo_RoCHours_Fail",
+              ns("dqo_RoCHours_Fail"),
               "Window (hr)",
               value = NA,
               width = "100%"
@@ -744,13 +733,13 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Suspect")),
             shiny::numericInput(
-              "dqo_FlatN_Suspect",
+              ns("dqo_FlatN_Suspect"),
               "N",
               value = NA,
               width = "100%"
             ),
             shiny::numericInput(
-              "dqo_FlatDelta_Suspect",
+              ns("dqo_FlatDelta_Suspect"),
               "Delta",
               value = NA,
               width = "100%"
@@ -760,13 +749,13 @@ editASRflag_app <- function(
             6,
             shiny::tags$small(shiny::strong("Fail")),
             shiny::numericInput(
-              "dqo_FlatN_Fail",
+              ns("dqo_FlatN_Fail"),
               "N",
               value = NA,
               width = "100%"
             ),
             shiny::numericInput(
-              "dqo_FlatDelta_Fail",
+              ns("dqo_FlatDelta_Fail"),
               "Delta",
               value = NA,
               width = "100%"
@@ -774,14 +763,113 @@ editASRflag_app <- function(
           )
         )
       ),
-      plotly::plotlyOutput("flagPlot", height = "550px")
+      plotly::plotlyOutput(ns("flagPlot"), height = "550px")
     )
   )
+}
 
-  # -------------------------------------------------------------------------
-  # Server
-  # -------------------------------------------------------------------------
-  server <- function(input, output, session) {
+# Builds the flag editor's server logic. Not exported.
+#
+# @param id      Shiny module id (see editASRflag_ui()).
+# @param cont    contdat data frame (see editASRflag).
+# @param dqo     dqodat data frame (see editASRflag).
+# @param removed Optional removed data frame (see editASRflag).
+# @param ext     Optional external data frame (see editASRflag).
+# @param on_done Optional callback invoked with the editASRflag_result() list
+#   when the user finishes (Done/Close, or an ungraceful browser close). When
+#   NULL (standalone use), Done/Close instead calls shiny::stopApp() directly
+#   and this module also registers its own browser-close safety net and
+#   beforeunload warning. When supplied (embedded use, e.g. from
+#   editASRworkflow()), those two are skipped -- the caller is responsible
+#   for its own safety net across whichever step is currently active, and
+#   for closing the browser tab, if at all.
+editASRflag_server <- function(id, cont, dqo, removed = NULL, ext = NULL, on_done = NULL) {
+  # If prior removed observations are supplied, restore their original values
+  # into cont before flagging so QC checks are not affected by the gaps.
+  if (!is.null(removed) && nrow(removed) > 0L) {
+    cont <- cont[order(cont$DateTime), ]
+    for (p in unique(removed$Parameter)) {
+      if (!p %in% names(cont)) {
+        next
+      }
+      p_rows <- removed[removed$Parameter == p, , drop = FALSE]
+      idx <- match(p_rows$DateTime, cont$DateTime)
+      ok <- !is.na(idx)
+      cont[idx[ok], p] <- p_rows$Value[ok]
+    }
+  }
+
+  # Compute flags for all parameters up front
+  flagdat_list <- utilASRflagall(cont, dqo)
+  params <- names(flagdat_list)
+
+  # Add stable .rowid to each flagdat
+  flagdat_list <- lapply(flagdat_list, function(fd) {
+    fd$.rowid <- seq_len(nrow(fd))
+    fd
+  })
+
+  # Pre-populate initial removed state from prior removals.
+  # All prior removals share group_id 0L (new session removals start at 1L).
+  init_remaining <- flagdat_list
+  init_history <- stats::setNames(lapply(params, function(p) list()), params)
+  if (!is.null(removed) && nrow(removed) > 0L) {
+    for (p in params) {
+      p_rows <- removed[removed$Parameter == p, , drop = FALSE]
+      if (nrow(p_rows) == 0L) {
+        next
+      }
+      fd <- flagdat_list[[p]]
+      mask <- fd$DateTime %in% p_rows$DateTime
+      if (!any(mask)) {
+        next
+      }
+      init_remaining[[p]] <- fd[!mask, , drop = FALSE]
+      init_history[[p]] <- list(list(
+        group_id = 0L,
+        data = fd[mask, , drop = FALSE]
+      ))
+    }
+  }
+
+  # Build display labels for the parameter selector
+  param_labels <- vapply(
+    params,
+    function(p) {
+      lbl <- paramsASR[paramsASR$Parameter == p, "Label"]
+      if (length(lbl) == 0L || is.na(lbl[1L])) p else as.character(lbl[1L])
+    },
+    character(1L)
+  )
+  param_choices <- stats::setNames(params, param_labels)
+
+  ext_prep <- editASRflag_ext_prep(cont, ext)
+  EXT_OVERLAY_PREFIX <- ext_prep$EXT_OVERLAY_PREFIX
+  ext_aligned <- ext_prep$ext_aligned
+  ext_choices <- ext_prep$ext_choices
+
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    # plotly::event_data() is keyed by a plain `source` string shared across
+    # the whole R session (it reads/writes session$rootScope(), bypassing
+    # module namespacing entirely) -- give each embedded instance its own
+    # source so a stale prior mount's click/selection/relayout events can
+    # never be picked up by a later mount. Standalone use keeps the default
+    # "A".
+    plot_source <- if (is.null(id)) "A" else ns("flagPlot")
+
+    # Routes "finish" through stopApp() (standalone) or on_done() (embedded)
+    # so every completion path -- Done/Close and the ungraceful-close safety
+    # net below -- shares one implementation.
+    finish <- function(result) {
+      if (is.null(on_done)) {
+        shiny::stopApp(returnValue = result)
+      } else {
+        on_done(result)
+      }
+    }
+
     # Mutable copy of the DQO used for on-the-fly threshold edits.
     working_dqo <- shiny::reactiveVal(dqo)
 
@@ -930,7 +1018,19 @@ editASRflag_app <- function(
         choices = c("None" = "", param_choices, ext_choices),
         selected = ""
       )
-      update_dqo_inputs(working_dqo(), input$param_select)
+      # input$param_select is only guaranteed non-NULL here when this UI was
+      # part of the browser's initial page load (standalone use): the client
+      # reports every input's starting value back to the server before the
+      # first reactive flush runs. When this module is instead mounted later
+      # via renderUI() (embedded use, e.g. editASRworkflow()), this observer
+      # fires as soon as the module server function is called -- which is
+      # before its own UI has even been sent to the browser, so there is no
+      # value to report back yet. Skip in that case; the
+      # observeEvent(input$param_select, ...) below calls update_dqo_inputs()
+      # itself as soon as the real default arrives.
+      if (!is.null(input$param_select)) {
+        update_dqo_inputs(working_dqo(), input$param_select)
+      }
     }) |>
       shiny::bindEvent(TRUE, once = TRUE)
 
@@ -983,9 +1083,9 @@ editASRflag_app <- function(
     })
 
     shiny::observeEvent(
-      plotly::event_data("plotly_relayout", session = session),
+      plotly::event_data("plotly_relayout", source = plot_source, session = session),
       {
-        ev <- plotly::event_data("plotly_relayout", session = session)
+        ev <- plotly::event_data("plotly_relayout", source = plot_source, session = session)
         pr <- plot_ranges()
 
         if (
@@ -999,7 +1099,7 @@ editASRflag_app <- function(
           pr$y <- c(ev[["yaxis.range[0]"]], ev[["yaxis.range[1]"]])
         }
         if (
-          !is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])
+          isTRUE(ev[["xaxis.autorange"]]) || isTRUE(ev[["yaxis.autorange"]])
         ) {
           pr$x <- NULL
           pr$y <- NULL
@@ -1175,7 +1275,7 @@ editASRflag_app <- function(
           NULL
         }
       }
-      p <- anlzASRflag(cur_remaining(), overlay = ovl)
+      p <- anlzASRflag(cur_remaining(), overlay = ovl, source = plot_source)
       p <- plotly::event_register(p, "plotly_relayout")
       rng <- shiny::isolate(plot_ranges())
       if (!is.null(rng$x)) {
@@ -1195,9 +1295,9 @@ editASRflag_app <- function(
 
     # ---- Box / lasso selection ----------------------------------------------
     shiny::observeEvent(
-      plotly::event_data("plotly_selected", session = session),
+      plotly::event_data("plotly_selected", source = plot_source, session = session),
       {
-        sel <- plotly::event_data("plotly_selected", session = session)
+        sel <- plotly::event_data("plotly_selected", source = plot_source, session = session)
         if (!is.data.frame(sel) || nrow(sel) == 0L) {
           return()
         }
@@ -1222,9 +1322,9 @@ editASRflag_app <- function(
 
     # ---- Single-point click -------------------------------------------------
     shiny::observeEvent(
-      plotly::event_data("plotly_click", session = session),
+      plotly::event_data("plotly_click", source = plot_source, session = session),
       {
-        click <- plotly::event_data("plotly_click", session = session)
+        click <- plotly::event_data("plotly_click", source = plot_source, session = session)
         if (is.null(click)) {
           return()
         }
@@ -1342,7 +1442,7 @@ editASRflag_app <- function(
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
           shiny::actionButton(
-            "reset_confirm",
+            ns("reset_confirm"),
             "Proceed",
             style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
           )
@@ -1361,50 +1461,49 @@ editASRflag_app <- function(
     })
 
     # ---- Ungraceful close safety net (browser tab/window closed without
-    # clicking Done/Close, or the page was refreshed) --------------------------
-    # onSessionEnded() fires on every disconnect. app_closing distinguishes a
-    # normal Done/Close (which already calls stopApp() itself) from anything
-    # else, so this never double-invokes stopApp(). Falls back to saving the
-    # current edit state, same as "Close, save edits".
+    # clicking Done/Close, or the page was refreshed) -- standalone only; an
+    # embedded instance's safety net is the caller's responsibility (it owns
+    # the browser tab, this module doesn't). --------------------------------
     app_closing <- FALSE
 
-    # TRUE if the session has made any removal not already present in the
-    # `removed` argument (group_id 0L marks those pre-loaded entries) or has
-    # changed the DQO thresholds. Drives the browser's beforeunload warning so
-    # it only appears when there is something to lose by closing ungracefully.
-    has_unsaved_edits <- shiny::reactive({
-      new_removal <- any(vapply(
-        removed_history_list(),
-        function(h) {
-          if (length(h) == 0L) {
-            return(FALSE)
-          }
-          any(vapply(h, function(x) x$group_id != 0L, logical(1)))
-        },
-        logical(1)
-      ))
-      new_removal || !identical(working_dqo(), dqo)
-    })
+    if (is.null(on_done)) {
+      # TRUE if the session has made any removal not already present in the
+      # `removed` argument (group_id 0L marks those pre-loaded entries) or
+      # has changed the DQO thresholds. Drives the browser's beforeunload
+      # warning so it only appears when there is something to lose by
+      # closing ungracefully.
+      has_unsaved_edits <- shiny::reactive({
+        new_removal <- any(vapply(
+          removed_history_list(),
+          function(h) {
+            if (length(h) == 0L) {
+              return(FALSE)
+            }
+            any(vapply(h, function(x) x$group_id != 0L, logical(1)))
+          },
+          logical(1)
+        ))
+        new_removal || !identical(working_dqo(), dqo)
+      })
 
-    shiny::observe({
-      session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
-    })
+      shiny::observe({
+        session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
+      })
 
-    session$onSessionEnded(function() {
-      if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
-        return(invisible(NULL))
-      }
-      shiny::isolate(
-        shiny::stopApp(
-          returnValue = editASRflag_result(
+      session$onSessionEnded(function() {
+        if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
+          return(invisible(NULL))
+        }
+        shiny::isolate(
+          finish(editASRflag_result(
             cont,
             base_flagdat_list(),
             remaining_list(),
             working_dqo()
-          )
+          ))
         )
-      )
-    })
+      })
+    }
 
     # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
@@ -1415,12 +1514,12 @@ editASRflag_app <- function(
           style = "display: flex; gap: 4px; justify-content: flex-end;",
           shiny::modalButton("Cancel"),
           shiny::actionButton(
-            "done_discard",
+            ns("done_discard"),
             "Close, discard edits",
             style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
           ),
           shiny::actionButton(
-            "done_confirm",
+            ns("done_confirm"),
             "Close, save edits",
             style = "background-color: #037B71; border-color: #037B71; color: #fff;"
           )
@@ -1432,33 +1531,34 @@ editASRflag_app <- function(
     shiny::observeEvent(input$done_discard, {
       app_closing <<- TRUE
       shiny::removeModal()
-      session$sendCustomMessage("closeWindow", list())
-      shiny::stopApp(
-        returnValue = editASRflag_result(
-          cont,
-          flagdat_list,
-          init_remaining,
-          dqo
-        )
-      )
+      if (is.null(on_done)) {
+        session$sendCustomMessage("closeWindow", list())
+      }
+      finish(editASRflag_result(
+        cont,
+        flagdat_list,
+        init_remaining,
+        dqo
+      ))
     })
 
     shiny::observeEvent(input$done_confirm, {
       app_closing <<- TRUE
       shiny::removeModal()
-      # Ask the browser to close the tab.  This works in RStudio's viewer pane
-      # and Electron/webview contexts; standard browser tabs opened by the OS
-      # block window.close() for security reasons, so it silently does nothing
-      # there — the app still disconnects when stopApp() terminates the server.
-      session$sendCustomMessage("closeWindow", list())
-      shiny::stopApp(
-        returnValue = editASRflag_result(
-          cont,
-          base_flagdat_list(),
-          remaining_list(),
-          working_dqo()
-        )
-      )
+      if (is.null(on_done)) {
+        # Ask the browser to close the tab.  This works in RStudio's viewer
+        # pane and Electron/webview contexts; standard browser tabs opened by
+        # the OS block window.close() for security reasons, so it silently
+        # does nothing there -- the app still disconnects when stopApp()
+        # terminates the server.
+        session$sendCustomMessage("closeWindow", list())
+      }
+      finish(editASRflag_result(
+        cont,
+        base_flagdat_list(),
+        remaining_list(),
+        working_dqo()
+      ))
     })
 
     # ---- Export Progress: zip of Excel files --------------------------------
@@ -1527,9 +1627,7 @@ editASRflag_app <- function(
         rownames = FALSE
       )
     })
-  }
-
-  shiny::shinyApp(ui, server)
+  })
 }
 
 # Computes the editASRflag return value from the final reactive state.

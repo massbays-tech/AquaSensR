@@ -91,20 +91,31 @@ editASRbulk <- function(cont, removed = NULL) {
 
 # Builds the shinyApp object without running it. Separated from editASRbulk()
 # so that tests can call shiny::testServer() on the server function directly.
-# Not exported.
+# Not exported. A thin id = NULL / on_done = NULL wrapper around
+# editASRbulk_ui()/editASRbulk_server(), the same functions editASRworkflow()
+# uses to embed this editor as one step of the combined app -- see those two
+# functions for the actual UI/server logic.
 #
 # @param cont    contdat data frame (see editASRbulk).
 # @param removed Optional removed data frame (see editASRbulk).
 editASRbulk_app <- function(cont, removed = NULL) {
-  full_cont <- cont[order(cont$DateTime), ]
-  full_cont$.rowid <- seq_len(nrow(full_cont))
-  params <- setdiff(names(full_cont), c("DateTime", ".rowid"))
-
-  tz <- attr(full_cont$DateTime, "tzone")
-  if (is.null(tz) || !nzchar(tz)) {
-    tz <- "UTC"
+  ui <- editASRbulk_ui(NULL, cont)
+  server <- function(input, output, session) {
+    editASRbulk_server(NULL, cont, removed = removed, on_done = NULL)
   }
+  shiny::shinyApp(ui, server)
+}
 
+# Builds the bulk-removal editor's UI. Not exported.
+#
+# @param id   Shiny module id. NULL for standalone use (editASRbulk_app()),
+#   producing today's exact unnamespaced input/output ids; a string when
+#   embedded as one step of editASRworkflow().
+# @param cont contdat data frame (see editASRbulk).
+editASRbulk_ui <- function(id, cont) {
+  ns <- shiny::NS(id)
+
+  params <- setdiff(names(cont), "DateTime")
   param_labels <- vapply(
     params,
     function(p) {
@@ -115,35 +126,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
   )
   param_choices <- stats::setNames(params, param_labels)
 
-  # Prior removals become the initial history entry, preserved through
-  # "Start Over" and returned by "Close, discard edits". Only
-  # Parameter/DateTime/Value are used, so a `removed` argument carried over
-  # from editASRflag() (which also has flag columns) works unmodified.
-  init_history <- if (!is.null(removed) && nrow(removed) > 0L) {
-    list(removed[, c("Parameter", "DateTime", "Value"), drop = FALSE])
-  } else {
-    list()
-  }
-  init_removed_points <- if (length(init_history) == 0L) {
-    NULL
-  } else {
-    do.call(rbind, init_history)
-  }
-
-  empty_removed <- data.frame(
-    Parameter = character(0),
-    DateTime = as.POSIXct(character(0), tz = tz),
-    Value = numeric(0),
-    stringsAsFactors = FALSE
-  )
-  if (is.null(init_removed_points)) {
-    init_removed_points <- empty_removed
-  }
-
-  # -------------------------------------------------------------------------
-  # UI
-  # -------------------------------------------------------------------------
-  ui <- bslib::page_sidebar(
+  bslib::page_sidebar(
     title = "Edit: Bulk Removal",
     sidebar = bslib::sidebar(
       width = 300,
@@ -161,7 +144,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
         )
       ),
       shiny::selectInput(
-        "param_select",
+        ns("param_select"),
         label = NULL,
         choices = param_choices,
         selected = params[1L]
@@ -169,12 +152,12 @@ editASRbulk_app <- function(cont, removed = NULL) {
       shiny::div(
         style = "display: flex; gap: 4px; margin-bottom: 3px;",
         shiny::actionButton(
-          "param_prev",
+          ns("param_prev"),
           "\u2190 Prev",
           style = "flex: 1; background-color: #ebebeb;"
         ),
         shiny::actionButton(
-          "param_next",
+          ns("param_next"),
           "Next \u2192",
           style = "flex: 1; background-color: #ebebeb;"
         )
@@ -218,23 +201,23 @@ editASRbulk_app <- function(cont, removed = NULL) {
         )
       ),
       shiny::actionButton(
-        "undo",
+        ns("undo"),
         "Undo Last Removal",
         style = "width: 100%; background-color: #eee685; border-color: #eee685; color: #000000ff;"
       ),
       shiny::actionButton(
-        "reset",
+        ns("reset"),
         "Start Over",
         style = "width: 100%; background-color: #ff6633; border-color: #ff6633; color: #fff;"
       ),
       shiny::downloadButton(
-        "export_progress",
+        ns("export_progress"),
         "Export Progress",
         icon = NULL,
         style = "width: 100%; display: block; background-color: #3BAD99; border-color: #3BAD99; color: #fff;"
       ),
       shiny::actionButton(
-        "done",
+        ns("done"),
         "Done / Close",
         style = "width: 100%; background-color: #037B71; border-color: #037B71; color: #fff;"
       ),
@@ -242,7 +225,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
         shiny::h4(
-          shiny::textOutput("removed_count", inline = TRUE),
+          shiny::textOutput(ns("removed_count"), inline = TRUE),
           style = "margin: 0;"
         ),
         bslib::popover(
@@ -256,35 +239,39 @@ editASRbulk_app <- function(cont, removed = NULL) {
       ),
       shiny::div(
         style = "font-size: 12px;",
-        DT::DTOutput("removed_table")
+        DT::DTOutput(ns("removed_table"))
       )
     ),
     shiny::tags$head(
       shiny::tags$script(shiny::HTML(
         'document.addEventListener("click", function(e) {
-           var el = document.getElementById("bulkPlot");
-           if (!el) return;
            var btn = e.target.closest("[data-title]");
-           if (!btn || btn.dataset.title !== "Reset axes" || !el.contains(btn)) return;
+           if (!btn || btn.dataset.title !== "Reset axes") return;
+           var el = btn.closest(".js-plotly-plot");
+           if (!el) return;
            e.stopPropagation();
            Plotly.relayout(el, {"xaxis.autorange": true, "yaxis.autorange": true});
-         }, true);
-         var appDirty = false;
-         window.addEventListener("beforeunload", function (e) {
-           if (!appDirty) return;
-           e.preventDefault();
-           e.returnValue =
-             "Closing without using Done / Close will automatically save your current edits.";
-           return e.returnValue;
-         });
-         Shiny.addCustomMessageHandler("setDirty", function(msg) {
-           appDirty = msg.dirty;
-         });
-         Shiny.addCustomMessageHandler("closeWindow", function(msg) {
-           appDirty = false;
-           window.close();
-         });'
+         }, true);'
       )),
+      if (is.null(id)) {
+        shiny::tags$script(shiny::HTML(
+          'var appDirty = false;
+           window.addEventListener("beforeunload", function (e) {
+             if (!appDirty) return;
+             e.preventDefault();
+             e.returnValue =
+               "Closing without using Done / Close will automatically save your current edits.";
+             return e.returnValue;
+           });
+           Shiny.addCustomMessageHandler("setDirty", function(msg) {
+             appDirty = msg.dirty;
+           });
+           Shiny.addCustomMessageHandler("closeWindow", function(msg) {
+             appDirty = false;
+             window.close();
+           });'
+        ))
+      },
       shiny::tags$style(shiny::HTML(
         # sidebar scrollbar mod for easier selection
         ".bslib-sidebar-layout .bslib-sidebar-resize-handle .resize-indicator {
@@ -341,13 +328,79 @@ editASRbulk_app <- function(cont, removed = NULL) {
       "This app is only for trimming the edges of a deployment: do not use it to remove a stretch from the middle of the record (e.g., a cleaning/redeployment gap); use editASRflag() for that instead.",
       "Double-click the plot background to clear a selection and start a new one."
     ),
-    plotly::plotlyOutput("bulkPlot", height = "550px")
+    plotly::plotlyOutput(ns("bulkPlot"), height = "550px")
   )
+}
 
-  # -------------------------------------------------------------------------
-  # Server
-  # -------------------------------------------------------------------------
-  server <- function(input, output, session) {
+# Builds the bulk-removal editor's server logic. Not exported.
+#
+# @param id      Shiny module id (see editASRbulk_ui()).
+# @param cont    contdat data frame (see editASRbulk).
+# @param removed Optional removed data frame (see editASRbulk).
+# @param on_done Optional callback invoked with the editASRbulk_result() list
+#   when the user finishes (Done/Close, or an ungraceful browser close). When
+#   NULL (standalone use), Done/Close instead calls shiny::stopApp() directly
+#   and this module also registers its own browser-close safety net and
+#   beforeunload warning. When supplied (embedded use, e.g. from
+#   editASRworkflow()), those two are skipped -- the caller is responsible
+#   for its own safety net across whichever step is currently active, and
+#   for closing the browser tab, if at all.
+editASRbulk_server <- function(id, cont, removed = NULL, on_done = NULL) {
+  full_cont <- cont[order(cont$DateTime), ]
+  full_cont$.rowid <- seq_len(nrow(full_cont))
+  params <- setdiff(names(full_cont), c("DateTime", ".rowid"))
+
+  tz <- attr(full_cont$DateTime, "tzone")
+  if (is.null(tz) || !nzchar(tz)) {
+    tz <- "UTC"
+  }
+
+  # Prior removals become the initial history entry, preserved through
+  # "Start Over" and returned by "Close, discard edits". Only
+  # Parameter/DateTime/Value are used, so a `removed` argument carried over
+  # from editASRflag() (which also has flag columns) works unmodified.
+  init_history <- if (!is.null(removed) && nrow(removed) > 0L) {
+    list(removed[, c("Parameter", "DateTime", "Value"), drop = FALSE])
+  } else {
+    list()
+  }
+  init_removed_points <- if (length(init_history) == 0L) {
+    NULL
+  } else {
+    do.call(rbind, init_history)
+  }
+
+  empty_removed <- data.frame(
+    Parameter = character(0),
+    DateTime = as.POSIXct(character(0), tz = tz),
+    Value = numeric(0),
+    stringsAsFactors = FALSE
+  )
+  if (is.null(init_removed_points)) {
+    init_removed_points <- empty_removed
+  }
+
+  shiny::moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    # plotly::event_data() is keyed by a plain `source` string shared across
+    # the whole R session (it reads/writes session$rootScope(), bypassing
+    # module namespacing entirely) -- give each embedded instance its own
+    # source so a stale prior mount's selection/relayout events can never be
+    # picked up by a later mount. Standalone use keeps the default "A".
+    plot_source <- if (is.null(id)) "A" else ns("bulkPlot")
+
+    # Routes "finish" through stopApp() (standalone) or on_done() (embedded)
+    # so every completion path -- Done/Close and the ungraceful-close safety
+    # net below -- shares one implementation.
+    finish <- function(result) {
+      if (is.null(on_done)) {
+        shiny::stopApp(returnValue = result)
+      } else {
+        on_done(result)
+      }
+    }
+
     plot_ranges <- shiny::reactiveVal(list(x = NULL, y = NULL))
 
     # `history`: single global undo stack (removal is always linked, so there
@@ -402,9 +455,9 @@ editASRbulk_app <- function(cont, removed = NULL) {
 
     # ---- Zoom state ---------------------------------------------------------
     shiny::observeEvent(
-      plotly::event_data("plotly_relayout", session = session),
+      plotly::event_data("plotly_relayout", source = plot_source, session = session),
       {
-        ev <- plotly::event_data("plotly_relayout", session = session)
+        ev <- plotly::event_data("plotly_relayout", source = plot_source, session = session)
         pr <- plot_ranges()
 
         if (
@@ -418,7 +471,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
           pr$y <- c(ev[["yaxis.range[0]"]], ev[["yaxis.range[1]"]])
         }
         if (
-          !is.null(ev[["xaxis.autorange"]]) || !is.null(ev[["yaxis.autorange"]])
+          isTRUE(ev[["xaxis.autorange"]]) || isTRUE(ev[["yaxis.autorange"]])
         ) {
           pr$x <- NULL
           pr$y <- NULL
@@ -430,9 +483,9 @@ editASRbulk_app <- function(cont, removed = NULL) {
 
     # ---- Box / lasso selection -----------------------------------------------
     shiny::observeEvent(
-      plotly::event_data("plotly_selected", session = session),
+      plotly::event_data("plotly_selected", source = plot_source, session = session),
       {
-        sel <- plotly::event_data("plotly_selected", session = session)
+        sel <- plotly::event_data("plotly_selected", source = plot_source, session = session)
         if (!is.data.frame(sel) || nrow(sel) == 0L) {
           return()
         }
@@ -477,7 +530,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
         footer = shiny::tagList(
           shiny::modalButton("Cancel"),
           shiny::actionButton(
-            "reset_confirm",
+            ns("reset_confirm"),
             "Proceed",
             style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
           )
@@ -492,27 +545,29 @@ editASRbulk_app <- function(cont, removed = NULL) {
     })
 
     # ---- Ungraceful close safety net (browser tab/window closed without
-    # clicking Done/Close, or the page was refreshed) --------------------------
+    # clicking Done/Close, or the page was refreshed) -- standalone only; an
+    # embedded instance's safety net is the caller's responsibility (it owns
+    # the browser tab, this module doesn't). --------------------------------
     app_closing <- FALSE
 
-    has_unsaved_edits <- shiny::reactive({
-      length(history()) != length(init_history)
-    })
+    if (is.null(on_done)) {
+      has_unsaved_edits <- shiny::reactive({
+        length(history()) != length(init_history)
+      })
 
-    shiny::observe({
-      session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
-    })
+      shiny::observe({
+        session$sendCustomMessage("setDirty", list(dirty = has_unsaved_edits()))
+      })
 
-    session$onSessionEnded(function() {
-      if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
-        return(invisible(NULL))
-      }
-      shiny::isolate(
-        shiny::stopApp(
-          returnValue = editASRbulk_result(full_cont, removed_points())
+      session$onSessionEnded(function() {
+        if (isTRUE(app_closing) || inherits(session, "MockShinySession")) {
+          return(invisible(NULL))
+        }
+        shiny::isolate(
+          finish(editASRbulk_result(full_cont, removed_points()))
         )
-      )
-    })
+      })
+    }
 
     # ---- Done: confirm then return results to the R session -----------------
     shiny::observeEvent(input$done, {
@@ -523,12 +578,12 @@ editASRbulk_app <- function(cont, removed = NULL) {
           style = "display: flex; gap: 4px; justify-content: flex-end;",
           shiny::modalButton("Cancel"),
           shiny::actionButton(
-            "done_discard",
+            ns("done_discard"),
             "Close, discard edits",
             style = "background-color: #ff6633; border-color: #ff6633; color: #fff;"
           ),
           shiny::actionButton(
-            "done_confirm",
+            ns("done_confirm"),
             "Close, save edits",
             style = "background-color: #037B71; border-color: #037B71; color: #fff;"
           )
@@ -540,19 +595,19 @@ editASRbulk_app <- function(cont, removed = NULL) {
     shiny::observeEvent(input$done_discard, {
       app_closing <<- TRUE
       shiny::removeModal()
-      session$sendCustomMessage("closeWindow", list())
-      shiny::stopApp(
-        returnValue = editASRbulk_result(full_cont, init_removed_points)
-      )
+      if (is.null(on_done)) {
+        session$sendCustomMessage("closeWindow", list())
+      }
+      finish(editASRbulk_result(full_cont, init_removed_points))
     })
 
     shiny::observeEvent(input$done_confirm, {
       app_closing <<- TRUE
       shiny::removeModal()
-      session$sendCustomMessage("closeWindow", list())
-      shiny::stopApp(
-        returnValue = editASRbulk_result(full_cont, removed_points())
-      )
+      if (is.null(on_done)) {
+        session$sendCustomMessage("closeWindow", list())
+      }
+      finish(editASRbulk_result(full_cont, removed_points()))
     })
 
     # ---- Export Progress: zip of Excel files --------------------------------
@@ -621,6 +676,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
         marker = list(opacity = 0, size = 6),
         name = y_label,
         showlegend = FALSE,
+        source = plot_source,
         hovertemplate = paste0(
           "<b>",
           y_label,
@@ -691,9 +747,7 @@ editASRbulk_app <- function(cont, removed = NULL) {
         rownames = FALSE
       )
     })
-  }
-
-  shiny::shinyApp(ui, server)
+  })
 }
 
 # Computes the editASRbulk return value from the final reactive state.

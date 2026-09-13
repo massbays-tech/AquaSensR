@@ -1,8 +1,14 @@
 # Tests for editASRbulk split across two approaches (same convention as
 # test-editASRflag.R / test-editASRdrift.R):
 #
-# 1. shiny::testServer() via editASRbulk_app() — tests reactive server logic
-#    (removals, undo, reset, navigation) without a browser.
+# 1. shiny::testServer() via editASRbulk_server() — tests reactive server logic
+#    (removals, undo, reset, navigation) without a browser. testServer() must
+#    target editASRbulk_server() directly (not editASRbulk_app()) to expose
+#    its internal reactives/locals via session$env -- testServer() on a
+#    shinyApp() whose server merely calls a moduleServer()-wrapped function
+#    does not instrument that function's environment. Passing id = NULL
+#    reproduces standalone behavior exactly (same unnamespaced input/output
+#    ids, same "A" plotly event source as before this file was modularized).
 #
 # 2. Direct calls to editASRbulk_result() — tests the "done" output logic as
 #    pure R (no stopApp, no Shiny reactive domain needed).
@@ -76,12 +82,15 @@ test_that("app uses parameter name as label when param is not in paramsASR", {
 
 test_that("removed_count output starts at zero", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_equal(output$removed_count, "Removed Timestamps: 0")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_equal(output$removed_count, "Removed Timestamps: 0")
+      }
+    )
   )
 })
 
@@ -91,66 +100,78 @@ test_that("removed_count output starts at zero", {
 
 test_that("plotly_selected removes the targeted timestamps from every parameter", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(
-        `plotly_selected-A` = '[{"customdata":1},{"customdata":2}]'
-      )
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(
+          `plotly_selected-A` = '[{"customdata":1},{"customdata":2}]'
+        )
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
 
-      rp <- removed_points()
-      expect_equal(nrow(rp), 4L) # 2 timestamps x 2 parameters
-      expect_setequal(rp$Parameter, c("Water_Temp_C", "DO_mg_l"))
-    })
+        rp <- removed_points()
+        expect_equal(nrow(rp), 4L) # 2 timestamps x 2 parameters
+        expect_setequal(rp$Parameter, c("Water_Temp_C", "DO_mg_l"))
+      }
+    )
   )
 })
 
 test_that("removal is visible after switching parameters (global, not per-param)", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 1")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 1")
 
-      session$setInputs(param_select = "DO_mg_l")
-      expect_equal(output$removed_count, "Removed Timestamps: 1")
-    })
+        session$setInputs(param_select = "DO_mg_l")
+        expect_equal(output$removed_count, "Removed Timestamps: 1")
+      }
+    )
   )
 })
 
 test_that("removed table is filtered to the currently selected parameter", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
 
-      rp <- cur_removed_points()
-      expect_equal(nrow(rp), 2L)
-      expect_true(all(rp$Parameter == "Water_Temp_C"))
+        rp <- cur_removed_points()
+        expect_equal(nrow(rp), 2L)
+        expect_true(all(rp$Parameter == "Water_Temp_C"))
 
-      session$setInputs(param_select = "DO_mg_l")
-      rp2 <- cur_removed_points()
-      expect_equal(nrow(rp2), 2L)
-      expect_true(all(rp2$Parameter == "DO_mg_l"))
-    })
+        session$setInputs(param_select = "DO_mg_l")
+        rp2 <- cur_removed_points()
+        expect_equal(nrow(rp2), 2L)
+        expect_true(all(rp2$Parameter == "DO_mg_l"))
+      }
+    )
   )
 })
 
 test_that("plotly_selected with an empty selection is a no-op", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(`plotly_selected-A` = "null"))
-      expect_equal(output$removed_count, "Removed Timestamps: 0")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(`plotly_selected-A` = "null"))
+        expect_equal(output$removed_count, "Removed Timestamps: 0")
+      }
+    )
   )
 })
 
@@ -160,47 +181,56 @@ test_that("plotly_selected with an empty selection is a no-op", {
 
 test_that("undo restores the removed timestamps for every parameter", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
 
-      session$setInputs(undo = 1L)
-      expect_equal(output$removed_count, "Removed Timestamps: 0")
-    })
+        session$setInputs(undo = 1L)
+        expect_equal(output$removed_count, "Removed Timestamps: 0")
+      }
+    )
   )
 })
 
 test_that("undo is per-batch: two selections require two undos to fully restore", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
-      session$setInputs(`plotly_selected-A` = '[{"customdata":2}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
+        session$setInputs(`plotly_selected-A` = '[{"customdata":2}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
 
-      session$setInputs(undo = 1L)
-      expect_equal(output$removed_count, "Removed Timestamps: 1")
+        session$setInputs(undo = 1L)
+        expect_equal(output$removed_count, "Removed Timestamps: 1")
 
-      session$setInputs(undo = 1L)
-      expect_equal(output$removed_count, "Removed Timestamps: 0")
-    })
+        session$setInputs(undo = 1L)
+        expect_equal(output$removed_count, "Removed Timestamps: 0")
+      }
+    )
   )
 })
 
 test_that("undo with no history is a no-op", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(undo = 1L))
-      expect_equal(output$removed_count, "Removed Timestamps: 0")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(undo = 1L))
+        expect_equal(output$removed_count, "Removed Timestamps: 0")
+      }
+    )
   )
 })
 
@@ -211,19 +241,22 @@ test_that("undo with no history is a no-op", {
 
 test_that("reset shows the modal without clearing removals until confirmed", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1},{"customdata":2}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
 
-      session$setInputs(reset = 1L)
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
+        session$setInputs(reset = 1L)
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
 
-      session$setInputs(reset_confirm = 1L)
-      expect_equal(output$removed_count, "Removed Timestamps: 0")
-    })
+        session$setInputs(reset_confirm = 1L)
+        expect_equal(output$removed_count, "Removed Timestamps: 0")
+      }
+    )
   )
 })
 
@@ -234,25 +267,31 @@ test_that("reset shows the modal without clearing removals until confirmed", {
 
 test_that("param_prev at the first parameter does not change selection", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(param_prev = 1L)
-      expect_equal(input$param_select, "Water_Temp_C")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(param_prev = 1L)
+        expect_equal(input$param_select, "Water_Temp_C")
+      }
+    )
   )
 })
 
 test_that("param_prev and param_next fire without error", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(param_next = 1L))
-      expect_no_error(session$setInputs(param_prev = 1L))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(param_next = 1L))
+        expect_no_error(session$setInputs(param_prev = 1L))
+      }
+    )
   )
 })
 
@@ -262,29 +301,35 @@ test_that("param_prev and param_next fire without error", {
 
 test_that("plotly_relayout stores x and y ranges", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(
-        `plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000,"yaxis.range[0]":15,"yaxis.range[1]":25}'
-      )
-      expect_equal(plot_ranges()$x, c(1000, 2000))
-      expect_equal(plot_ranges()$y, c(15, 25))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(
+          `plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000,"yaxis.range[0]":15,"yaxis.range[1]":25}'
+        )
+        expect_equal(plot_ranges()$x, c(1000, 2000))
+        expect_equal(plot_ranges()$y, c(15, 25))
+      }
+    )
   )
 })
 
 test_that("plotly_relayout autorange resets stored ranges to NULL", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000}')
-      session$setInputs(`plotly_relayout-A` = '{"xaxis.autorange":true}')
-      expect_null(plot_ranges()$x)
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_relayout-A` = '{"xaxis.range[0]":1000,"xaxis.range[1]":2000}')
+        session$setInputs(`plotly_relayout-A` = '{"xaxis.autorange":true}')
+        expect_null(plot_ranges()$x)
+      }
+    )
   )
 })
 
@@ -294,24 +339,30 @@ test_that("plotly_relayout autorange resets stored ranges to NULL", {
 
 test_that("bulkPlot renders without error for the default parameter", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(invisible(output$bulkPlot))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(invisible(output$bulkPlot))
+      }
+    )
   )
 })
 
 test_that("bulkPlot renders without error after a removal", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
-      expect_no_error(invisible(output$bulkPlot))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
+        expect_no_error(invisible(output$bulkPlot))
+      }
+    )
   )
 })
 
@@ -321,12 +372,55 @@ test_that("bulkPlot renders without error after a removal", {
 
 test_that("done observer fires without error", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$setInputs(done = 1L))
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$setInputs(done = 1L))
+      }
+    )
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Embedded mode: on_done callback and plot source isolation
+# ---------------------------------------------------------------------------
+
+test_that("on_done is called instead of stopApp when supplied", {
+  cont <- make_bulk_cont()
+  captured <- NULL
+  suppressWarnings(
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(
+        id = "bulk_1",
+        cont = cont,
+        on_done = function(res) captured <<- res
+      ),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(done = 1L)
+        session$setInputs(done_confirm = 1L)
+      }
+    )
+  )
+  expect_false(is.null(captured))
+  expect_named(captured, c("contdat", "removed"))
+})
+
+test_that("embedded mode uses a namespaced plotly source, not the default 'A'", {
+  cont <- make_bulk_cont()
+  suppressWarnings(
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = "bulk_1", cont = cont, on_done = function(res) NULL),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_equal(plot_source, "bulk_1-bulkPlot")
+      }
+    )
   )
 })
 
@@ -336,24 +430,30 @@ test_that("done observer fires without error", {
 
 test_that("session$close() does not error when app closed without Done/Close", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_no_error(session$close())
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_no_error(session$close())
+      }
+    )
   )
 })
 
 test_that("session$close() is a no-op once Done/Close has already fired", {
   cont <- make_bulk_cont()
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$env$app_closing <- TRUE
-      expect_no_error(session$close())
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$env$app_closing <- TRUE
+        expect_no_error(session$close())
+      }
+    )
   )
 })
 
@@ -373,15 +473,15 @@ test_that("editASRbulk_app pre-populates removed count when removed argument is 
   )
   prior_result <- AquaSensR:::editASRbulk_result(full_cont, prior_removed)
 
-  app2 <- AquaSensR:::editASRbulk_app(
-    prior_result$contdat,
-    removed = prior_result$removed
-  )
   suppressWarnings(
-    shiny::testServer(app2, {
-      session$setInputs(param_select = "Water_Temp_C")
-      expect_equal(output$removed_count, "Removed Timestamps: 1")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = prior_result$contdat, removed = prior_result$removed),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        expect_equal(output$removed_count, "Removed Timestamps: 1")
+      }
+    )
   )
 })
 
@@ -397,17 +497,17 @@ test_that("editASRbulk_app with removed argument: new removal adds to pre-existi
   )
   prior_result <- AquaSensR:::editASRbulk_result(full_cont, prior_removed)
 
-  app2 <- AquaSensR:::editASRbulk_app(
-    prior_result$contdat,
-    removed = prior_result$removed
-  )
   suppressWarnings(
-    shiny::testServer(app2, {
-      session$setInputs(param_select = "Water_Temp_C")
-      # rowid 1 was the prior removal (now NA); rowid 2 is a fresh point
-      session$setInputs(`plotly_selected-A` = '[{"customdata":2}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
-    })
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = prior_result$contdat, removed = prior_result$removed),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        # rowid 1 was the prior removal (now NA); rowid 2 is a fresh point
+        session$setInputs(`plotly_selected-A` = '[{"customdata":2}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
+      }
+    )
   )
 })
 
@@ -423,20 +523,20 @@ test_that("start_over with removed argument restores to app-open state, not full
   )
   prior_result <- AquaSensR:::editASRbulk_result(full_cont, prior_removed)
 
-  app2 <- AquaSensR:::editASRbulk_app(
-    prior_result$contdat,
-    removed = prior_result$removed
-  )
   suppressWarnings(
-    shiny::testServer(app2, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":2}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 2")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = prior_result$contdat, removed = prior_result$removed),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":2}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 2")
 
-      session$setInputs(reset = 1L)
-      session$setInputs(reset_confirm = 1L)
-      expect_equal(output$removed_count, "Removed Timestamps: 1")
-    })
+        session$setInputs(reset = 1L)
+        session$setInputs(reset_confirm = 1L)
+        expect_equal(output$removed_count, "Removed Timestamps: 1")
+      }
+    )
   )
 })
 
@@ -508,16 +608,19 @@ test_that("editASRbulk_result ignores a removed Parameter absent from contdat", 
 
 test_that("app and result helper work with a single-parameter dataset", {
   cont <- make_bulk_cont()[, c("DateTime", "Water_Temp_C")]
-  app <- AquaSensR:::editASRbulk_app(cont)
   suppressWarnings(
-    shiny::testServer(app, {
-      session$setInputs(param_select = "Water_Temp_C")
-      session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
-      expect_equal(output$removed_count, "Removed Timestamps: 1")
+    shiny::testServer(
+      AquaSensR:::editASRbulk_server,
+      args = list(id = NULL, cont = cont),
+      {
+        session$setInputs(param_select = "Water_Temp_C")
+        session$setInputs(`plotly_selected-A` = '[{"customdata":1}]')
+        expect_equal(output$removed_count, "Removed Timestamps: 1")
 
-      session$setInputs(param_prev = 1L)
-      session$setInputs(param_next = 1L)
-      expect_equal(input$param_select, "Water_Temp_C")
-    })
+        session$setInputs(param_prev = 1L)
+        session$setInputs(param_next = 1L)
+        expect_equal(input$param_select, "Water_Temp_C")
+      }
+    )
   )
 })

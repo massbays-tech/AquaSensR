@@ -5,6 +5,12 @@
 #'   and one numeric parameter column.  When supplied, the series is drawn as a
 #'   light blue line on a second y-axis on the right side of the plot.  Pass
 #'   \code{NULL} (the default) to omit the overlay.
+#' @param source character string identifying this plot for
+#'   \code{\link[plotly:event_data]{plotly::event_data()}}.  Defaults to
+#'   \code{"A"} (plotly's own default).  \code{\link{editASRflag}} sets this
+#'   to a namespaced value when embedded as one step of
+#'   \code{\link{editASRworkflow}}, so that multiple mounted instances don't
+#'   read/write each other's click, selection, or zoom events.
 #'
 #' @details Produces an interactive \pkg{plotly} time series showing all
 #' observations as a line, with non-passing observations overlaid as markers.
@@ -39,7 +45,7 @@
 #'
 #' flagdat <- utilASRflag(contdat, dqodat, param = 'Water_Temp_C')
 #' anlzASRflag(flagdat)
-anlzASRflag <- function(flag, overlay = NULL) {
+anlzASRflag <- function(flag, overlay = NULL, source = "A") {
   flagdat <- flag
   param <- names(flagdat)[2L]
   ylab <- paramsASR[paramsASR$Parameter == param, "Label"] |> as.character()
@@ -84,6 +90,7 @@ anlzASRflag <- function(flag, overlay = NULL) {
     marker = list(opacity = 0, size = 6),
     name = param,
     showlegend = FALSE,
+    source = source,
     hovertemplate = paste0(
       "<b>",
       param,

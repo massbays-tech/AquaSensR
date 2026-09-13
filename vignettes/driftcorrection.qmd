@@ -195,3 +195,7 @@ drift_result$corrections
 ```
 
 The `corrections` data frame provides a complete audit trail of every change made during the session, which can be saved alongside the corrected data for documentation purposes.
+
+## Running the full workflow
+
+`editASRdrift()` can also be run as one step of `editASRworkflow()`, which steps through `editASRbulk()`, `editASRdrift()`, and `editASRflag()` in order from a single launcher screen (see the [quality control vignette](qcoverview.html#running-the-full-workflow)), with each step's output feeding the next step's input.
