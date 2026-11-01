@@ -240,6 +240,7 @@ anlzASRflag <- function(flag, overlay = NULL, source = "A") {
   plotly::config(
     p,
     displaylogo = FALSE,
+    scrollZoom = TRUE,
     modeBarButtonsToRemove = c(
       "zoomIn2d",
       "zoomOut2d",

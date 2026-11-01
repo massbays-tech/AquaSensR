@@ -129,7 +129,7 @@ editASRbulk_ui <- function(id, cont) {
   bslib::page_sidebar(
     title = aquasensr_logo_title("Edit: Bulk Removal"),
     sidebar = bslib::sidebar(
-      width = 300,
+      width = 360,
       open = "open",
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
@@ -323,6 +323,7 @@ editASRbulk_ui <- function(id, cont) {
     ),
     shiny::p(
       "Zoom and pan normally with the plot toolbar visible on the top right when the pointer is over the plot.",
+      "Zooming in/out can also be done by mousing over the plot and using the scrollwheel.",
       "To trim the start or end of the record, use the \u2018Box Select\u2019 or \u2018Lasso Select\u2019 toolbar buttons.",
       "The removal applies to every parameter at those timestamps, not just the one shown.",
       "This app is only for trimming the edges of a deployment: do not use it to remove a stretch from the middle of the record (e.g., a cleaning/redeployment gap); use editASRflag() for that instead.",
@@ -693,6 +694,7 @@ editASRbulk_server <- function(id, cont, removed = NULL, on_done = NULL) {
         ) |>
         plotly::config(
           displaylogo = FALSE,
+          scrollZoom = TRUE,
           modeBarButtonsToRemove = c(
             "zoomIn2d",
             "zoomOut2d",

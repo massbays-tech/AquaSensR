@@ -141,5 +141,20 @@ utilASRdrift <- function(
         autorange = FALSE,
         range = as.list(y_rng)
       )
+    ) |>
+    plotly::config(
+      displaylogo = FALSE,
+      scrollZoom = TRUE,
+      modeBarButtonsToRemove = c(
+        "zoomIn2d",
+        "zoomOut2d",
+        "autoScale2d",
+        "select2d",
+        "lasso2d",
+        "hoverClosestCartesian",
+        "hoverCompareCartesian",
+        "toggleSpikelines",
+        "toImage"
+      )
     )
 }

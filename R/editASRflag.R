@@ -275,7 +275,7 @@ editASRflag_ui <- function(id, cont, ext = NULL, dqo_sidebar_open = FALSE) {
   bslib::page_sidebar(
     title = aquasensr_logo_title("Edit: QC Flags"),
     sidebar = bslib::sidebar(
-      width = 300,
+      width = 360,
       open = "open",
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
@@ -560,6 +560,7 @@ editASRflag_ui <- function(id, cont, ext = NULL, dqo_sidebar_open = FALSE) {
     ),
     shiny::p(
       "Zoom and pan normally with the plot toolbar visible on the top right when the pointer is over the plot.",
+      "Zooming in/out can also be done by mousing over the plot and using the scrollwheel.",
       "To remove points: click individual points directly, or use the",
       "\u2018Box Select\u2019 or \u2018Lasso Select\u2019 toolbar buttons to remove a region.",
       "Double-click the plot background to clear selection and start a new one."

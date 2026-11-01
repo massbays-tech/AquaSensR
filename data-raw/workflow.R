@@ -1,7 +1,8 @@
 # AquaSensR QC Workflow
 # Imports continuous data and data quality objectives, applies QC flags, and visualizes results
 
-library(AquaSensR)
+# library(AquaSensR)
+devtools::load_all('.')
 
 # ------------------------------------------------------------------------------
 # 1. File paths

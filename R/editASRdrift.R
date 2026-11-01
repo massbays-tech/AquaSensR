@@ -210,7 +210,7 @@ editASRdrift_ui <- function(id, cont, ext = NULL) {
   bslib::page_sidebar(
     title = aquasensr_logo_title("Edit: Drift Correction"),
     sidebar = bslib::sidebar(
-      width = 300,
+      width = 360,
       open = "open",
       shiny::div(
         style = "display: flex; align-items: center; gap: 6px;",
@@ -487,7 +487,8 @@ editASRdrift_ui <- function(id, cont, ext = NULL) {
     shiny::p(
       "Click the line twice to select the start and end of the drift period.",
       "A third click resets the selection.",
-      "Zoom and pan with the toolbar (visible when the pointer is over the plot) to inspect the data."
+      "Zoom and pan with the toolbar (visible when the pointer is over the plot) to inspect the data.",
+      "Zooming in/out can also be done by mousing over the plot and using the scrollwheel."
     ),
     plotly::plotlyOutput(ns("driftPlot"), height = "550px")
   )
@@ -1228,6 +1229,23 @@ editASRdrift_server <- function(id, cont, ext = NULL, on_done = NULL) {
           )
         )
       }
+
+      p <- plotly::config(
+        p,
+        displaylogo = FALSE,
+        scrollZoom = TRUE,
+        modeBarButtonsToRemove = c(
+          "zoomIn2d",
+          "zoomOut2d",
+          "autoScale2d",
+          "select2d",
+          "lasso2d",
+          "hoverClosestCartesian",
+          "hoverCompareCartesian",
+          "toggleSpikelines",
+          "toImage"
+        )
+      )
 
       p <- plotly::event_register(p, "plotly_relayout")
 
